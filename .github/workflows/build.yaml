@@ -20,6 +20,7 @@ jobs:
       - name: Lint Helm Chart
         run: |
           # Lint
+          helm dependency build helm/ph-ee-engine
           helm dependency update helm/ph-ee-engine
           helm lint helm/ph-ee-engine
       - name: Package Helm Chart
