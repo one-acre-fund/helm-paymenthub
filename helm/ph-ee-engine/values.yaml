@@ -30,13 +30,7 @@ mtn_rwanda_connector:
 
 zeebe:
   enabled: true
-  #broker:
-  #  contactpoint: "zeebe-zeebe-gateway:26500"
-
-#zeebe-cluster-helm:
-  #global:
-    #zeebe: "zeebe-zeebe"
-    elasticsearch:
+  elasticsearch:
       disableExporter: true
       host: "ph-ee-elasticsearch"
   annotations:
