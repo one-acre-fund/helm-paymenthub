@@ -29,13 +29,8 @@ mtn_rwanda_connector:
   env: []
 
 zeebe:
-  broker:
-    contactpoint: "zeebe-zeebe-gateway:26500"
-
-zeebe-cluster-helm:
-  global:
-    zeebe: "zeebe-zeebe"
-    elasticsearch:
+  enabled: true
+  elasticsearch:
       disableExporter: true
       host: "ph-ee-elasticsearch"
   annotations:
@@ -45,8 +40,7 @@ zeebe-cluster-helm:
 
   image:
     repository: camunda/zeebe
-    tag: 1.1.0
-
+    tag: 8.5.6
   clusterSize: "1"
   partitionCount: "1"
   replicationFactor: "1"
@@ -101,15 +95,26 @@ zeebe-cluster-helm:
       value: 'false'
     - name: ZEEBE_BROKER_EXPORTERS_KAFKA_ARGS_INDEX_CREATETEMPLATE
       value: 'false'
+zeebeGateway:
+  replicas: 1
+  image:
+    registry: ""
+    repository: camunda/zeebe
+    tag: 8.5.6
+  env:
+    - name: ZEEBE_GATEWAY_THREADS_MANAGEMENTTHREADS
+      value: "4"
+    - name: ZEEBE_GATEWAY_MONITORING_ENABLED
+      value: "true"
 
-  gateway:
-    replicas: 1
-    logLevel: warn
-    env:
-      - name: ZEEBE_GATEWAY_THREADS_MANAGEMENTTHREADS
-        value: "4"
-      - name: ZEEBE_GATEWAY_MONITORING_ENABLED
-        value: "true"
+  # gateway:
+  #   replicas: 1
+  #   logLevel: warn
+  #   env:
+  #     - name: ZEEBE_GATEWAY_THREADS_MANAGEMENTTHREADS
+  #       value: "4"
+  #     - name: ZEEBE_GATEWAY_MONITORING_ENABLED
+  #       value: "true"
 
   # zeebe's dependencies
   elasticsearch:
@@ -274,6 +279,7 @@ channel:
     mtn: momo
     tigo: airtel
     tnm: mpamba
+    nbs: nbs
 
 operations:
   enabled: true
@@ -1170,6 +1176,43 @@ tnm_connector:
   max_retry_count: 3
   timeout: 6000
   wait_tnm_pay_request_period: 60
+  skip:
+    enabled: false
+  deployment:
+    annotations:
+      co.elastic.logs/enabled: "true"
+      instrumentation.opentelemetry.io/inject-java: "true"
+      sidecar.opentelemetry.io/inject: "sidecar"
+  paybill:
+    roster:
+      business_short_code: "12345678"
+      currency: "MWK"
+      base_url: "http://ph-ee-connector-ams-roster"
+    fineract:
+      business_short_code: "24322607"
+      currency: "MWK"
+      base_url: "http://ph-ee-connector-ams-fineract"
+
+nbs_connector:
+  enabled: true
+  replicas: 1
+  image: "oaftech.azurecr.io/oneacrefund/ph-ee-connector-nbs"
+  imageTag: "1.0.0"
+  imagePullPolicy: "IfNotPresent"
+  zeebe_broker_contactpoint: "zeebe-zeebe-gateway:26500"
+  LOGGING_LEVEL_ROOT: "INFO"
+  SPRING_PROFILES_ACTIVE: ""
+  CHANNEL_HOST: "http://ph-ee-connector-channel"
+  containerPort: 5000
+  limits:
+    memory: "1Gi"
+    cpu: "200m"
+  requests:
+    memory: "512M"
+    cpu: "100m"
+  max_retry_count: 3
+  timeout: 6000
+  wait_nbs_pay_request_period: 60
   skip:
     enabled: false
   deployment:

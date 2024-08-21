@@ -1,0 +1,97 @@
+{{- if .Values.nbs_connector.enabled -}}
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "ph-ee-connector-nbs"
+  labels:
+    app: ph-ee-connector-nbs
+spec:
+  replicas: {{ .Values.nbs_connector.replicas }}
+  selector:
+    matchLabels:
+      app: ph-ee-connector-nbs
+  template:
+    metadata:
+      labels:
+        app: ph-ee-connector-nbs
+      annotations:
+{{- if .Values.nbs_connector.deployment.annotations }}
+{{ toYaml .Values.nbs_connector.deployment.annotations | indent 8 }}
+{{- end }}
+    spec:
+      containers:
+        - name: ph-ee-connector-nbs
+          image: "{{ .Values.nbs_connector.image }}:{{ .Values.nbs_connector.imageTag }}"
+          imagePullPolicy: "{{ .Values.nbs_connector.imagePullPolicy }}"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8085
+            periodSeconds: 60
+            initialDelaySeconds: 3
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8085
+            initialDelaySeconds: 3
+            periodSeconds: 60
+            timeoutSeconds: 5
+          startupProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8085
+            failureThreshold: 30
+            periodSeconds: 5
+          resources:
+            limits:
+              memory: "{{ .Values.nbs_connector.limits.memory }}"
+              cpu: "{{ .Values.nbs_connector.limits.cpu }}"
+            requests:
+              memory: "{{ .Values.nbs_connector.requests.memory }}"
+              cpu: "{{ .Values.nbs_connector.requests.cpu }}"
+          ports:
+            - containerPort: {{ .Values.nbs_connector.containerPort }}
+          env:
+            - name: "ZEEBE_BROKER_CONTACTPOINT"
+              value: "{{ .Values.nbs_connector.zeebe_broker_contactpoint }}"
+            - name: "SKIP_ENABLED"
+              value: "{{ .Values.nbs_connector.skip.enabled }}"
+            - name: "SPRING_PROFILES_ACTIVE"
+              value: "{{ .Values.nbs_connector.spring_profiles_active }}"
+            - name: "ZEEBE_WAIT-NBS-PAY-REQUEST-PERIOD"
+              value: "{{ .Values.nbs_connector.wait_nbs_pay_request_period }}"
+            - name: "CHANNEL_HOST"
+              value: "{{ .Values.nbs_connector.CHANNEL_HOST  }}"
+            - name: "ACCOUNTS_FINERACT_PAYBILL_SHORTCODE"
+              value: "{{ .Values.nbs_connector.paybill.fineract.business_short_code  }}"
+            - name: "ACCOUNTS_FINERACT_CURRENCY"
+              value: "{{ .Values.nbs_connector.paybill.fineract.currency  }}" 
+            - name: "ACCOUNTS_FINERACT_BASEURL"
+              value: "{{ .Values.nbs_connector.paybill.fineract.base_url  }}"
+            - name: "ACCOUNTS_ROSTER_PAYBILL_SHORTCODE"
+              value: "{{ .Values.nbs_connector.paybill.roster.business_short_code  }}"
+            - name: "ACCOUNTS_ROSTER_CURRENCY"
+              value: "{{ .Values.nbs_connector.paybill.roster.currency  }}" 
+            - name: "ACCOUNTS_ROSTER_BASEURL"
+              value: "{{ .Values.nbs_connector.paybill.roster.base_url  }}"  
+
+--- 
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: ph-ee-connector-nbs
+  name: ph-ee-connector-nbs
+spec:
+  ports:
+    - name: port
+      port: 80
+      protocol: TCP
+      targetPort: {{ .Values.nbs_connector.containerPort }}
+  selector:
+    app: ph-ee-connector-nbs
+  sessionAffinity: None
+  type: ClusterIP
+{{- end}}
