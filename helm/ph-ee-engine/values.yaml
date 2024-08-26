@@ -1,10 +1,11 @@
+zeebe_broker_contactpoint: "ph-zeebe-gateway:26500"
 mtn_rwanda_connector:
   enabled: true
   image: "oaftech.azurecr.io/oneacrefund/mtn-connector"
   imageTag: "1.0.0"
   tenants: "oaf"
   imagePullPolicy: "IfNotPresent"
-  zeebe_broker_contactpoint: "zeebe-zeebe-gateway:26500"
+  zeebe_broker_contactpoint: "ph-zeebe-gateway:26500"
   camel_server_port: 5000
   mtnrw_callback: ""
   mtnrw_subscription_key: ""
@@ -27,85 +28,105 @@ mtn_rwanda_connector:
         cpu: 100m
   replicas: 3
   env: []
-
-zeebe:
-  enabled: true
+camunda-platform:
+  identity:
+    enabled: false
+  tasklist:
+    enabled: false
+  operate:
+    enabled: false
+  optimize:
+    enabled: false
   elasticsearch:
-      disableExporter: true
-      host: "ph-ee-elasticsearch"
-  annotations:
-    prometheus.io/scrape: 'true'
-    prometheus.io/port: '9600'
-    prometheus.io/path: '/metrics'
+    enabled: false
+    fullnameOverride: "zeebe-elasticsearch"
+    clusterName: "zeebe-elasticsearch"
+    kibana:
+      enabled: false
+      fullnameOverride: "zeebee-kibana"
+      elasticsearchHosts: "http://zeebe-elasticsearch:9200/"
+    prometheus:
+      enabled: false
+  zeebe:
+    enabled: true
+    elasticsearch:
+        disableExporter: true
+        host: "ph-ee-elasticsearch"
+    annotations:
+      prometheus.io/scrape: 'true'
+      prometheus.io/port: '9600'
+      prometheus.io/path: '/metrics'
 
-  image:
-    repository: camunda/zeebe
-    tag: 8.5.6
-  clusterSize: "1"
-  partitionCount: "1"
-  replicationFactor: "1"
-  cpuThreadCount: "2"
-  ioThreadCount: "2"
-  pvcSize: "10Gi"
-  pvcAccessModes:
-    - "ReadWriteOnce"
+    image:
+      repository: camunda/zeebe
+      tag: 8.2.29
+    clusterSize: "1"
+    partitionCount: "1"
+    replicationFactor: "1"
+    cpuThreadCount: "2"
+    ioThreadCount: "2"
+    pvcSize: "10Gi"
+    pvcAccessModes:
+      - "ReadWriteOnce"
 
-  resources:
-    requests:
-      cpu: 100m
+    resources:
+      requests:
+        cpu: 100m
 
-  env:
-    # - name: ZEEBE_BROKER_BACKPRESSURE_ENABLED
-    #   value: "false"
-    - name: ZEEBE_BROKER_EXECUTION_METRICS_EXPORTER_ENABLED
-      value: "true"
-    - name: ZEEBE_BROKER_EXPORTERS_ELASTICSEARCH_CLASSNAME
-      value: "hu.dpc.rt.kafkastreamer.exporter.NoOpExporter"
-    - name: ZEEBE_BROKER_EXPORTERS_ELASTICSEARCH_JARPATH
-      value: "/exporters/ph-ee-kafka-exporter.jar"
-    - name: ZEEBE_BROKER_EXPORTERS_KAFKA_JARPATH
-      value: "/exporters/ph-ee-kafka-exporter.jar"
-    - name: ZEEBE_BROKER_EXPORTERS_KAFKA_CLASSNAME
-      value: "hu.dpc.rt.kafkastreamer.exporter.KafkaExporter"
-    - name: ZEEBE_BROKER_BACKPRESSURE_VEGAS_INITIALLIMIT
-      value: "1000"
-    - name: ZEEBE_BROKER_BACKPRESSURE_VEGAS_ALPHA
-      value: "2"
-    - name: ZEEBE_BROKER_BACKPRESSURE_VEGAS_BETA
-      value: "8"
-    - name: ZEEBE_BROKER_EXPORTERS_KAFKA_ARGS_INDEX_EVENT
-      value: 'true'
-    - name: ZEEBE_BROKER_EXPORTERS_KAFKA_ARGS_INDEX_VARIABLE
-      value: 'true'
-    - name: ZEEBE_BROKER_EXPORTERS_KAFKA_ARGS_INDEX_PROCESSINSTANCE
-      value: 'true'
-    - name: ZEEBE_BROKER_EXPORTERS_KAFKA_ARGS_INDEX_PROCESS
-      value: 'true'
-    - name: ZEEBE_BROKER_EXPORTERS_KAFKA_ARGS_INDEX_INCIDENT
-      value: 'true'
-    - name: ZEEBE_BROKER_EXPORTERS_KAFKA_ARGS_INDEX_DEPLOYMENT
-      value: 'false'
-    - name: ZEEBE_BROKER_EXPORTERS_KAFKA_ARGS_INDEX_ERROR
-      value: 'false'
-    - name: ZEEBE_BROKER_EXPORTERS_KAFKA_ARGS_INDEX_JOB
-      value: 'false'
-    - name: ZEEBE_BROKER_EXPORTERS_KAFKA_ARGS_INDEX_VARIABLEDOCUMENT
-      value: 'false'
-    - name: ZEEBE_BROKER_EXPORTERS_KAFKA_ARGS_INDEX_WORKFLOWINSTANCE
-      value: 'false'
-    - name: ZEEBE_BROKER_EXPORTERS_KAFKA_ARGS_INDEX_CREATETEMPLATE
-      value: 'false'
-zeebeGateway:
-  replicas: 1
-  image:
-    registry: ""
-    repository: camunda/zeebe
-    tag: 8.5.6
-  env:
-    - name: ZEEBE_GATEWAY_THREADS_MANAGEMENTTHREADS
-      value: "4"
-    - name: ZEEBE_GATEWAY_MONITORING_ENABLED
-      value: "true"
+    env:
+      # - name: ZEEBE_BROKER_BACKPRESSURE_ENABLED
+      #   value: "false"
+      - name: ZEEBE_BROKER_EXECUTION_METRICS_EXPORTER_ENABLED
+        value: "true"
+      - name: ZEEBE_BROKER_EXPORTERS_ELASTICSEARCH_ARGS_URL
+        value: http://ph-ee-elasticsearch:9200
+      - name: ZEEBE_BROKER_EXPORTERS_ELASTICSEARCH_CLASSNAME
+        value: "io.camunda.zeebe.exporter.ElasticsearchExporter"
+      # - name: ZEEBE_BROKER_EXPORTERS_ELASTICSEARCH_JARPATH
+      #   value: "/exporters/ph-ee-kafka-exporter.jar"
+      # - name: ZEEBE_BROKER_EXPORTERS_KAFKA_JARPATH
+      #   value: "/exporters/ph-ee-kafka-exporter.jar"
+      - name: ZEEBE_BROKER_EXPORTERS_KAFKA_CLASSNAME
+        value: "io.camunda.zeebe.exporter.KafkaExporter"
+      - name: ZEEBE_BROKER_BACKPRESSURE_VEGAS_INITIALLIMIT
+        value: "1000"
+      - name: ZEEBE_BROKER_BACKPRESSURE_VEGAS_ALPHA
+        value: "2"
+      - name: ZEEBE_BROKER_BACKPRESSURE_VEGAS_BETA
+        value: "8"
+      - name: ZEEBE_BROKER_EXPORTERS_KAFKA_ARGS_INDEX_EVENT
+        value: 'true'
+      - name: ZEEBE_BROKER_EXPORTERS_KAFKA_ARGS_INDEX_VARIABLE
+        value: 'true'
+      - name: ZEEBE_BROKER_EXPORTERS_KAFKA_ARGS_INDEX_PROCESSINSTANCE
+        value: 'true'
+      - name: ZEEBE_BROKER_EXPORTERS_KAFKA_ARGS_INDEX_PROCESS
+        value: 'true'
+      - name: ZEEBE_BROKER_EXPORTERS_KAFKA_ARGS_INDEX_INCIDENT
+        value: 'true'
+      - name: ZEEBE_BROKER_EXPORTERS_KAFKA_ARGS_INDEX_DEPLOYMENT
+        value: 'false'
+      - name: ZEEBE_BROKER_EXPORTERS_KAFKA_ARGS_INDEX_ERROR
+        value: 'false'
+      - name: ZEEBE_BROKER_EXPORTERS_KAFKA_ARGS_INDEX_JOB
+        value: 'false'
+      - name: ZEEBE_BROKER_EXPORTERS_KAFKA_ARGS_INDEX_VARIABLEDOCUMENT
+        value: 'false'
+      - name: ZEEBE_BROKER_EXPORTERS_KAFKA_ARGS_INDEX_WORKFLOWINSTANCE
+        value: 'false'
+      - name: ZEEBE_BROKER_EXPORTERS_KAFKA_ARGS_INDEX_CREATETEMPLATE
+        value: 'false'
+  zeebeGateway:
+    replicas: 1
+    image:
+      registry: ""
+      repository: camunda/zeebe
+      tag: 8.5.6
+    env:
+      - name: ZEEBE_GATEWAY_THREADS_MANAGEMENTTHREADS
+        value: "4"
+      - name: ZEEBE_GATEWAY_MONITORING_ENABLED
+        value: "true"
 
   # gateway:
   #   replicas: 1
@@ -115,20 +136,7 @@ zeebeGateway:
   #       value: "4"
   #     - name: ZEEBE_GATEWAY_MONITORING_ENABLED
   #       value: "true"
-
-  # zeebe's dependencies
-  elasticsearch:
-    enabled: false
-    fullnameOverride: "zeebe-elasticsearch"
-    clusterName: "zeebe-elasticsearch"
-
-  kibana:
-    enabled: false
-    fullnameOverride: "zeebee-kibana"
-    elasticsearchHosts: "http://zeebe-elasticsearch:9200/"
-
-  prometheus:
-    enabled: false
+    
 
   extraInitContainers: |
     - name: init-ph-ee-kafka-exporter
@@ -402,7 +410,7 @@ mpesa:
   SPRING_PROFILES_ACTIVE: "bb"
   LOGGING_LEVEL_ROOT: "INFO"
   hostname: ""
-  zeebe_broker_contactpoint: "zeebe-zeebe-gateway:26500"
+  zeebe_broker_contactpoint: "ph-zeebe-gateway:26500"
   tenant: "oaf"
   callback_host: ""
   channel:
@@ -627,7 +635,7 @@ notifications:
   SPRING_PROFILES_ACTIVE: "bb"
   LOGGING_LEVEL_ROOT: "INFO"
   hostname: ""
-  zeebe_broker_contactpoint: "zeebe-zeebe-gateway:26500"
+  zeebe_broker_contactpoint: "ph-zeebe-gateway:26500"
   MESSAGEGATEWAYCONFIG_HOST: "message-gateway"
   NOTIFICATION_LOCAL_HOST: "ph-ee-connector-notifications"
   NOTIFICATION_SUCCESS_ENABLED: "false"
@@ -664,7 +672,7 @@ zeebe_ops:
   SPRING_PROFILES_ACTIVE: "bb"
   LOGGING_LEVEL_ROOT: "INFO"
   hostname: ""
-  zeebe_broker_contactpoint: "zeebe-zeebe-gateway:26500"
+  zeebe_broker_contactpoint: "ph-zeebe-gateway:26500"
   elasticsearch_contactpoint: "ph-ee-elasticsearch:9200"
   elasticsearch_sslverification: false
   elasticsearch_security_enabled: false
@@ -802,7 +810,7 @@ connector_bulk:
   SPRING_PROFILES_ACTIVE: "default"
   camel_disable_ssl: true
   hostname: "bulk-connector.sandbox.fynarfin.io"
-  zeebe_broker_contactpoint: "zeebe-zeebe-gateway:26500"
+  zeebe_broker_contactpoint: "ph-zeebe-gateway:26500"
   tenants: "ibank-usa,ibank-india"
   bucket_name: "paymenthub-ee-dev"
   operations_app:
@@ -866,7 +874,7 @@ ph_ee_connector_slcb:
   imageTag: "v1.1.1"
   imagePullPolicy: "Always"
   SPRING_PROFILES_ACTIVE: ""
-  zeebe_broker_contactpoint: "zeebe-zeebe-gateway:26500"
+  zeebe_broker_contactpoint: "ph-zeebe-gateway:26500"
   username: "username"
   password: "password"
   signature_key: "long_segnature_key"
@@ -1098,7 +1106,7 @@ airtel_connector:
   image: "oaftech.azurecr.io/oneacrefund/airtel-connector"
   imageTag: "0.0.1"
   imagePullPolicy: "IfNotPresent"
-  zeebe_broker_contactpoint: "zeebe-zeebe-gateway:26500"
+  zeebe_broker_contactpoint: "ph-zeebe-gateway:26500"
   LOGGING_LEVEL_ROOT: "INFO"
   SPRING_PROFILES_ACTIVE: ""
   containerPort: 5000
@@ -1162,7 +1170,7 @@ tnm_connector:
   image: "oaftech.azurecr.io/oneacrefund/tnm-connector"
   imageTag: "1.0.0.2024.03.14.1 "
   imagePullPolicy: "IfNotPresent"
-  zeebe_broker_contactpoint: "zeebe-zeebe-gateway:26500"
+  zeebe_broker_contactpoint: "ph-zeebe-gateway:26500"
   LOGGING_LEVEL_ROOT: "INFO"
   SPRING_PROFILES_ACTIVE: ""
   CHANNEL_HOST: "http://ph-ee-connector-channel"
@@ -1199,7 +1207,7 @@ nbs_connector:
   image: "oaftech.azurecr.io/oneacrefund/ph-ee-connector-nbs"
   imageTag: "1.0.0"
   imagePullPolicy: "IfNotPresent"
-  zeebe_broker_contactpoint: "zeebe-zeebe-gateway:26500"
+  zeebe_broker_contactpoint: "ph-zeebe-gateway:26500"
   LOGGING_LEVEL_ROOT: "INFO"
   SPRING_PROFILES_ACTIVE: ""
   CHANNEL_HOST: "http://ph-ee-connector-channel"
