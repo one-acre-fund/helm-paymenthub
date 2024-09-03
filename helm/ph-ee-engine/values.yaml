@@ -29,6 +29,12 @@ mtn_rwanda_connector:
   replicas: 3
   env: []
 camunda-platform:
+  global:
+    elasticsearch:
+      enabled: false
+    identity:
+      auth:
+        enabled: false
   identity:
     enabled: false
   tasklist:
@@ -125,7 +131,7 @@ camunda-platform:
       co.elastic.logs/multiline.match: 'after'
       instrumentation.opentelemetry.io/inject-java: 'true'
       sidecar.opentelemetry.io/inject: 'sidecar'
-    extraInitContainers: |
+    extraInitContainers: 
       - name: init-ph-ee-kafka-exporter
         image: busybox:1.28
         command: ['/bin/sh', '-c']
