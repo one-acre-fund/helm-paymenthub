@@ -32,6 +32,9 @@ camunda-platform:
   global:
     elasticsearch:
       enabled: false
+    identity:
+      auth:
+        enabled: false
   identity:
     enabled: false
   tasklist:
