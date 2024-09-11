@@ -75,7 +75,9 @@ spec:
             - name: "ACCOUNTS_ROSTER_CURRENCY"
               value: "{{ .Values.nbs_connector.paybill.roster.currency  }}" 
             - name: "ACCOUNTS_ROSTER_BASEURL"
-              value: "{{ .Values.nbs_connector.paybill.roster.base_url  }}"  
+              value: "{{ .Values.nbs_connector.paybill.roster.base_url  }}" 
+            - name: "CAMEL_SERVER_PORT"
+              value: "{{ .Values.nbs_connector.camel_server_port }}" 
 
 --- 
 apiVersion: v1
