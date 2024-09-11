@@ -1231,6 +1231,7 @@ nbs_connector:
   max_retry_count: 3
   timeout: 6000
   wait_nbs_pay_request_period: 60
+  camel_server_port: 5000
   skip:
     enabled: false
   deployment:
