@@ -131,7 +131,7 @@ camunda-platform:
       co.elastic.logs/multiline.match: 'after'
       instrumentation.opentelemetry.io/inject-java: 'true'
       sidecar.opentelemetry.io/inject: 'sidecar'
-    InitContainers: 
+    initContainers: 
       - name: init-ph-ee-kafka-exporter
         image: busybox:1.28
         command: ['/bin/sh', '-c']
