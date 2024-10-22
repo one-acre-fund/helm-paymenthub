@@ -40,9 +40,6 @@ spec:
               value: "{{ .Values.kafka.advertised.host }}"
             - name: "ADVERTISED_PORT"
               value: "{{ .Values.kafka.advertised.port }}"
-          resources:
-                limits:
-                  memory: "1536M"
       restartPolicy: Always
 
 ---
