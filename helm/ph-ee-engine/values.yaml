@@ -298,6 +298,7 @@ channel:
     tigo: airtel
     tnm: mpamba
     nbs: nbs
+    bancobu: bancobu
 
 operations:
   enabled: true
@@ -1247,4 +1248,38 @@ nbs_connector:
     fineract:
       business_short_code: "24322607"
       currency: "MWK"
+      base_url: "http://ph-ee-connector-ams-fineract"
+
+bancobu_connector:
+  enabled: true
+  replicas: 1
+  image: "oaftech.azurecr.io/oneacrefund/ph-ee-connector-bancobu"
+  imageTag: "1.0.0"
+  imagePullPolicy: "IfNotPresent"
+  zeebe_broker_contactpoint: "ph-zeebe-gateway:26500"
+  LOGGING_LEVEL_ROOT: "INFO"
+  SPRING_PROFILES_ACTIVE: ""
+  CHANNEL_HOST: "http://ph-ee-connector-channel"
+  containerPort: 5000
+  limits:
+    memory: "1Gi"
+    cpu: "200m"
+  requests:
+    memory: "512M"
+    cpu: "100m"
+  max_retry_count: 3
+  timeout: 6000
+  wait_bancobu_pay_request_period: 60
+  camel_server_port: 5000
+  skip:
+    enabled: false
+  deployment:
+    annotations:
+      co.elastic.logs/enabled: "true"
+      instrumentation.opentelemetry.io/inject-java: "true"
+      sidecar.opentelemetry.io/inject: "sidecar"
+  paybill:
+    fineract:
+      business_short_code: "24322607"
+      currency: "BIF"
       base_url: "http://ph-ee-connector-ams-fineract"
