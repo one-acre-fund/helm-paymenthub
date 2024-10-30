@@ -1,0 +1,93 @@
+{{- if .Values.bancobu_connector.enabled -}}
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "ph-ee-connector-bancobu"
+  labels:
+    app: ph-ee-connector-bancobu
+spec:
+  replicas: {{ .Values.bancobu_connector.replicas }}
+  selector:
+    matchLabels:
+      app: ph-ee-connector-bancobu
+  template:
+    metadata:
+      labels:
+        app: ph-ee-connector-bancobu
+      annotations:
+{{- if .Values.bancobu_connector.deployment.annotations }}
+{{ toYaml .Values.bancobu_connector.deployment.annotations | indent 8 }}
+{{- end }}
+    spec:
+      containers:
+        - name: ph-ee-connector-bancobu
+          image: "{{ .Values.bancobu_connector.image }}:{{ .Values.bancobu_connector.imageTag }}"
+          imagePullPolicy: "{{ .Values.bancobu_connector.imagePullPolicy }}"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8085
+            periodSeconds: 60
+            initialDelaySeconds: 3
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8085
+            initialDelaySeconds: 3
+            periodSeconds: 60
+            timeoutSeconds: 5
+          startupProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8085
+            failureThreshold: 30
+            periodSeconds: 5
+          resources:
+            limits:
+              memory: "{{ .Values.bancobu_connector.limits.memory }}"
+              cpu: "{{ .Values.bancobu_connector.limits.cpu }}"
+            requests:
+              memory: "{{ .Values.bancobu_connector.requests.memory }}"
+              cpu: "{{ .Values.bancobu_connector.requests.cpu }}"
+          ports:
+            - containerPort: {{ .Values.bancobu_connector.containerPort }}
+          env:
+            - name: "ZEEBE_BROKER_CONTACTPOINT"
+              value: "{{ .Values.bancobu_connector.zeebe_broker_contactpoint }}"
+            - name: "SKIP_ENABLED"
+              value: "{{ .Values.bancobu_connector.skip.enabled }}"
+            - name: "SPRING_PROFILES_ACTIVE"
+              value: "{{ .Values.bancobu_connector.spring_profiles_active }}"
+            - name: "ZEEBE_WAIT-bancobu-PAY-REQUEST-PERIOD"
+              value: "{{ .Values.bancobu_connector.wait_bancobu_pay_request_period }}"
+            - name: "CHANNEL_HOST"
+              value: "{{ .Values.bancobu_connector.CHANNEL_HOST  }}"
+            - name: "ACCOUNTS_FINERACT_PAYBILL_SHORTCODE"
+              value: "{{ .Values.bancobu_connector.paybill.fineract.business_short_code  }}"
+            - name: "ACCOUNTS_FINERACT_CURRENCY"
+              value: "{{ .Values.bancobu_connector.paybill.fineract.currency  }}" 
+            - name: "ACCOUNTS_FINERACT_BASEURL"
+              value: "{{ .Values.bancobu_connector.paybill.fineract.base_url  }}"
+            - name: "CAMEL_SERVER_PORT"
+              value: "{{ .Values.bancobu_connector.camel_server_port }}" 
+
+--- 
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: ph-ee-connector-bancobu
+  name: ph-ee-connector-bancobu
+spec:
+  ports:
+    - name: port
+      port: 80
+      protocol: TCP
+      targetPort: {{ .Values.bancobu_connector.containerPort }}
+  selector:
+    app: ph-ee-connector-bancobu
+  sessionAffinity: None
+  type: ClusterIP
+{{- end}}
