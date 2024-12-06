@@ -25,6 +25,9 @@ spec:
           image: "{{ .Values.fineract_connector.image }}:{{ .Values.fineract_connector.imageTag }}"
           ports:
             - containerPort: 5000
+              protocol: TCP
+            - containerPort: 5004
+              protocol: TCP
           imagePullPolicy: "{{ .Values.fineract_connector.imagePullPolicy }}"
           livenessProbe:
             httpGet:
@@ -78,6 +81,10 @@ spec:
       port: 80
       protocol: TCP
       targetPort: 5000
+    - name: port
+      port: 82
+      protocol: TCP
+      targetPort: 5004
   selector:
     app: ph-ee-connector-ams-fineract
   sessionAffinity: None

@@ -25,6 +25,9 @@ spec:
           image: "{{ .Values.erply_connector.image }}:{{ .Values.erply_connector.imageTag }}"
           ports:
             - containerPort: 5000
+              protocol: TCP
+            - containerPort: 8080
+              protocol: TCP
           imagePullPolicy: "{{ .Values.erply_connector.imagePullPolicy }}"
           livenessProbe:
             httpGet:
@@ -91,6 +94,10 @@ spec:
       port: 80
       protocol: TCP
       targetPort: 5000
+    - name: port
+      port: 82
+      protocol: TCP
+      targetPort: 8080
   selector:
     app: ph-ee-connector-ams-erply
   sessionAffinity: None

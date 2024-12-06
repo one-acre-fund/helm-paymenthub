@@ -53,6 +53,9 @@ spec:
               cpu: "{{ .Values.nbs_connector.requests.cpu }}"
           ports:
             - containerPort: {{ .Values.nbs_connector.containerPort }}
+              protocol: TCP
+            - containerPort: 8080
+              protocol: TCP
           env:
             - name: "ZEEBE_BROKER_CONTACTPOINT"
               value: "{{ .Values.nbs_connector.zeebe_broker_contactpoint }}"
@@ -92,6 +95,10 @@ spec:
       port: 80
       protocol: TCP
       targetPort: {{ .Values.nbs_connector.containerPort }}
+    - name: port
+      port: 82
+      protocol: TCP
+      targetPort: 8080
   selector:
     app: ph-ee-connector-nbs
   sessionAffinity: None

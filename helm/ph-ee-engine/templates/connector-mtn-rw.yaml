@@ -53,6 +53,9 @@ spec:
               cpu: "{{ .Values.mtn_rwanda_connector.deployment.resources.requests.cpu }}"
           ports:
             - containerPort: 5000
+              protocol: TCP
+            - containerPort: 8080
+              protocol: TCP
           env:
             - name: "ZEEBE_BROKER_CONTACTPOINT"
               value: "{{ .Values.mtn_rwanda_connector.zeebe_broker_contactpoint }}"
@@ -114,6 +117,10 @@ spec:
       port: 80
       protocol: TCP
       targetPort: 5000
+    - name: port
+      port: 82
+      protocol: TCP
+      targetPort: 8080
   selector:
     app: ph-ee-connector-ams-mtn-rw
   sessionAffinity: None

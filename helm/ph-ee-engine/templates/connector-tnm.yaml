@@ -53,6 +53,9 @@ spec:
               cpu: "{{ .Values.tnm_connector.requests.cpu }}"
           ports:
             - containerPort: {{ .Values.tnm_connector.containerPort }}
+              protocol: TCP
+            - containerPort: 8080
+              protocol: TCP
           env:
             - name: "ZEEBE_BROKER_CONTACTPOINT"
               value: "{{ .Values.tnm_connector.zeebe_broker_contactpoint }}"
@@ -90,6 +93,10 @@ spec:
       port: 80
       protocol: TCP
       targetPort: {{ .Values.tnm_connector.containerPort }}
+    - name: port
+      port: 82
+      protocol: TCP
+      targetPort: 8080
   selector:
     app: ph-ee-connector-tnm
   sessionAffinity: None
