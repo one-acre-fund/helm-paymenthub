@@ -95,7 +95,7 @@ spec:
       port: 80
       protocol: TCP
       targetPort: {{ .Values.nbs_connector.containerPort }}
-    - name: port
+    - name: tomcat
       port: 82
       protocol: TCP
       targetPort: 8080
