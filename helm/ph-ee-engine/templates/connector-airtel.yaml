@@ -87,6 +87,22 @@ spec:
               value: "{{ .Values.airtel_connector.max_retry_count}}"
             - name: "AIRTEL_TIMEOUT"
               value: "{{ .Values.airtel_connector.timeout }}"
+            - name: "CHANNEL_HOST"
+              value: "{{ .Values.airtel_connector.channel_host }}"
+            - name: "PAYBILL_ACCOUNT-HOLDING-INSTITUTION-ID"
+              value: "{{ .Values.airtel_connector.paybill.account_holding_institution_id }}"
+            - name: "PAYBILL_TIMER"
+              value: "{{ .Values.airtel_connector.paybill.timer }}"
+            - name: "PAYBILL_DEFAULT-SHORT-CODE"
+              value: "{{ .Values.airtel_connector.paybill.default_short_code }}"
+          {{- range $key, $value := .Values.airtel_connector.paybill.ams_short_codes }}
+            - name: "PAYBILL_AMS-SHORT-CODES_{{ $key }}_AMS-NAME"
+              value: "{{ $value.ams_name }}"
+            - name: "PAYBILL_AMS-SHORT-CODES_{{ $key }}_AMS-URL"
+              value: "{{ $value.ams_url }}"
+            - name: "PAYBILL_AMS-SHORT-CODES_{{ $key }}_IDENTIFIER"
+              value: "{{ $value.identifier }}"
+          {{- end }}
 
 ---
 apiVersion: v1
