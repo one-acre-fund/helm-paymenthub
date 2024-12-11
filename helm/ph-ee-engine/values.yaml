@@ -1145,6 +1145,20 @@ airtel_connector:
       co.elastic.logs/enabled: "true"
       instrumentation.opentelemetry.io/inject-java: "true"
       sidecar.opentelemetry.io/inject: "sidecar"
+  channel_host: "http://ph-ee-connector-channel"
+  paybill:
+    account_holding_institution_id: "oaf"
+    timer: "PT45S"
+    default_short_code: "123456"
+    ams_short_codes:
+      "123456":
+        ams_name: "roster"
+        ams_url: "http://ph-ee-connector-ams-roster"
+        identifier: "ACCOUNTID"
+      "789012":
+        ams_name: "fineract"
+        ams_url: "http://ph-ee-connector-ams-fineract"
+        identifier: "FINERACTACCOUNTID"
 
 odoo_connector:
   enabled: true
