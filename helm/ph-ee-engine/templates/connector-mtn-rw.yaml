@@ -118,7 +118,7 @@ spec:
       protocol: TCP
       targetPort: 5000
     - name: tomcat
-      port: 82
+      port: 443
       protocol: TCP
       targetPort: 8080
   selector:
