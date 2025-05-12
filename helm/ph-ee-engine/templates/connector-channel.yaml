@@ -70,6 +70,10 @@ spec:
               value: "{{ .Values.channel.operations.url }}"
             - name: "AMS"
               value: "{{ .Values.channel.AMS  }}"
+            - name: "CALLBACK_URL_RESTRICT"
+              value: "{{ .Values.channel.callbackUrl.restrict }}"
+            - name: "CALLBACK_URL_ALLOWED_DOMAINS"
+              value: "{{ .Values.channel.callbackUrl.allowedDomains }}"
             - name: "PAYMENTSCHEMES"
               value: {{ .Values.channel.paymentSchemes | toJson | quote }}
             - name: "LOGGING_PATTERN_CONSOLE"

@@ -299,6 +299,9 @@ channel:
     tnm: mpamba
     nbs: nbs
     bancobu: bancobu
+  callbackUrl:
+    restrict: false
+    allowedDomains: "oneacrefund.org"
 
 operations:
   enabled: true
