@@ -17,6 +17,18 @@ mtn_rwanda_connector:
   spring_profiles_active: "bb"
   mtn_max_retry_count: 3
   mtn_api_timeout: 6000
+  paybill:
+    accountHoldingInstitutionId: "oaf"
+    timer: "PT45S"
+    amsName: "fineract"
+    amsUrl: "http://ph-ee-connector-ams-fineract"
+    amsIdentifier: "FINERACTACCOUNTID"
+    currency: "RWF"
+    paymentCompletedUrl: "https://9fa1f44b-bc54-4b2a-b67e-e7db2fcdbdfe.mock.pstmn.io/sp/paymentcompleted"
+    username: "changeme"
+    password: "changeme"
+  channel:
+    host: "http://ph-ee-connector-channel"
   deployment:
     annotations: {}
     resources:
