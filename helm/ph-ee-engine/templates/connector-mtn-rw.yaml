@@ -92,6 +92,32 @@ spec:
               value: "{{ .Values.mtn_rwanda_connector.mtnrw_callback }}"
             - name: "CAMEL_SERVER_PORT"
               value: "{{ .Values.mtn_rwanda_connector.camel_server_port }}"
+            - name: "PAYBILL_USERNAME"
+              valueFrom:
+                secretKeyRef:
+                  name: "mtn-rw-secret"
+                  key: "paybill-username"
+            - name: "PAYBILL_PASSWORD"
+              valueFrom:
+                secretKeyRef:
+                  name: "mtn-rw-secret"
+                  key: "paybill-password"
+            - name: "PAYBILL_ACCOUNT_HOLDING_INSTITUTION_ID"
+              value: "{{ .Values.mtn_rwanda_connector.paybill.accountHoldingInstitutionId }}"
+            - name: "PAYBILL_TIMER"
+              value: "{{ .Values.mtn_rwanda_connector.paybill.timer }}"
+            - name: "PAYBILL_AMS_NAME"
+              value: "{{ .Values.mtn_rwanda_connector.paybill.amsName }}"
+            - name: "PAYBILL_AMS_URL"
+              value: "{{ .Values.mtn_rwanda_connector.paybill.amsUrl }}"
+            - name: "PAYBILL_AMS_IDENTIFIER"
+              value: "{{ .Values.mtn_rwanda_connector.paybill.amsIdentifier }}"
+            - name: "PAYBILL_CURRENCY"
+              value: "{{ .Values.mtn_rwanda_connector.paybill.currency }}"
+            - name: "PAYBILL_PAYMENT_COMPLETED_URL"
+              value: "{{ .Values.mtn_rwanda_connector.paybill.paymentCompletedUrl }}"
+            - name: "CHANNEL_HOST"
+              value: "{{ .Values.mtn_rwanda_connector.channel.host }}"
 
 ---
 apiVersion: v1
@@ -103,6 +129,8 @@ data:
   client-key: {{ .Values.mtn_rwanda_connector.mtnrw_client_key | b64enc}}
   client-secret: {{ .Values.mtn_rwanda_connector.mtnrw_client_secret | b64enc }}
   subscription-key : {{ .Values.mtn_rwanda_connector.mtnrw_subscription_key | b64enc }}
+  paybill-username : {{ .Values.mtn_rwanda_connector.paybill.username | b64enc }}
+  paybill-password : {{ .Values.mtn_rwanda_connector.paybill.password | b64enc }}
 
 --- 
 apiVersion: v1
