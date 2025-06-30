@@ -74,6 +74,40 @@ spec:
               value: "{{ .Values.channel.callbackUrl.restrict }}"
             - name: "CALLBACK_URL_ALLOWED_DOMAINS"
               value: "{{ .Values.channel.callbackUrl.allowedDomains }}"
+            - name: SQUAD_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: "channel-secret"
+                  key: "squad-secret-key"
+            - name: SQUAD_AMS_IDENTIFIER
+              value: "{{ .Values.channel.squad.amsIdentifier }}"
+            - name: SQUAD_AMS_VALUE
+              value: "{{ .Values.channel.squad.amsValue }}"
+            - name: SQUAD_FLOW
+              value: "{{ .Values.channel.squad.flow }}"
+            - name: SQUAD_PAYER_ID_TYPE
+              value: "{{ .Values.channel.squad.payerIdType }}"
+            - name: SQUAD_SUCCESS_NOTIFICATIONS_ENABLED
+              value: "{{ .Values.channel.squad.successNotificationsEnabled }}"
+            - name: SQUAD_FAILURE_NOTIFICATIONS_ENABLED
+              value: "{{ .Values.channel.squad.failureNotificationsEnabled }}"
+            - name: MONNIFY_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: "channel-secret"
+                  key: "monnify-secret-key"
+            - name: MONNIFY_AMS_IDENTIFIER
+              value: "{{ .Values.channel.monnify.amsIdentifier }}"
+            - name: MONNIFY_AMS_VALUE
+              value: "{{ .Values.channel.monnify.amsValue }}"
+            - name: MONNIFY_FLOW
+              value: "{{ .Values.channel.monnify.flow }}"
+            - name: MONNIFY_PAYER_ID_TYPE
+              value: "{{ .Values.channel.monnify.payerIdType }}"
+            - name: MONNIFY_SUCCESS_NOTIFICATIONS_ENABLED
+              value: "{{ .Values.channel.monnify.successNotificationsEnabled }}"
+            - name: MONNIFY_FAILURE_NOTIFICATIONS_ENABLED
+              value: "{{ .Values.channel.monnify.failureNotificationsEnabled }}"
             - name: "PAYMENTSCHEMES"
               value: {{ .Values.channel.paymentSchemes | toJson | quote }}
             - name: "LOGGING_PATTERN_CONSOLE"
@@ -167,5 +201,15 @@ spec:
     app: ph-ee-connector-channel
   sessionAffinity: None
   type: ClusterIP
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: channel-secret
+type: Opaque
+data:
+  squad-secret-key: {{ .Values.channel.squad.secretKey | b64enc}}
+  monnify-secret-key: {{ .Values.channel.monnify.secretKey | b64enc }}
 
   {{- end }}
