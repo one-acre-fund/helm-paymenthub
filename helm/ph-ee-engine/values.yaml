@@ -314,6 +314,22 @@ channel:
   callbackUrl:
     restrict: false
     allowedDomains: "oneacrefund.org"
+  squad:
+    secretKey: "changeme"
+    amsIdentifier: "FINERACTACCOUNTID"
+    amsValue: "fineract"
+    flow: "pos_payment-oaf"
+    payerIdType: "VIRTUAL_ACCOUNT_NUMBER"
+    successNotificationsEnabled: false
+    failureNotificationsEnabled: false
+  monnify:
+    secretKey: "changeme"
+    amsIdentifier: "FINERACTACCOUNTID"
+    amsValue: "fineract"
+    flow: "pos_payment-oaf"
+    payerIdType: "VIRTUAL_ACCOUNT_NUMBER"
+    successNotificationsEnabled: false
+    failureNotificationsEnabled: false
 
 operations:
   enabled: true
