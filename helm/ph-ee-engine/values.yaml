@@ -322,6 +322,10 @@ channel:
     payerIdType: "VIRTUAL_ACCOUNT_NUMBER"
     successNotificationsEnabled: false
     failureNotificationsEnabled: false
+    baseUrl: "https://sandbox-api-d.squadco.com"
+    logsEndpoint: "/virtual-account/webhook/logs"
+    logsPageSize: 100
+    token: "changeme"
   monnify:
     secretKey: "changeme"
     amsIdentifier: "FINERACTACCOUNTID"

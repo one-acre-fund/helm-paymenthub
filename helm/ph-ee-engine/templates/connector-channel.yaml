@@ -91,6 +91,17 @@ spec:
               value: "{{ .Values.channel.squad.successNotificationsEnabled }}"
             - name: SQUAD_FAILURE_NOTIFICATIONS_ENABLED
               value: "{{ .Values.channel.squad.failureNotificationsEnabled }}"
+            - name: SQUAD_BASE_URL
+              value: "{{ .Values.channel.squad.baseUrl }}"
+            - name: SQUAD_LOGS_ENDPOINT
+              value: "{{ .Values.channel.squad.logsEndpoint }}"
+            - name: SQUAD_LOGS_PAGE_SIZE
+              value: "{{ .Values.channel.squad.logsPageSize }}"
+            - name: SQUAD_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: "channel-secret"
+                  key: "squad-token"
             - name: MONNIFY_SECRET_KEY
               valueFrom:
                 secretKeyRef:
@@ -211,5 +222,6 @@ type: Opaque
 data:
   squad-secret-key: {{ .Values.channel.squad.secretKey | b64enc}}
   monnify-secret-key: {{ .Values.channel.monnify.secretKey | b64enc }}
+  squad-token: {{ .Values.channel.squad.token | b64enc}}
 
   {{- end }}
