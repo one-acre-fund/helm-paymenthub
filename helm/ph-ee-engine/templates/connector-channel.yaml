@@ -220,8 +220,8 @@ metadata:
   name: channel-secret
 type: Opaque
 data:
-  squad-secret-key: {{ .Values.channel.squad.secretKey | b64enc}}
+  squad-secret-key: {{ .Values.channel.squad.secretKey | b64enc }}
   monnify-secret-key: {{ .Values.channel.monnify.secretKey | b64enc }}
-  squad-token: {{ .Values.channel.squad.token | b64enc}}
+  squad-token: {{ .Values.channel.squad.token | b64enc }}
 
   {{- end }}
