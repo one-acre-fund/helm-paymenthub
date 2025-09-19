@@ -259,7 +259,10 @@ channel:
   DFSPIDS: "oaf,rw-oaf"
   operations:
     url: "http://ph-ee-operations-app"
-    authEnabled: false
+    authExpiryDefault: 60
+    authExpiryBufferDefault: 30
+    endpoint:
+      auth: "https://accounts.oneacrefund.org/realms/OneAcreFund/protocol/openid-connect/token"
   tenantPrimary:
     clientId: ""
     clientSecret: ""
