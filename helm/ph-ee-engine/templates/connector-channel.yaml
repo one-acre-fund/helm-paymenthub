@@ -129,6 +129,12 @@ spec:
             - name: "{{ cat "AMS_GROUPS_" $key "__VALUE" | nospace }}"
               value: "{{ $value.value }}"
             {{- end }}
+            - name: "AUTHENTICATION_API"
+              value: "{{ .Values.channel.operations.endpoint.auth }}"
+            - name: "AUTHENTICATION_EXPIRY_DEFAULT"
+              value: "{{ .Values.channel.operations.authExpiryDefault }}"
+            - name: "AUTHENTICATION_EXPIRY_BUFFER_DEFAULT"
+              value: "{{ .Values.channel.operations.authExpiryBufferDefault }}"
           volumeMounts:
             - name: ph-ee-config
               mountPath: "/config"
