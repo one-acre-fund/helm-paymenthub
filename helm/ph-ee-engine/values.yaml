@@ -388,7 +388,7 @@ operations_app:
   image: "oaftech.azurecr.io/phee-ns/ph-ee-operations-app"
   imagePullPolicy: IfNotPresent
   imageTag: "v1.3.0"
-  SPRING_PROFILES_ACTIVE: "bb"
+  SPRING_PROFILES_ACTIVE: "keycloak"
   LOGGING_LEVEL_ROOT: "INFO"
   LOGGING_PATTERN_CONSOLE: "%d{dd-MM-yyyy HH:mm:ss.SSS} %magenta([%thread]) %highlight(%-5level) %logger.%M - %msg%n"
   hostname: ""
