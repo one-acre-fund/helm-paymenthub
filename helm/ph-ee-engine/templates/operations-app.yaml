@@ -28,7 +28,7 @@ spec:
             - containerPort: 5000
           readinessProbe:
             httpGet:
-              path: /oauth/token_key
+              path: /v3/api-docs
               port: 5000
             periodSeconds: 30
             timeoutSeconds: 5
