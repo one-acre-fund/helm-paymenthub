@@ -264,8 +264,8 @@ channel:
     endpoint:
       auth: "https://accounts.oneacrefund.org/realms/OneAcreFund/protocol/openid-connect/token"
   tenantPrimary:
-    clientId: ""
-    clientSecret: ""
+    clientId: "ph-system.user@oneacrefund.org"
+    clientSecret: "changeme"
     tenant: "oaf"
   tenantSecondary:
     clientId: ""
