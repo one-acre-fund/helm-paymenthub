@@ -63,6 +63,14 @@ spec:
               value: "{{ .Values.operations_app.LOGGING_LEVEL_ROOT }}"
             - name: "LOGGING_PATTERN_CONSOLE"
               value: "{{ .Values.operations_app.LOGGING_PATTERN_CONSOLE }}"
+            - name: "KEYCLOAK_BASE_URL"
+              value: "{{ .Values.operations_app.keycloak.base_url }}"
+            - name: "KEYCLOAK_CLIENT_ID"
+              value: "{{ .Values.operations_app.keycloak.client_id }}"
+            - name: "KEYCLOAK_REALM"
+              value: "{{ .Values.operations_app.keycloak.realm }}"
+            - name: "PH_OPERATIONS_APP_SWAGGER_REDIRECT_URL"
+              value: "{{ .Values.operations_app.keycloak.ops_app_swagger_redirection_url }}"
           volumeMounts:
             - name: ph-ee-config
               mountPath: "/config"

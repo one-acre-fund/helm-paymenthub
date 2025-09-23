@@ -394,6 +394,11 @@ operations_app:
   hostname: ""
   tenants: "oaf"
   token_client_channel_secret: ""
+  keycloak:
+    base_url: "$(KEYCLOAK_BASE_URL)"
+    client_id: "$(KEYCLOAK_CLIENT_ID)"
+    realm: "$(KEYCLOAK_REALM)"
+    ops_app_swagger_redirection_url: "$(PH_OPERATIONS_APP_SWAGGER_REDIRECT_URL)"
   datasource:
     username: "mifos"
     password: "password"
