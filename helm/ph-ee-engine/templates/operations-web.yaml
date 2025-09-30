@@ -33,6 +33,17 @@ spec:
             requests:
               memory: "{{ .Values.operations_web.requests.memory }}"
               cpu: "{{ .Values.operations_web.requests.cpu }}"
+          env:
+            - name: "KEYCLOAK_BASE_URL"
+              value: "{{ .Values.operations_web.oauth.keycloak.base_url }}"
+            - name: "KEYCLOAK_CLIENT_ID"
+              value: "{{ .Values.operations_web.oauth.keycloak.client_id }}"
+            - name: "KEYCLOAK_REALM"
+              value: "{{ .Values.operations_web.oauth.keycloak.realm }}"
+            - name: "KEYCLOAK_TOKEN_URL"
+              value: "{{ .Values.operations_web.oauth.keycloak.token_url }}"
+            - name: "OPERATIONS_WEB_HOME_URL"
+              value: "{{ .Values.operations_web.oauth.keycloak.redirect_url }}"
           volumeMounts:
             - name: ph-ee-operations-web-config
               mountPath: "/usr/share/nginx/html/assets/configuration.properties"
