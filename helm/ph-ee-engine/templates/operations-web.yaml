@@ -59,9 +59,9 @@ kind: ConfigMap
 data:
   configuration.properties: |
     oauth.enabled true
-    oauth.basicAuth true
+    oauth.basicAuth false
     oauth.basicAuthToken Y2xpZW50Og==
-    oauth.serverUrl https://{{ .Values.identity.hostname }}
+    oauth.serverUrl https://{{ .Values.operations_web.oauth.keycloak.base_url }}
     serverUrl https://{{ .Values.operations_app.hostname }}
 metadata:
   name: ph-ee-operations-web-config
