@@ -437,7 +437,7 @@ operations_web:
       client_id: "$(KEYCLOAK_CLIENT_ID)"
       realm: "$(KEYCLOAK_REALM)"
       token_url: "$(KEYCLOAK_TOKEN_URL)"
-      redirect_url: "$(OPERATIONS_WEB_HOME_URL)"
+      redirect_uri: "$(OPERATIONS_WEB_HOME_URL)"
   limits:
     memory: "512M"
     cpu: "500m"
