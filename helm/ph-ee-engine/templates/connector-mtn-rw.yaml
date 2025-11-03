@@ -79,6 +79,16 @@ spec:
                 secretKeyRef:
                   name: "mtn-rw-secret"
                   key: "client-secret"
+            - name: "MTNZ_CLIENT_KEY"
+              valueFrom:
+                secretKeyRef:
+                  name: "mtn-rw-secret"
+                  key: "zambia-client-key"
+            - name: "MTNZ_CLIENT_SECRET"
+              valueFrom:
+                secretKeyRef:
+                  name: "mtn-rw-secret"
+                  key: "zambia-client-secret"
             - name: "MTNRW_API_HOST"
               value: "{{ .Values.mtn_rwanda_connector.mtnrw_api_host }}"
             - name: "MTNRW_ENVIRONMENT"
@@ -128,6 +138,8 @@ type: Opaque
 data:
   client-key: {{ .Values.mtn_rwanda_connector.mtnrw_client_key | b64enc}}
   client-secret: {{ .Values.mtn_rwanda_connector.mtnrw_client_secret | b64enc }}
+  zambia-client-key: {{ .Values.mtn_rwanda_connector.mtnz_client_key | b64enc}}
+  zambia-client-secret: {{ .Values.mtn_rwanda_connector.mtnz_client_secret | b64enc }}
   subscription-key : {{ .Values.mtn_rwanda_connector.mtnrw_subscription_key | b64enc }}
   paybill-username : {{ .Values.mtn_rwanda_connector.paybill.username | b64enc }}
   paybill-password : {{ .Values.mtn_rwanda_connector.paybill.password | b64enc }}
