@@ -84,12 +84,12 @@ spec:
             - name: "AIRTEL_ZAMBIA_CREDENTIALS_CLIENT-ID"
               valueFrom:
                 secretKeyRef:
-                  name: "zambia-airtel-secret"
+                  name: "airtel-secret"
                   key: "zambia-client-id"
             - name: "AIRTEL_ZAMBIA_CREDENTIALS_CLIENT-SECRET"
               valueFrom:
                 secretKeyRef:
-                  name: "zambia-airtel-secret"
+                  name: "airtel-secret"
                   key: "zambia-client-secret"
             - name: "AIRTEL_CREDENTIALS_GRANT-TYPE"
               value: "{{ .Values.airtel_connector.credentials.grant_type }}"
