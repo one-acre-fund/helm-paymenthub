@@ -258,7 +258,7 @@ channel:
   LOGGING_PATTERN_CONSOLE: "%d{dd-MM-yyyy HH:mm:ss.SSS} %magenta([%thread]) %highlight(%-5level) %logger.%M - %msg%n"
   TRANSACTION_ID_LENGTH: 20
   gsma_payee_tenant: ""
-  DFSPIDS: "oaf,rw-oaf"
+  DFSPIDS: "oaf,rw-oaf,kenya,rwanda,burundi,malawi,usa,zambia,nigeria"
   operations:
     url: "http://ph-ee-operations-app"
     authExpiryDefault: 60
@@ -306,8 +306,22 @@ channel:
         value: "fineract"
       - identifier: ODOOID
         value: "odoo"
+      - identifier: "kenya"
+        value: "fineract"
+      - identifier: "rwanda"
+        value: "fineract"
+      - identifier: "burundi"
+        value: "fineract"
+      - identifier: "malawi"
+        value: "fineract"
+      - identifier: "zambia"
+        value: "fineract"
+      - identifier: "nigeria"
+        value: "fineract"
+      - identifier: "usa"
+        value: "fineract"
       - identifier: "default"
-        value: "paygops"
+        value: "fineract"
   paymentSchemes:
     airtel: airtel
     safaricom: mpesa
