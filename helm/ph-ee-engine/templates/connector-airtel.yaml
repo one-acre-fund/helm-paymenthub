@@ -93,6 +93,8 @@ spec:
                   key: "zambia-client-secret"
             - name: "AIRTEL_CREDENTIALS_GRANT-TYPE"
               value: "{{ .Values.airtel_connector.credentials.grant_type }}"
+            - name: "AIRTEL_ZAMBIA_CREDENTIALS_GRANT-TYPE"
+              value: "{{ .Values.airtel_connector.credentials.grant_type }}"
             - name: "AIRTEL_MAX-RETRY-COUNT"
               value: "{{ .Values.airtel_connector.max_retry_count}}"
             - name: "AIRTEL_TIMEOUT"
