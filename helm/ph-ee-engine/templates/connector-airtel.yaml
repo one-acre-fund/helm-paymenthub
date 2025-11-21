@@ -81,6 +81,16 @@ spec:
                 secretKeyRef:
                   name: "airtel-secret"
                   key: "client-secret"
+            - name: "AIRTEL_ZAMBIA_CREDENTIALS_CLIENT-ID"
+              valueFrom:
+                secretKeyRef:
+                  name: "airtel-secret"
+                  key: "zambia-client-id"
+            - name: "AIRTEL_ZAMBIA_CREDENTIALS_CLIENT-SECRET"
+              valueFrom:
+                secretKeyRef:
+                  name: "airtel-secret"
+                  key: "zambia-client-secret"
             - name: "AIRTEL_CREDENTIALS_GRANT-TYPE"
               value: "{{ .Values.airtel_connector.credentials.grant_type }}"
             - name: "AIRTEL_MAX-RETRY-COUNT"
@@ -113,6 +123,8 @@ type: Opaque
 data:
   client-id: {{ .Values.airtel_connector.credentials.client_id | b64enc}}
   client-secret: {{ .Values.airtel_connector.credentials.client_secret | b64enc }}
+  zambia-client-id: {{ .Values.airtel_connector.credentials.zambia_client_id | b64enc}}
+  zambia-client-secret: {{ .Values.airtel_connector.credentials.zambia_client_secret | b64enc }}
 
 --- 
 apiVersion: v1
