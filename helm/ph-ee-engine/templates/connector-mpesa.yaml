@@ -25,6 +25,9 @@ spec:
           image: "{{ .Values.mpesa.image }}:{{ .Values.mpesa.imageTag }}"
           ports:
             - containerPort: 5000
+              protocol: TCP
+            - containerPort: 8080
+              protocol: TCP
           imagePullPolicy: "{{ .Values.mpesa.imagePullPolicy }}"
           livenessProbe:
             httpGet:
@@ -251,6 +254,10 @@ spec:
       port: 80
       protocol: TCP
       targetPort: 5000
+    - name: tomcat
+      port: 82
+      protocol: TCP
+      targetPort: 8080
   selector:
     app: ph-ee-connector-mpesa
   sessionAffinity: None
