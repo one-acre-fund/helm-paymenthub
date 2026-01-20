@@ -1097,7 +1097,7 @@ tupande_connector:
       sidecar.opentelemetry.io/inject: 'sidecar'
 
 erply_connector:
-  enabled: true
+  enabled: false
   replicas: 1
   image: "oaftech.azurecr.io/oneacrefund/erply-connector"
   imageTag: "0.0.1"
