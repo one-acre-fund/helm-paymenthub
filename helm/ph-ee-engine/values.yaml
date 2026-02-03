@@ -141,8 +141,6 @@ camunda-platform:
       co.elastic.logs/multiline.pattern: '^\d{4}-\d{2}-\d{2}\s(\d\d:){2}\d{2}.\d{3}\s'
       co.elastic.logs/multiline.negate: "true"
       co.elastic.logs/multiline.match: 'after'
-      instrumentation.opentelemetry.io/inject-java: 'true'
-      sidecar.opentelemetry.io/inject: 'sidecar'
     initContainers: 
       - name: init-ph-ee-kafka-exporter
         image: busybox:1.28
@@ -288,8 +286,6 @@ channel:
   deployment:
     annotations:
       co.elastic.logs/enabled: "true"
-      instrumentation.opentelemetry.io/inject-java: 'true'
-      sidecar.opentelemetry.io/inject: 'sidecar'
   ams:
     groups:
       - identifier: "ACCOUNTID"
@@ -414,8 +410,6 @@ operations_app:
   deployment:
     annotations:
       co.elastic.logs/enabled: "true"
-      instrumentation.opentelemetry.io/inject-java: 'true'
-      sidecar.opentelemetry.io/inject: 'sidecar'
 
 operations_web:
   enabled: true
@@ -569,8 +563,6 @@ mpesa:
       co.elastic.logs/multiline.pattern: '^\d{4}-\d{2}-\d{2}\s(\d\d:){2}\d{2}.\d{3}\s'
       co.elastic.logs/multiline.negate: 'true'
       co.elastic.logs/multiline.match: after
-      instrumentation.opentelemetry.io/inject-java: 'true'
-      sidecar.opentelemetry.io/inject: 'sidecar'
 
 roster_connector:
   enabled: true
@@ -606,8 +598,6 @@ roster_connector:
       co.elastic.logs/multiline.pattern: '^\d{4}-\d{2}-\d{2}\s(\d\d:){2}\d{2}.\d{3}\s'
       co.elastic.logs/multiline.negate: 'true'
       co.elastic.logs/multiline.match: after
-      instrumentation.opentelemetry.io/inject-java: 'true'
-      sidecar.opentelemetry.io/inject: 'sidecar'
 
 paygops_connector:
   enabled: true
@@ -633,8 +623,6 @@ paygops_connector:
   deployment:
     annotations:
       co.elastic.logs/enabled: "true"
-      instrumentation.opentelemetry.io/inject-java: 'true'
-      sidecar.opentelemetry.io/inject: 'sidecar'
 
 messagegateway:
   enabled: true
@@ -672,8 +660,6 @@ messagegateway:
       co.elastic.logs/multiline.pattern: '^\d{4}-\d{2}-\d{2}\s(\d\d:){2}\d{2}.\d{3}\s'
       co.elastic.logs/multiline.negate: 'true'
       co.elastic.logs/multiline.match: after
-      instrumentation.opentelemetry.io/inject-java: 'true'
-      sidecar.opentelemetry.io/inject: 'sidecar'
 
 notifications:
   enabled: false
@@ -709,8 +695,6 @@ notifications:
       co.elastic.logs/multiline.pattern: '^\d{4}-\d{2}-\d{2}\s(\d\d:){2}\d{2}.\d{3}\s'
       co.elastic.logs/multiline.negate: 'true'
       co.elastic.logs/multiline.match: after
-      instrumentation.opentelemetry.io/inject-java: 'true'
-      sidecar.opentelemetry.io/inject: 'sidecar'
 
 zeebe_ops:
   enabled: true
@@ -799,8 +783,6 @@ importer_es:
   deployment:
     annotations:
       co.elastic.logs/enabled: "true"
-      instrumentation.opentelemetry.io/inject-java: 'true'
-      sidecar.opentelemetry.io/inject: 'sidecar'
 
 kafka:
   enabled: true
@@ -846,8 +828,6 @@ importer_rdbms:
       co.elastic.logs/multiline.pattern: '^(\d\d:){2}\d{2}.\d{3}\s'
       co.elastic.logs/multiline.negate: 'true'
       co.elastic.logs/multiline.match: after
-      instrumentation.opentelemetry.io/inject-java: 'true'
-      sidecar.opentelemetry.io/inject: 'sidecar'
   javaToolOptions: "-Xmx256M"
 
 connector_bulk:
@@ -1093,8 +1073,6 @@ tupande_connector:
   deployment:
     annotations:
       co.elastic.logs/enabled: "true"
-      instrumentation.opentelemetry.io/inject-java: 'true'
-      sidecar.opentelemetry.io/inject: 'sidecar'
 
 erply_connector:
   enabled: false
@@ -1120,8 +1098,6 @@ erply_connector:
   deployment:
     annotations:
       co.elastic.logs/enabled: "true"
-      instrumentation.opentelemetry.io/inject-java: 'true'
-      sidecar.opentelemetry.io/inject: 'sidecar'
 
 fineract_connector:
   enabled: true
@@ -1146,8 +1122,6 @@ fineract_connector:
   deployment:
     annotations:
       co.elastic.logs/enabled: "true"
-      instrumentation.opentelemetry.io/inject-java: 'true'
-      sidecar.opentelemetry.io/inject: 'sidecar'
 
 airtel_connector:
   enabled: true
@@ -1181,8 +1155,6 @@ airtel_connector:
   deployment:
     annotations:
       co.elastic.logs/enabled: "true"
-      instrumentation.opentelemetry.io/inject-java: "true"
-      sidecar.opentelemetry.io/inject: "sidecar"
   channel_host: "http://ph-ee-connector-channel"
   paybill:
     account_holding_institution_id: "oaf"
@@ -1224,8 +1196,6 @@ odoo_connector:
   deployment:
     annotations:
       co.elastic.logs/enabled: "true"
-      instrumentation.opentelemetry.io/inject-java: 'true'
-      sidecar.opentelemetry.io/inject: 'sidecar'
 
 tnm_connector:
   enabled: true
@@ -1252,8 +1222,6 @@ tnm_connector:
   deployment:
     annotations:
       co.elastic.logs/enabled: "true"
-      instrumentation.opentelemetry.io/inject-java: "true"
-      sidecar.opentelemetry.io/inject: "sidecar"
   paybill:
     roster:
       business_short_code: "12345678"
@@ -1290,8 +1258,6 @@ nbs_connector:
   deployment:
     annotations:
       co.elastic.logs/enabled: "true"
-      instrumentation.opentelemetry.io/inject-java: "true"
-      sidecar.opentelemetry.io/inject: "sidecar"
   paybill:
     roster:
       business_short_code: "12345678"
@@ -1328,8 +1294,6 @@ bancobu_connector:
   deployment:
     annotations:
       co.elastic.logs/enabled: "true"
-      instrumentation.opentelemetry.io/inject-java: "true"
-      sidecar.opentelemetry.io/inject: "sidecar"
   paybill:
     fineract:
       business_short_code: "24322607"
