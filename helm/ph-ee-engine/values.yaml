@@ -301,7 +301,7 @@ channel:
       - identifier: ODOOID
         value: "odoo"
       - identifier: "default"
-        value: "fineract"
+        value: "paygops"
   paymentSchemes:
     airtel: airtel
     safaricom: mpesa
@@ -479,10 +479,37 @@ mpesa:
       client_key: "0pLxbN83FrOl5Nd0Fh9Zi5BQlMxSL2n5"
       client_secret: "YzuGNoJxeub8ZC6d"
       pass_key: "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919"
+    roster:
+      name: "roster"
+      business_short_code: "7385028"
+      till: "1234567"
+      auth_host: "https://sandbox.safaricom.co.ke/oauth/v1/generate"
+      api_host: "https://sandbox.safaricom.co.ke"
+      client_key: "0pLxbN83FrOl5Nd0Fh9Zi5BQlMxSL2n5"
+      client_secret: "YzuGNoJxeub8ZC6d"
+      pass_key: "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919"
+    paygops:
+      name: "paygops"
+      business_short_code: "174379"
+      till: "9347335"
+      auth_host: "https://sandbox.safaricom.co.ke/oauth/v1/generate"
+      api_host: "https://sandbox.safaricom.co.ke"
+      client_key: "0pLxbN83FrOl5Nd0Fh9Zi5BQlMxSL2n5"
+      client_secret: "YzuGNoJxeub8ZC6d"
+      pass_key: "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919"
     tupande:
       name: "tupande"
       business_short_code: "7385028"
       till: "1234567"
+      auth_host: "https://sandbox.safaricom.co.ke/oauth/v1/generate"
+      api_host: "https://sandbox.safaricom.co.ke"
+      client_key: "0pLxbN83FrOl5Nd0Fh9Zi5BQlMxSL2n5"
+      client_secret: "YzuGNoJxeub8ZC6d"
+      pass_key: "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919"
+    erply:
+      name: "erply"
+      business_short_code: "174379"
+      till: "9347335"
       auth_host: "https://sandbox.safaricom.co.ke/oauth/v1/generate"
       api_host: "https://sandbox.safaricom.co.ke"
       client_key: "0pLxbN83FrOl5Nd0Fh9Zi5BQlMxSL2n5"
@@ -509,6 +536,12 @@ mpesa:
 
   paybill:
     accountHoldingInstitutionId: "default"
+    paygops:
+      business_short_code: "24322607"
+      currency: "KES"
+    roster:
+      business_short_code: "12345678"
+      currency: "KES"
     fineract:
       business_short_code: "87654321"
       currency: "KES"
@@ -532,7 +565,7 @@ mpesa:
       co.elastic.logs/multiline.match: after
 
 roster_connector:
-  enabled: false
+  enabled: true
   replicas: 1
   image: "oaftech.azurecr.io/phee-ns/ph-ee-connector-ams-pesa"
   imageTag: "v1.2.1"
@@ -567,7 +600,7 @@ roster_connector:
       co.elastic.logs/multiline.match: after
 
 paygops_connector:
-  enabled: false
+  enabled: true
   replicas: 1
   image: "oaftech.azurecr.io/phee-ns/ph-ee-connector-ams-paygops"
   imageTag: "v1.5.1"
@@ -1126,8 +1159,11 @@ airtel_connector:
   paybill:
     account_holding_institution_id: "oaf"
     timer: "PT45S"
-    default_short_code: "789012"
+    default_short_code: "123456"
     ams_short_codes:
+      "123456":
+        ams_name: "roster"
+        ams_url: "http://ph-ee-connector-ams-roster"
         identifier: "ACCOUNTID"
       "789012":
         ams_name: "fineract"
@@ -1187,6 +1223,10 @@ tnm_connector:
     annotations:
       co.elastic.logs/enabled: "true"
   paybill:
+    roster:
+      business_short_code: "12345678"
+      currency: "MWK"
+      base_url: "http://ph-ee-connector-ams-roster"
     fineract:
       business_short_code: "24322607"
       currency: "MWK"
@@ -1219,6 +1259,10 @@ nbs_connector:
     annotations:
       co.elastic.logs/enabled: "true"
   paybill:
+    roster:
+      business_short_code: "12345678"
+      currency: "MWK"
+      base_url: "http://ph-ee-connector-ams-roster"
     fineract:
       business_short_code: "24322607"
       currency: "MWK"
