@@ -83,11 +83,11 @@ spec:
             - name: JVM_MAX_RAM_PERCENT
               value: "{{ .Values.operations_app.JVM_MAX_RAM_PERCENT }}"
             - name: ELASTIC_APM_SERVICE_NAME
-              value: "{{ .Values.elasticsearch.APM_SERVICE_NAME }}"
+              value: "{{ .Values.operations_app.APM_SERVICE_NAME }}"
             - name: ELASTIC_APM_SERVER_URLS
               value: "{{ .Values.elasticsearch.APM_SERVER_URLS }}"
             - name: ELASTIC_APM_SECRET_TOKEN
-              value: "{{ .Values.operations_app.ELASTIC_APM_SECRET_TOKEN }}"
+              value: "{{ .Values.elasticsearch.ELASTIC_APM_SECRET_TOKEN }}"
             - name: ELASTIC_APM_APPLICATION_PACKAGES
               value: "{{ .Values.operations_app.ELASTIC_APM_APPLICATION_PACKAGES }}"
           volumeMounts:
