@@ -70,13 +70,12 @@ camunda-platform:
   zeebe:
     enabled: true
     elasticsearch:
-        disableExporter: true
-        host: "ph-ee-elasticsearch"
+      disableExporter: true
+      host: "ph-ee-elasticsearch"
     annotations:
       prometheus.io/scrape: 'true'
       prometheus.io/port: '9600'
       prometheus.io/path: '/metrics'
-
     image:
       repository: camunda/zeebe
       tag: 8.2.29
@@ -88,11 +87,9 @@ camunda-platform:
     pvcSize: "10Gi"
     pvcAccessModes:
       - "ReadWriteOnce"
-
     resources:
       requests:
         cpu: 100m
-
     env:
       - name: ZEEBE_BROKER_BACKPRESSURE_ENABLED
         value: "false"
@@ -116,41 +113,41 @@ camunda-platform:
         value: "2"
       - name: ZEEBE_BROKER_BACKPRESSURE_VEGAS_BETA
         value: "8"
-      # - name: ZEEBE_BROKER_EXPORTERS_KAFKA_ARGS_INDEX_EVENT
-      #   value: 'true'
-      # - name: ZEEBE_BROKER_EXPORTERS_KAFKA_ARGS_INDEX_VARIABLE
-      #   value: 'true'
-      # - name: ZEEBE_BROKER_EXPORTERS_KAFKA_ARGS_INDEX_PROCESSINSTANCE
-      #   value: 'true'
-      # - name: ZEEBE_BROKER_EXPORTERS_KAFKA_ARGS_INDEX_PROCESS
-      #   value: 'true'
-      # - name: ZEEBE_BROKER_EXPORTERS_KAFKA_ARGS_INDEX_INCIDENT
-      #   value: 'true'
-      # - name: ZEEBE_BROKER_EXPORTERS_KAFKA_ARGS_INDEX_DEPLOYMENT
-      #   value: 'false'
-      # - name: ZEEBE_BROKER_EXPORTERS_KAFKA_ARGS_INDEX_ERROR
-      #   value: 'false'
-      # - name: ZEEBE_BROKER_EXPORTERS_KAFKA_ARGS_INDEX_JOB
-      #   value: 'false'
-      # - name: ZEEBE_BROKER_EXPORTERS_KAFKA_ARGS_INDEX_VARIABLEDOCUMENT
-      #   value: 'false'
-      # - name: ZEEBE_BROKER_EXPORTERS_KAFKA_ARGS_INDEX_WORKFLOWINSTANCE
-      #   value: 'false'
-      # - name: ZEEBE_BROKER_EXPORTERS_KAFKA_ARGS_INDEX_CREATETEMPLATE
-      #   value: 'false'
+        # - name: ZEEBE_BROKER_EXPORTERS_KAFKA_ARGS_INDEX_EVENT
+        #   value: 'true'
+        # - name: ZEEBE_BROKER_EXPORTERS_KAFKA_ARGS_INDEX_VARIABLE
+        #   value: 'true'
+        # - name: ZEEBE_BROKER_EXPORTERS_KAFKA_ARGS_INDEX_PROCESSINSTANCE
+        #   value: 'true'
+        # - name: ZEEBE_BROKER_EXPORTERS_KAFKA_ARGS_INDEX_PROCESS
+        #   value: 'true'
+        # - name: ZEEBE_BROKER_EXPORTERS_KAFKA_ARGS_INDEX_INCIDENT
+        #   value: 'true'
+        # - name: ZEEBE_BROKER_EXPORTERS_KAFKA_ARGS_INDEX_DEPLOYMENT
+        #   value: 'false'
+        # - name: ZEEBE_BROKER_EXPORTERS_KAFKA_ARGS_INDEX_ERROR
+        #   value: 'false'
+        # - name: ZEEBE_BROKER_EXPORTERS_KAFKA_ARGS_INDEX_JOB
+        #   value: 'false'
+        # - name: ZEEBE_BROKER_EXPORTERS_KAFKA_ARGS_INDEX_VARIABLEDOCUMENT
+        #   value: 'false'
+        # - name: ZEEBE_BROKER_EXPORTERS_KAFKA_ARGS_INDEX_WORKFLOWINSTANCE
+        #   value: 'false'
+        # - name: ZEEBE_BROKER_EXPORTERS_KAFKA_ARGS_INDEX_CREATETEMPLATE
+        #   value: 'false'
     podAnnotations:
       co.elastic.logs/enabled: "true"
       co.elastic.logs/multiline.pattern: '^\d{4}-\d{2}-\d{2}\s(\d\d:){2}\d{2}.\d{3}\s'
       co.elastic.logs/multiline.negate: "true"
       co.elastic.logs/multiline.match: 'after'
-    initContainers: 
+    initContainers:
       - name: init-ph-ee-kafka-exporter
         image: busybox:1.28
         command: ['/bin/sh', '-c']
         args: ['wget -O /exporters/ph-ee-kafka-exporter.jar https://raw.githubusercontent.com/one-acre-fund/helm-paymenthub/develop/helm/ph-ee-engine/exporter-1.1.0-SNAPSHOT.jar; ls -al /exporters/']
         volumeMounts:
-        - name: exporters
-          mountPath: /exporters/
+          - name: exporters
+            mountPath: /exporters/
   zeebeGateway:
     replicas: 1
     image:
@@ -162,21 +159,14 @@ camunda-platform:
         value: "4"
       - name: ZEEBE_GATEWAY_MONITORING_ENABLED
         value: "true"
-
-  # gateway:
-  #   replicas: 1
-  #   logLevel: warn
-  #   env:
-  #     - name: ZEEBE_GATEWAY_THREADS_MANAGEMENTTHREADS
-  #       value: "4"
-  #     - name: ZEEBE_GATEWAY_MONITORING_ENABLED
-  #       value: "true"
-    
-
-  
-
-  
-
+        # gateway:
+        #   replicas: 1
+        #   logLevel: warn
+        #   env:
+        #     - name: ZEEBE_GATEWAY_THREADS_MANAGEMENTTHREADS
+        #       value: "4"
+        #     - name: ZEEBE_GATEWAY_MONITORING_ENABLED
+        #       value: "true"
 # payment hub Operate, ES and Kibana
 zeebe-operate-helm:
   enabled: false
@@ -191,13 +181,14 @@ zeebe-operate-helm:
       clusterName: "zeebe-elasticsearch"
   ingress:
     enabled: false
-
 elasticsearch:
   enabled: true
   imageTag: 7.16.3
   replicas: 1
   fullnameOverride: "ph-ee-elasticsearch"
   clusterName: "ph-ee-elasticsearch"
+  APM_SERVER_URLS: "https://api.qa.oneacrefund.org/apm"
+  APM_SECRET_TOKEN: "changeme"
   minimumMasterNodes: 1
   protocol: https
   esConfig:
@@ -221,7 +212,6 @@ elasticsearch:
         secretKeyRef:
           name: elastic-credentials
           key: password
-
 kibana:
   enabled: true
   imageTag: 7.16.3
@@ -244,7 +234,6 @@ kibana:
     - name: elastic-certificate-pem
       secretName: elastic-certificate-pem
       path: /usr/share/kibana/config/certs
-
 channel:
   enabled: true
   replicas: 1
@@ -349,27 +338,20 @@ channel:
     payerIdType: "VIRTUAL_ACCOUNT_NUMBER"
     successNotificationsEnabled: false
     failureNotificationsEnabled: false
-
 operations:
   enabled: true
   mysql:
     enabled: true
-
 ingress:
   apiversion: "networking.k8s.io/v1"
-
 deployment:
   apiversion: "apps/v1"
-
 service:
   apiversion: "v1"
-
 secret:
   apiversion: "v1"
-
 configmap:
   apiversion: "v1"
-
 operationsmysql:
   fullnameOverride: "operationsmysql"
   image:
@@ -387,13 +369,10 @@ operationsmysql:
       GRANT ALL ON *.* TO 'root'@'%';
       GRANT ALL PRIVILEGES ON messagegateway.* TO 'mifos';
       GRANT ALL PRIVILEGES ON oaf.* TO 'mifos';
-
 ph_ee_connector_ams_mifos:
   enabled: false
-
 ph_ee_connector_mojaloop:
   enabled: false
-
 operations_app:
   enabled: true
   replicas: 1
@@ -403,6 +382,10 @@ operations_app:
   SPRING_PROFILES_ACTIVE: "keycloak"
   LOGGING_LEVEL_ROOT: "INFO"
   LOGGING_PATTERN_CONSOLE: "%d{dd-MM-yyyy HH:mm:ss.SSS} %magenta([%thread]) %highlight(%-5level) %logger.%M - %msg%n"
+  ELASTIC_APM_APPLICATION_PACKAGES: "org.apache.fineract"
+  APM_SERVICE_NAME: "operations-app"
+  JVM_INITIAL_RAM_PERCENT: "50.0"
+  JVM_MAX_RAM_PERCENT: "75.0"
   hostname: ""
   tenants: "oaf"
   token_client_channel_secret: ""
@@ -431,7 +414,6 @@ operations_app:
   deployment:
     annotations:
       co.elastic.logs/enabled: "true"
-
 operations_web:
   enabled: true
   replicas: 1
@@ -467,12 +449,10 @@ operations_web:
       co.elastic.logs/multiline.pattern: '^(\d\d:){2}\d{2}.\d{3}\s'
       co.elastic.logs/multiline.negate: 'true'
       co.elastic.logs/multiline.match: after
-
 identity:
   hostname: ""
   ingress:
     enabled: false
-
 mpesa:
   enabled: true
   replicas: 1
@@ -562,7 +542,6 @@ mpesa:
       client_key: "0pLxbN83FrOl5Nd0Fh9Zi5BQlMxSL2n5"
       client_secret: "YzuGNoJxeub8ZC6d"
       pass_key: "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919"
-
   paybill:
     accountHoldingInstitutionId: "default"
     paygops:
@@ -574,7 +553,6 @@ mpesa:
     fineract:
       business_short_code: "87654321"
       currency: "KES"
-
   limits:
     memory: "512M"
     cpu: "500m"
@@ -592,7 +570,6 @@ mpesa:
       co.elastic.logs/multiline.pattern: '^\d{4}-\d{2}-\d{2}\s(\d\d:){2}\d{2}.\d{3}\s'
       co.elastic.logs/multiline.negate: 'true'
       co.elastic.logs/multiline.match: after
-
 roster_connector:
   enabled: true
   replicas: 1
@@ -627,7 +604,6 @@ roster_connector:
       co.elastic.logs/multiline.pattern: '^\d{4}-\d{2}-\d{2}\s(\d\d:){2}\d{2}.\d{3}\s'
       co.elastic.logs/multiline.negate: 'true'
       co.elastic.logs/multiline.match: after
-
 paygops_connector:
   enabled: true
   replicas: 1
@@ -652,7 +628,6 @@ paygops_connector:
   deployment:
     annotations:
       co.elastic.logs/enabled: "true"
-
 messagegateway:
   enabled: true
   replicas: 1
@@ -689,7 +664,6 @@ messagegateway:
       co.elastic.logs/multiline.pattern: '^\d{4}-\d{2}-\d{2}\s(\d\d:){2}\d{2}.\d{3}\s'
       co.elastic.logs/multiline.negate: 'true'
       co.elastic.logs/multiline.match: after
-
 notifications:
   enabled: false
   replicas: 1
@@ -724,7 +698,6 @@ notifications:
       co.elastic.logs/multiline.pattern: '^\d{4}-\d{2}-\d{2}\s(\d\d:){2}\d{2}.\d{3}\s'
       co.elastic.logs/multiline.negate: 'true'
       co.elastic.logs/multiline.match: after
-
 zeebe_ops:
   enabled: true
   replicas: 1
@@ -754,7 +727,6 @@ zeebe_ops:
     annotations:
       co.elastic.logs/enabled: "true"
       deployTime: "{{ .Values.deployTime }}"
-
 importer_es:
   enabled: true
   replicas: 1
@@ -812,7 +784,6 @@ importer_es:
   deployment:
     annotations:
       co.elastic.logs/enabled: "true"
-
 kafka:
   enabled: true
   replicas: 1
@@ -830,7 +801,6 @@ kafka:
   deployment:
     annotations:
       deployTime: "{{ .Values.deployTime }}"
-
 importer_rdbms:
   enabled: true
   replicas: 1
@@ -858,7 +828,6 @@ importer_rdbms:
       co.elastic.logs/multiline.negate: 'true'
       co.elastic.logs/multiline.match: after
   javaToolOptions: "-Xmx256M"
-
 connector_bulk:
   enabled: false
   replicas: 1
@@ -908,7 +877,6 @@ connector_bulk:
     cpu: "100m"
   deployment:
     annotations: {}
-
 ph_ee_connector_gsma:
   enabled: false
   replicas: 1
@@ -924,7 +892,6 @@ ph_ee_connector_gsma:
     cpu: "100m"
   deployment:
     annotations: {}
-
 ph_ee_connector_slcb:
   enabled: false
   replicas: 1
@@ -963,7 +930,6 @@ ph_ee_connector_slcb:
     cpu: "100m"
   deployment:
     annotations: {}
-
 mock_oracle:
   enabled: false
   replicas: 1
@@ -985,11 +951,8 @@ mock_oracle:
     backend: {}
   deployment:
     annotations: {}
-
 wildcardhostname: ""
-
 tls: ""
-
 kong:
   enabled: false
   image:
@@ -1016,7 +979,7 @@ kong:
           kubernetes.io/ingress.class: "kong"
         labels:
           global: "false"
-      disabled: false  # optionally disable the plugin in Kong
+      disabled: false # optionally disable the plugin in Kong
       plugin: request-transformer
       config:
         remove:
@@ -1031,7 +994,7 @@ kong:
           kubernetes.io/ingress.class: "kong"
         labels:
           global: "true"
-      disabled: false  # optionally disable the plugin in Kong
+      disabled: false # optionally disable the plugin in Kong
       plugin: cors
       config:
         origins:
@@ -1049,15 +1012,14 @@ kong:
           kubernetes.io/ingress.class: "kong"
         labels:
           global: "false"
-      disabled: false  # optionally disable the plugin in Kong
+      disabled: false # optionally disable the plugin in Kong
       plugin: oidc
-      config:  # configuration for the plugin
+      config: # configuration for the plugin
         client_id: kong-oidc
-        client_secret: xxxxxxxx  # Generated on keyCloak
+        client_secret: xxxxxxxx # Generated on keyCloak
         realm: kong
         discovery: https://keycloak.localhost/auth/realms/kong-oidc/.well-known/openid-configuration
         scope: openid
-
 keycloak:
   enabled: false
   ingress:
@@ -1077,7 +1039,6 @@ keycloak:
   extraEnv: |
     - name: KEYCLOAK_IMPORT
       value: /realm/kong-keycloak-realm.json
-
 tupande_connector:
   enabled: true
   replicas: 1
@@ -1102,7 +1063,6 @@ tupande_connector:
   deployment:
     annotations:
       co.elastic.logs/enabled: "true"
-
 erply_connector:
   enabled: false
   replicas: 1
@@ -1127,7 +1087,6 @@ erply_connector:
   deployment:
     annotations:
       co.elastic.logs/enabled: "true"
-
 fineract_connector:
   enabled: true
   replicas: 1
@@ -1151,7 +1110,6 @@ fineract_connector:
   deployment:
     annotations:
       co.elastic.logs/enabled: "true"
-
 airtel_connector:
   enabled: true
   replicas: 1
@@ -1200,7 +1158,6 @@ airtel_connector:
         ams_name: "fineract"
         ams_url: "http://ph-ee-connector-ams-fineract"
         identifier: "FINERACTACCOUNTID"
-
 odoo_connector:
   enabled: true
   replicas: 1
@@ -1227,7 +1184,6 @@ odoo_connector:
   deployment:
     annotations:
       co.elastic.logs/enabled: "true"
-
 tnm_connector:
   enabled: true
   replicas: 1
@@ -1262,7 +1218,6 @@ tnm_connector:
       business_short_code: "24322607"
       currency: "MWK"
       base_url: "http://ph-ee-connector-ams-fineract"
-
 nbs_connector:
   enabled: true
   replicas: 1
@@ -1298,7 +1253,6 @@ nbs_connector:
       business_short_code: "24322607"
       currency: "MWK"
       base_url: "http://ph-ee-connector-ams-fineract"
-
 bancobu_connector:
   enabled: true
   replicas: 1
