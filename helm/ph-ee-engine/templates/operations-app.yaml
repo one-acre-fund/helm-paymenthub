@@ -90,9 +90,6 @@ spec:
               value: "{{ .Values.elasticsearch.ELASTIC_APM_SECRET_TOKEN }}"
             - name: ELASTIC_APM_APPLICATION_PACKAGES
               value: "{{ .Values.operations_app.ELASTIC_APM_APPLICATION_PACKAGES }}"
-          volumeMounts:
-            - name: ph-ee-config
-              mountPath: "/config"
       initContainers:
         - name: wait-db
           image: jwilder/dockerize
@@ -101,10 +98,6 @@ spec:
             - -timeout=120s
             - -wait
             - tcp://{{ .Values.operations_app.datasource.host }}:3306
-      volumes:
-        - name: ph-ee-config
-          configMap:
-            name: ph-ee-config
 
 ---
 apiVersion: {{ .Values.service.apiversion }}
