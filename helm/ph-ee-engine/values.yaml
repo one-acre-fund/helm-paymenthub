@@ -4,6 +4,10 @@ mtn_rwanda_connector:
   image: "oaftech.azurecr.io/oneacrefund/mtn-connector"
   imageTag: "1.0.0"
   tenants: "oaf"
+  ELASTIC_APM_APPLICATION_PACKAGES: "org.mifos.connector.mtn"
+  APM_SERVICE_NAME: "ph-ee-connector-mno-mtn"
+  JVM_INITIAL_RAM_PERCENT: "50.0"
+  JVM_MAX_RAM_PERCENT: "75.0"
   imagePullPolicy: "IfNotPresent"
   zeebe_broker_contactpoint: "ph-zeebe-gateway:26500"
   camel_server_port: 5000
@@ -241,6 +245,10 @@ channel:
   imageTag: "v1.4.2"
   imagePullPolicy: IfNotPresent
   SPRING_PROFILES_ACTIVE: "bb"
+  ELASTIC_APM_APPLICATION_PACKAGES: "org.mifos.connector.channel"
+  APM_SERVICE_NAME: "ph-ee-connector-channel"
+  JVM_INITIAL_RAM_PERCENT: "50.0"
+  JVM_MAX_RAM_PERCENT: "75.0"
   LOGGING_LEVEL_ROOT: "INFO"
   LOGGING_PATTERN_CONSOLE: "%d{dd-MM-yyyy HH:mm:ss.SSS} %magenta([%thread]) %highlight(%-5level) %logger.%M - %msg%n"
   TRANSACTION_ID_LENGTH: 20
@@ -460,6 +468,10 @@ mpesa:
   imageTag: "v1.4.1"
   imagePullPolicy: IfNotPresent
   SPRING_PROFILES_ACTIVE: "bb"
+  ELASTIC_APM_APPLICATION_PACKAGES: "org.mifos.connector.mpesa"
+  APM_SERVICE_NAME: "ph-ee-connector-mno-mpesa"
+  JVM_INITIAL_RAM_PERCENT: "50.0"
+  JVM_MAX_RAM_PERCENT: "75.0"
   LOGGING_LEVEL_ROOT: "INFO"
   hostname: ""
   zeebe_broker_contactpoint: "ph-zeebe-gateway:26500"
@@ -732,6 +744,10 @@ importer_es:
   replicas: 1
   image: "oaftech.azurecr.io/phee-ns/ph-ee-importer-es"
   imageTag: "v1.4.0"
+  ELASTIC_APM_APPLICATION_PACKAGES: "org.mifos.phee.kafkastreamer.importer"
+  APM_SERVICE_NAME: "ph-ee-connector-importer-es"
+  JVM_INITIAL_RAM_PERCENT: "50.0"
+  JVM_MAX_RAM_PERCENT: "75.0"
   imagePullPolicy: IfNotPresent
   reporting:
     enabled: true
@@ -806,6 +822,10 @@ importer_rdbms:
   replicas: 1
   image: "oaftech.azurecr.io/phee-ns/ph-ee-importer-rdbms"
   imageTag: "v1.3.1"
+  ELASTIC_APM_APPLICATION_PACKAGES: "hu.dpc.phee.operator"
+  APM_SERVICE_NAME: "ph-ee-connector-importer-rdbms"
+  JVM_INITIAL_RAM_PERCENT: "50.0"
+  JVM_MAX_RAM_PERCENT: "75.0"
   imagePullPolicy: IfNotPresent
   LOGGING_LEVEL_ROOT: "INFO"
   LOGGING_PATTERN_CONSOLE: "%d{dd-MM-yyyy HH:mm:ss.SSS} %magenta([%thread]) %highlight(%-5level) %logger.%M - %msg%n"
@@ -1045,6 +1065,10 @@ tupande_connector:
   image: "oaftech.azurecr.io/oneacrefund/tupande-connector"
   imageTag: "0.0.1"
   imagePullPolicy: "IfNotPresent"
+  ELASTIC_APM_APPLICATION_PACKAGES: "org.mifos.connector.ams.tupande"
+  APM_SERVICE_NAME: "ph-ee-connector-ams-tupande"
+  JVM_INITIAL_RAM_PERCENT: "50.0"
+  JVM_MAX_RAM_PERCENT: "75.0"
   LOGGING_LEVEL_ROOT: "INFO"
   SPRING_PROFILES_ACTIVE: ""
   containerPort: 5000
@@ -1093,6 +1117,10 @@ fineract_connector:
   image: "oaftech.azurecr.io/oneacrefund/ph-ee-connector-ams-fineract"
   imageTag: "0.0.1.2023.06.08.1"
   imagePullPolicy: "IfNotPresent"
+  ELASTIC_APM_APPLICATION_PACKAGES: "org.mifos.connector.ams.fineract"
+  APM_SERVICE_NAME: "ph-ee-connector-ams-fineract"
+  JVM_INITIAL_RAM_PERCENT: "50.0"
+  JVM_MAX_RAM_PERCENT: "75.0"
   LOGGING_LEVEL_ROOT: "INFO"
   SPRING_PROFILES_ACTIVE: ""
   containerPort: 5000
@@ -1116,6 +1144,10 @@ airtel_connector:
   image: "oaftech.azurecr.io/oneacrefund/airtel-connector"
   imageTag: "0.0.1"
   imagePullPolicy: "IfNotPresent"
+  ELASTIC_APM_APPLICATION_PACKAGES: "org.mifos.connector.airtel"
+  APM_SERVICE_NAME: "ph-ee-connector-mno-airtel"
+  JVM_INITIAL_RAM_PERCENT: "50.0"
+  JVM_MAX_RAM_PERCENT: "75.0"
   zeebe_broker_contactpoint: "ph-zeebe-gateway:26500"
   LOGGING_LEVEL_ROOT: "INFO"
   SPRING_PROFILES_ACTIVE: ""
@@ -1164,6 +1196,10 @@ odoo_connector:
   image: "oaftech.azurecr.io/oneacrefund/ph-ee-connector-ams-odoo"
   imageTag: "1.0.0"
   imagePullPolicy: "IfNotPresent"
+  ELASTIC_APM_APPLICATION_PACKAGES: "org.mifos.connector"
+  APM_SERVICE_NAME: "ph-ee-connector-ams-odoo"
+  JVM_INITIAL_RAM_PERCENT: "50.0"
+  JVM_MAX_RAM_PERCENT: "75.0"
   LOGGING_LEVEL_ROOT: "INFO"
   SPRING_PROFILES_ACTIVE: ""
   containerPort: 5000
@@ -1190,6 +1226,10 @@ tnm_connector:
   image: "oaftech.azurecr.io/oneacrefund/tnm-connector"
   imageTag: "1.0.0.2024.03.14.1 "
   imagePullPolicy: "IfNotPresent"
+  ELASTIC_APM_APPLICATION_PACKAGES: "org.mifos.connector.tnm"
+  APM_SERVICE_NAME: "ph-ee-connector-mno-tnm"
+  JVM_INITIAL_RAM_PERCENT: "50.0"
+  JVM_MAX_RAM_PERCENT: "75.0"
   zeebe_broker_contactpoint: "ph-zeebe-gateway:26500"
   LOGGING_LEVEL_ROOT: "INFO"
   SPRING_PROFILES_ACTIVE: ""
@@ -1224,6 +1264,10 @@ nbs_connector:
   image: "oaftech.azurecr.io/oneacrefund/ph-ee-connector-nbs"
   imageTag: "1.0.0"
   imagePullPolicy: "IfNotPresent"
+  ELASTIC_APM_APPLICATION_PACKAGES: "org.mifos.connector.nbs"
+  APM_SERVICE_NAME: "ph-ee-connector-mno-nbs"
+  JVM_INITIAL_RAM_PERCENT: "50.0"
+  JVM_MAX_RAM_PERCENT: "75.0"
   zeebe_broker_contactpoint: "ph-zeebe-gateway:26500"
   LOGGING_LEVEL_ROOT: "INFO"
   SPRING_PROFILES_ACTIVE: ""
@@ -1261,6 +1305,10 @@ bancobu_connector:
   imagePullPolicy: "IfNotPresent"
   zeebe_broker_contactpoint: "ph-zeebe-gateway:26500"
   LOGGING_LEVEL_ROOT: "INFO"
+  ELASTIC_APM_APPLICATION_PACKAGES: "org.mifos.connector.bancobu"
+  APM_SERVICE_NAME: "ph-ee-connector-mno-bancobu"
+  JVM_INITIAL_RAM_PERCENT: "50.0"
+  JVM_MAX_RAM_PERCENT: "75.0"
   SPRING_PROFILES_ACTIVE: ""
   CHANNEL_HOST: "http://ph-ee-connector-channel"
   containerPort: 5000

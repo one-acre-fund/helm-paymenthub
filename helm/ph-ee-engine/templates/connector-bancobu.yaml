@@ -53,6 +53,13 @@ spec:
               cpu: "{{ .Values.bancobu_connector.requests.cpu }}"
           ports:
             - containerPort: {{ .Values.bancobu_connector.containerPort }}
+          args:
+            - java
+            - -XX:InitialRAMPercentage=$(JVM_INITIAL_RAM_PERCENT)
+            - -XX:MaxRAMPercentage=$(JVM_MAX_RAM_PERCENT)
+            - -javaagent:/app/config/elastic/elastic-apm-agent.jar
+            - -jar
+            - /app/ph-ee-connector-bancobu.jar
           env:
             - name: "ZEEBE_BROKER_CONTACTPOINT"
               value: "{{ .Values.bancobu_connector.zeebe_broker_contactpoint }}"
@@ -72,6 +79,18 @@ spec:
               value: "{{ .Values.bancobu_connector.paybill.fineract.base_url  }}"
             - name: "CAMEL_SERVER_PORT"
               value: "{{ .Values.bancobu_connector.camel_server_port }}" 
+            - name: JVM_INITIAL_RAM_PERCENT
+              value: "{{ .Values.bancobu_connector.JVM_INITIAL_RAM_PERCENT }}"
+            - name: JVM_MAX_RAM_PERCENT
+              value: "{{ .Values.bancobu_connector.JVM_MAX_RAM_PERCENT }}"
+            - name: ELASTIC_APM_SERVICE_NAME
+              value: "{{ .Values.bancobu_connector.APM_SERVICE_NAME }}"
+            - name: ELASTIC_APM_SERVER_URLS
+              value: "{{ .Values.elasticsearch.APM_SERVER_URLS }}"
+            - name: ELASTIC_APM_SECRET_TOKEN
+              value: "{{ .Values.elasticsearch.ELASTIC_APM_SECRET_TOKEN }}"
+            - name: ELASTIC_APM_APPLICATION_PACKAGES
+              value: "{{ .Values.bancobu_connector.ELASTIC_APM_APPLICATION_PACKAGES }}"
 
 --- 
 apiVersion: v1

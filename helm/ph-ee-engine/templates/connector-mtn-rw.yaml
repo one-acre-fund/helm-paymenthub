@@ -56,6 +56,13 @@ spec:
               protocol: TCP
             - containerPort: 8080
               protocol: TCP
+          args:
+            - java
+            - -XX:InitialRAMPercentage=$(JVM_INITIAL_RAM_PERCENT)
+            - -XX:MaxRAMPercentage=$(JVM_MAX_RAM_PERCENT)
+            - -javaagent:/app/config/elastic/elastic-apm-agent.jar
+            - -jar
+            - /app/ph-ee-connector-mtn.jar
           env:
             - name: "ZEEBE_BROKER_CONTACTPOINT"
               value: "{{ .Values.mtn_rwanda_connector.zeebe_broker_contactpoint }}"
@@ -128,6 +135,18 @@ spec:
               value: "{{ .Values.mtn_rwanda_connector.paybill.paymentCompletedUrl }}"
             - name: "CHANNEL_HOST"
               value: "{{ .Values.mtn_rwanda_connector.channel.host }}"
+            - name: JVM_INITIAL_RAM_PERCENT
+              value: "{{ .Values.mtn_rwanda_connector.JVM_INITIAL_RAM_PERCENT }}"
+            - name: JVM_MAX_RAM_PERCENT
+              value: "{{ .Values.mtn_rwanda_connector.JVM_MAX_RAM_PERCENT }}"
+            - name: ELASTIC_APM_SERVICE_NAME
+              value: "{{ .Values.mtn_rwanda_connector.APM_SERVICE_NAME }}"
+            - name: ELASTIC_APM_SERVER_URLS
+              value: "{{ .Values.elasticsearch.APM_SERVER_URLS }}"
+            - name: ELASTIC_APM_SECRET_TOKEN
+              value: "{{ .Values.elasticsearch.ELASTIC_APM_SECRET_TOKEN }}"
+            - name: ELASTIC_APM_APPLICATION_PACKAGES
+              value: "{{ .Values.mtn_rwanda_connector.ELASTIC_APM_APPLICATION_PACKAGES }}"
 
 ---
 apiVersion: v1

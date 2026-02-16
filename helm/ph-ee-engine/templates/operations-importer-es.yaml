@@ -31,6 +31,13 @@ spec:
             requests:
               memory: "{{ .Values.importer_es.requests.memory }}"
               cpu: "{{ .Values.importer_es.requests.cpu }}"
+          args:
+            - java
+            - -XX:InitialRAMPercentage=$(JVM_INITIAL_RAM_PERCENT)
+            - -XX:MaxRAMPercentage=$(JVM_MAX_RAM_PERCENT)
+            - -javaagent:/config/elastic/elastic-apm-agent.jar
+            - -jar
+            - /app/app.jar
           env:
           - name: "reporting.enabled"
             value: "{{ .Values.importer_es.reporting.enabled }}"
@@ -106,6 +113,18 @@ spec:
             value: "{{ .Values.importer_es.elasticsearch_security_enabled }}"
           - name: "ELASTICSEARCH_SSLVERIFICATION"
             value: "{{ .Values.importer_es.elasticsearch_sslverification }}"
+          - name: JVM_INITIAL_RAM_PERCENT
+            value: "{{ .Values.importer_es.JVM_INITIAL_RAM_PERCENT }}"
+          - name: JVM_MAX_RAM_PERCENT
+            value: "{{ .Values.importer_es.JVM_MAX_RAM_PERCENT }}"
+          - name: ELASTIC_APM_SERVICE_NAME
+            value: "{{ .Values.importer_es.APM_SERVICE_NAME }}"
+          - name: ELASTIC_APM_SERVER_URLS
+            value: "{{ .Values.elasticsearch.APM_SERVER_URLS }}"
+          - name: ELASTIC_APM_SECRET_TOKEN
+            value: "{{ .Values.elasticsearch.ELASTIC_APM_SECRET_TOKEN }}"
+          - name: ELASTIC_APM_APPLICATION_PACKAGES
+            value: "{{ .Values.importer_es.ELASTIC_APM_APPLICATION_PACKAGES }}"
           - name: "ELASTICSEARCH_USERNAME"
             valueFrom:
               secretKeyRef:

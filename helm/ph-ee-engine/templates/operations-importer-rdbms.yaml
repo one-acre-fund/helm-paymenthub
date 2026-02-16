@@ -26,6 +26,13 @@ spec:
           imagePullPolicy: "{{ .Values.importer_rdbms.imagePullPolicy }}"
           ports:
             - containerPort: 8000
+          args:
+            - java
+            - -XX:InitialRAMPercentage=$(JVM_INITIAL_RAM_PERCENT)
+            - -XX:MaxRAMPercentage=$(JVM_MAX_RAM_PERCENT)
+            - -javaagent:/config/elastic/elastic-apm-agent.jar
+            - -jar
+            - /app/app.jar
           env:
             - name: "SPRING_PROFILES_ACTIVE"
               value: "{{ .Values.operations.SPRING_PROFILES_ACTIVE }}"
@@ -48,9 +55,18 @@ spec:
               value: "{{ .Values.importer_rdbms.LOGGING_PATTERN_CONSOLE }}"
             - name: "JAVA_TOOL_OPTIONS"
               value: "{{ .Values.importer_rdbms.javaToolOptions}}"
-          volumeMounts:
-            - name: ph-ee-config
-              mountPath: "/config"
+            - name: JVM_INITIAL_RAM_PERCENT
+              value: "{{ .Values.importer_rdbms.JVM_INITIAL_RAM_PERCENT }}"
+            - name: JVM_MAX_RAM_PERCENT
+              value: "{{ .Values.importer_rdbms.JVM_MAX_RAM_PERCENT }}"
+            - name: ELASTIC_APM_SERVICE_NAME
+              value: "{{ .Values.importer_rdbms.APM_SERVICE_NAME }}"
+            - name: ELASTIC_APM_SERVER_URLS
+              value: "{{ .Values.elasticsearch.APM_SERVER_URLS }}"
+            - name: ELASTIC_APM_SECRET_TOKEN
+              value: "{{ .Values.elasticsearch.ELASTIC_APM_SECRET_TOKEN }}"
+            - name: ELASTIC_APM_APPLICATION_PACKAGES
+              value: "{{ .Values.importer_rdbms.ELASTIC_APM_APPLICATION_PACKAGES }}"
           resources:
             limits:
               memory: "{{ .Values.importer_rdbms.limits.memory }}"
@@ -58,10 +74,6 @@ spec:
             requests:
               memory: "{{ .Values.importer_rdbms.requests.memory }}"
               cpu: "{{ .Values.importer_rdbms.requests.cpu }}"
-      volumes:
-        - name: ph-ee-config
-          configMap:
-            name: ph-ee-config
 ---
 apiVersion: {{ .Values.secret.apiversion }}
 kind: Secret

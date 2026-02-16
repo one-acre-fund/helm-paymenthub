@@ -56,6 +56,13 @@ spec:
               protocol: TCP
             - containerPort: 8080
               protocol: TCP
+          args:
+            - java
+            - -XX:InitialRAMPercentage=$(JVM_INITIAL_RAM_PERCENT)
+            - -XX:MaxRAMPercentage=$(JVM_MAX_RAM_PERCENT)
+            - -javaagent:/app/config/elastic/elastic-apm-agent.jar
+            - -jar
+            - /app/ph-ee-connector-tnm.jar
           env:
             - name: "ZEEBE_BROKER_CONTACTPOINT"
               value: "{{ .Values.tnm_connector.zeebe_broker_contactpoint }}"
@@ -78,7 +85,19 @@ spec:
             - name: "ACCOUNTS_ROSTER_CURRENCY"
               value: "{{ .Values.tnm_connector.paybill.roster.currency  }}" 
             - name: "ACCOUNTS_ROSTER_BASEURL"
-              value: "{{ .Values.tnm_connector.paybill.roster.base_url  }}"  
+              value: "{{ .Values.tnm_connector.paybill.roster.base_url  }}" 
+            - name: JVM_INITIAL_RAM_PERCENT
+              value: "{{ .Values.tnm_connector.JVM_INITIAL_RAM_PERCENT }}"
+            - name: JVM_MAX_RAM_PERCENT
+              value: "{{ .Values.tnm_connector.JVM_MAX_RAM_PERCENT }}"
+            - name: ELASTIC_APM_SERVICE_NAME
+              value: "{{ .Values.tnm_connector.APM_SERVICE_NAME }}"
+            - name: ELASTIC_APM_SERVER_URLS
+              value: "{{ .Values.elasticsearch.APM_SERVER_URLS }}"
+            - name: ELASTIC_APM_SECRET_TOKEN
+              value: "{{ .Values.elasticsearch.ELASTIC_APM_SECRET_TOKEN }}"
+            - name: ELASTIC_APM_APPLICATION_PACKAGES
+              value: "{{ .Values.tnm_connector.ELASTIC_APM_APPLICATION_PACKAGES }}" 
 
 --- 
 apiVersion: v1
