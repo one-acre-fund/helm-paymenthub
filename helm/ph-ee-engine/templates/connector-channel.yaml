@@ -55,7 +55,7 @@ spec:
             - java
             - -XX:InitialRAMPercentage=$(JVM_INITIAL_RAM_PERCENT)
             - -XX:MaxRAMPercentage=$(JVM_MAX_RAM_PERCENT)
-            - -javaagent:/app/config/elastic/elastic-apm-agent.jar
+            - -javaagent:/config/elastic/elastic-apm-agent.jar
             - -jar
             - /app/app.jar
           env:
@@ -245,5 +245,6 @@ data:
   squad-secret-key: {{ .Values.channel.squad.secretKey | b64enc }}
   monnify-secret-key: {{ .Values.channel.monnify.secretKey | b64enc }}
   squad-token: {{ .Values.channel.squad.token | b64enc }}
+
 
   {{- end }}
