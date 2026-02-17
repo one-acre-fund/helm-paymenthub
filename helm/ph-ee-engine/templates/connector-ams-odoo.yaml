@@ -46,6 +46,13 @@ spec:
               port: 8080
             failureThreshold: 30
             periodSeconds: 60
+          args:
+            - java
+            - -XX:InitialRAMPercentage=$(JVM_INITIAL_RAM_PERCENT)
+            - -XX:MaxRAMPercentage=$(JVM_MAX_RAM_PERCENT)
+            - -javaagent:/app/config/elastic/elastic-apm-agent.jar
+            - -jar
+            - /app/ph-ee-connector-ams-odoo.jar
           env:
             - name: "SPRING_PROFILES_ACTIVE"
               value: "{{ .Values.odoo_connector.SPRING_PROFILES_ACTIVE }}"
@@ -64,6 +71,19 @@ spec:
               value: "{{ .Values.odoo_connector.LOGGING_LEVEL_ROOT }}"
             - name: "ODOO_ENDPOINT_CONFIRMATION"
               value: "{{ .Values.odoo_connector.odoo.endpoint.confirmation}}"
+            - name: JVM_INITIAL_RAM_PERCENT
+              value: "{{ .Values.odoo_connector.JVM_INITIAL_RAM_PERCENT }}"
+            - name: JVM_MAX_RAM_PERCENT
+              value: "{{ .Values.odoo_connector.JVM_MAX_RAM_PERCENT }}"
+            - name: ELASTIC_APM_SERVICE_NAME
+              value: "{{ .Values.odoo_connector.APM_SERVICE_NAME }}"
+            - name: ELASTIC_APM_SERVER_URLS
+              value: "{{ .Values.elasticsearch.APM_SERVER_URLS }}"
+            - name: ELASTIC_APM_SECRET_TOKEN
+              value: "{{ .Values.elasticsearch.ELASTIC_APM_SECRET_TOKEN }}"
+            - name: ELASTIC_APM_APPLICATION_PACKAGES
+              value: "{{ .Values.odoo_connector.ELASTIC_APM_APPLICATION_PACKAGES }}"
+
           resources:
             limits:
               memory: "{{ .Values.odoo_connector.limits.memory }}"

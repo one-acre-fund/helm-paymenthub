@@ -51,6 +51,13 @@ spec:
             requests:
               memory: "{{ .Values.mpesa.requests.memory }}"
               cpu: "{{ .Values.mpesa.requests.cpu }}"
+          args:
+            - java
+            - -XX:InitialRAMPercentage=$(JVM_INITIAL_RAM_PERCENT)
+            - -XX:MaxRAMPercentage=$(JVM_MAX_RAM_PERCENT)
+            - -javaagent:/config/elastic/elastic-apm-agent.jar
+            - -jar
+            - /app/app.jar
           env:
             - name: "SPRING_PROFILES_ACTIVE"
               value: "{{ .Values.mpesa.SPRING_PROFILES_ACTIVE }}"
@@ -237,6 +244,18 @@ spec:
                 secretKeyRef:
                   name: "mpesa-secret-odoo"
                   key: "pass-key"
+            - name: JVM_INITIAL_RAM_PERCENT
+              value: "{{ .Values.mpesa.JVM_INITIAL_RAM_PERCENT }}"
+            - name: JVM_MAX_RAM_PERCENT
+              value: "{{ .Values.mpesa.JVM_MAX_RAM_PERCENT }}"
+            - name: ELASTIC_APM_SERVICE_NAME
+              value: "{{ .Values.mpesa.APM_SERVICE_NAME }}"
+            - name: ELASTIC_APM_SERVER_URLS
+              value: "{{ .Values.elasticsearch.APM_SERVER_URLS }}"
+            - name: ELASTIC_APM_SECRET_TOKEN
+              value: "{{ .Values.elasticsearch.ELASTIC_APM_SECRET_TOKEN }}"
+            - name: ELASTIC_APM_APPLICATION_PACKAGES
+              value: "{{ .Values.mpesa.ELASTIC_APM_APPLICATION_PACKAGES }}"
 
 ---
 apiVersion: {{ .Values.service.apiversion }}
