@@ -74,6 +74,18 @@ spec:
               value: "{{ .Values.airtel_connector.api.auth_endpoint }}"
             - name: "SPRING_PROFILES_ACTIVE"
               value: "{{ .Values.airtel_connector.spring_profiles_active }}"
+            - name: ELASTIC_APM_SERVER_URLS
+              value: "{{ .Values.elasticsearch.APM_SERVER_URLS }}"
+            - name: ELASTIC_APM_SECRET_TOKEN
+              value: "{{ .Values.elasticsearch.ELASTIC_APM_SECRET_TOKEN }}"
+            - name: JVM_INITIAL_RAM_PERCENT
+              value: "{{ .Values.airtel_connector.JVM_INITIAL_RAM_PERCENT }}"
+            - name: JVM_MAX_RAM_PERCENT
+              value: "{{ .Values.airtel_connector.JVM_MAX_RAM_PERCENT }}"
+            - name: ELASTIC_APM_SERVICE_NAME
+              value: "{{ .Values.airtel_connector.APM_SERVICE_NAME }}"
+            - name: ELASTIC_APM_APPLICATION_PACKAGES
+              value: "{{ .Values.airtel_connector.ELASTIC_APM_APPLICATION_PACKAGES }}"
             - name: "AIRTEL_API_COLLECTION-ENDPOINT"
               value: "{{ .Values.airtel_connector.api.collection_endpoint }}"
             - name: "AIRTEL_API_STATUS-ENDPOINT"
@@ -121,18 +133,6 @@ spec:
               value: "{{ $value.ams_url }}"
             - name: "PAYBILL_AMS-SHORT-CODES_{{ $key }}_IDENTIFIER"
               value: "{{ $value.identifier }}"
-            - name: JVM_INITIAL_RAM_PERCENT
-              value: "{{ .Values.airtel_connector.JVM_INITIAL_RAM_PERCENT }}"
-            - name: JVM_MAX_RAM_PERCENT
-              value: "{{ .Values.airtel_connector.JVM_MAX_RAM_PERCENT }}"
-            - name: ELASTIC_APM_SERVICE_NAME
-              value: "{{ .Values.airtel_connector.APM_SERVICE_NAME }}"
-            - name: ELASTIC_APM_SERVER_URLS
-              value: "{{ .Values.elasticsearch.APM_SERVER_URLS }}"
-            - name: ELASTIC_APM_SECRET_TOKEN
-              value: "{{ .Values.elasticsearch.ELASTIC_APM_SECRET_TOKEN }}"
-            - name: ELASTIC_APM_APPLICATION_PACKAGES
-              value: "{{ .Values.airtel_connector.ELASTIC_APM_APPLICATION_PACKAGES }}"
 
           {{- end }}
 

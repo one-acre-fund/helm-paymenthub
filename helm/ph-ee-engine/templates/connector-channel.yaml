@@ -158,13 +158,6 @@ spec:
               value: "{{ .Values.elasticsearch.ELASTIC_APM_SECRET_TOKEN }}"
             - name: ELASTIC_APM_APPLICATION_PACKAGES
               value: "{{ .Values.channel.ELASTIC_APM_APPLICATION_PACKAGES }}"
-          volumeMounts:
-            - name: ph-ee-config
-              mountPath: "/config"
-      volumes:
-        - name: ph-ee-config
-          configMap:
-            name: ph-ee-config
 
 ---
 {{- if .Values.channel.ingress.enabled }}
