@@ -46,14 +46,13 @@ spec:
               port: 8080
             failureThreshold: 30
             periodSeconds: 60
-          command: ["sh", "-c"]
+          command: ["java"]
           args:
-            - java
-            - -XX:InitialRAMPercentage=$(JVM_INITIAL_RAM_PERCENT)
-            - -XX:MaxRAMPercentage=$(JVM_MAX_RAM_PERCENT)
-            - -javaagent:/app/config/elastic/elastic-apm-agent.jar
-            - -jar
-            - /app/ph-ee-connector-ams-odoo.jar
+            - "-XX:InitialRAMPercentage=${JVM_INITIAL_RAM_PERCENT}"
+            - "-XX:MaxRAMPercentage=${JVM_MAX_RAM_PERCENT}"
+            - "-javaagent:/app/config/elastic/elastic-apm-agent.jar"
+            - "-jar"
+            - "/app/ph-ee-connector-ams-odoo.jar"
           env:
             - name: "SPRING_PROFILES_ACTIVE"
               value: "{{ .Values.odoo_connector.SPRING_PROFILES_ACTIVE }}"
