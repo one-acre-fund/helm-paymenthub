@@ -58,8 +58,8 @@ spec:
               protocol: TCP
           command: ["java"]
           args:
-            - "-XX:InitialRAMPercentage=${JVM_INITIAL_RAM_PERCENT}"
-            - "-XX:MaxRAMPercentage=${JVM_MAX_RAM_PERCENT}"
+            - "-XX:InitialRAMPercentage=$(JVM_INITIAL_RAM_PERCENT)"
+            - "-XX:MaxRAMPercentage=$(JVM_MAX_RAM_PERCENT)"
             - "-javaagent:/app/config/elastic/elastic-apm-agent.jar"
             - "-jar"
             - "/app/ph-ee-connector-tnm.jar"
