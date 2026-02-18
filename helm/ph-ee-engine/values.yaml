@@ -245,6 +245,7 @@ channel:
   imageTag: "v1.4.2"
   imagePullPolicy: IfNotPresent
   SPRING_PROFILES_ACTIVE: "bb"
+  zeebe_broker_contactpoint: "ph-zeebe-gateway:26500"
   ELASTIC_APM_APPLICATION_PACKAGES: "org.mifos.connector.channel"
   APM_SERVICE_NAME: "ph-ee-connector-channel"
   JVM_INITIAL_RAM_PERCENT: "50.0"
@@ -391,7 +392,7 @@ operations_app:
   LOGGING_LEVEL_ROOT: "INFO"
   LOGGING_PATTERN_CONSOLE: "%d{dd-MM-yyyy HH:mm:ss.SSS} %magenta([%thread]) %highlight(%-5level) %logger.%M - %msg%n"
   ELASTIC_APM_APPLICATION_PACKAGES: "org.apache.fineract"
-  APM_SERVICE_NAME: "operations-app"
+  APM_SERVICE_NAME: "ph-ee-connector-operations-app"
   JVM_INITIAL_RAM_PERCENT: "50.0"
   JVM_MAX_RAM_PERCENT: "75.0"
   hostname: ""

@@ -53,6 +53,7 @@ spec:
             - -javaagent:/app/config/elastic/elastic-apm-agent.jar
             - -jar
             - /app/ph-ee-connector-ams-tupande.jar
+          command: ["sh", "-c"]
           env:
             - name: "SPRING_PROFILES_ACTIVE"
               value: "{{ .Values.tupande_connector.SPRING_PROFILES_ACTIVE }}"

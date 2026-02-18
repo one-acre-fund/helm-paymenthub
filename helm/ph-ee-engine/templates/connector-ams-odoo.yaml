@@ -46,6 +46,7 @@ spec:
               port: 8080
             failureThreshold: 30
             periodSeconds: 60
+          command: ["sh", "-c"]
           args:
             - java
             - -XX:InitialRAMPercentage=$(JVM_INITIAL_RAM_PERCENT)

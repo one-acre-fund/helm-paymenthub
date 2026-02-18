@@ -56,6 +56,7 @@ spec:
               protocol: TCP
             - containerPort: 8080
               protocol: TCP
+          command: ["sh", "-c"]
           args:
             - java
             - -XX:InitialRAMPercentage=$(JVM_INITIAL_RAM_PERCENT)
