@@ -56,14 +56,13 @@ spec:
               protocol: TCP
             - containerPort: 8080
               protocol: TCP
-          command: ["sh", "-c"]
+          command: ["java"]
           args:
-            - java
-            - -XX:InitialRAMPercentage=$(JVM_INITIAL_RAM_PERCENT)
-            - -XX:MaxRAMPercentage=$(JVM_MAX_RAM_PERCENT)
-            - -javaagent:/app/config/elastic/elastic-apm-agent.jar
-            - -jar
-            - /app/ph-ee-connector-tnm.jar
+            - "-XX:InitialRAMPercentage=$(JVM_INITIAL_RAM_PERCENT)"
+            - "-XX:MaxRAMPercentage=$(JVM_MAX_RAM_PERCENT)"
+            - "-javaagent:/app/config/elastic/elastic-apm-agent.jar"
+            - "-jar"
+            - "/app/ph-ee-connector-tnm.jar"
           env:
             - name: "ZEEBE_BROKER_CONTACTPOINT"
               value: "{{ .Values.tnm_connector.zeebe_broker_contactpoint }}"
