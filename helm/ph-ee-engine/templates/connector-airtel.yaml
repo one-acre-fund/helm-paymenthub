@@ -90,22 +90,22 @@ spec:
               value: "{{ .Values.airtel_connector.api.collection_endpoint }}"
             - name: "AIRTEL_API_STATUS-ENDPOINT"
               value: "{{ .Values.airtel_connector.api.status_endpoint }}"
-            - name: "AIRTEL_CREDENTIALS_RWANDA_CLIENT-ID"
+            - name: "AIRTEL_CREDENTIALS_RWANDA_CLIENT_ID"
               valueFrom:
                 secretKeyRef:
                   name: "airtel-secret"
                   key: "client-id"
-            - name: "AIRTEL_CREDENTIALS_RWANDA_CLIENT-SECRET"
+            - name: "AIRTEL_CREDENTIALS_RWANDA_CLIENT_SECRET"
               valueFrom:
                 secretKeyRef:
                   name: "airtel-secret"
                   key: "client-secret"
-            - name: "AIRTEL_CREDENTIALS_ZAMBIA_CLIENT-ID"
+            - name: "AIRTEL_CREDENTIALS_ZAMBIA_CLIENT_ID"
               valueFrom:
                 secretKeyRef:
                   name: "airtel-secret"
                   key: "zambia-client-id"
-            - name: "AIRTEL_CREDENTIALS_ZAMBIA_CLIENT-SECRET"
+            - name: "AIRTEL_CREDENTIALS_ZAMBIA_CLIENT_SECRET"
               valueFrom:
                 secretKeyRef:
                   name: "airtel-secret"
