@@ -53,8 +53,8 @@ spec:
               cpu: "{{ .Values.mpesa.requests.cpu }}"
           args:
             - java
-            - -XX:InitialRAMPercentage=$(JVM_INITIAL_RAM_PERCENT)
-            - -XX:MaxRAMPercentage=$(JVM_MAX_RAM_PERCENT)
+            - -XX:InitialRAMPercentage=${JVM_INITIAL_RAM_PERCENT}
+            - -XX:MaxRAMPercentage=${JVM_MAX_RAM_PERCENT}
             - -javaagent:/config/elastic/elastic-apm-agent.jar
             - -jar
             - /app/app.jar
