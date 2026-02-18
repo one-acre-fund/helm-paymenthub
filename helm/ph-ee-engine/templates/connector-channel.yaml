@@ -61,6 +61,8 @@ spec:
           env:
             - name: "SPRING_PROFILES_ACTIVE"
               value: "{{ .Values.channel.SPRING_PROFILES_ACTIVE }}"
+            - name: "ZEEBE_BROKER_CONTACTPOINT"
+              value: "{{ .Values.channel.zeebe_broker_contactpoint }}"
             - name: "DFSPIDS"
               value: "{{ .Values.channel.DFSPIDS }}"
             - name: "TRANSACTION-ID-LENGTH"

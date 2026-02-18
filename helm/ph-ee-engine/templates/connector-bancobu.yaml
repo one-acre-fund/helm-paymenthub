@@ -53,6 +53,7 @@ spec:
               cpu: "{{ .Values.bancobu_connector.requests.cpu }}"
           ports:
             - containerPort: {{ .Values.bancobu_connector.containerPort }}
+          command: ["sh", "-c"]
           args:
             - java
             - -XX:InitialRAMPercentage=$(JVM_INITIAL_RAM_PERCENT)
