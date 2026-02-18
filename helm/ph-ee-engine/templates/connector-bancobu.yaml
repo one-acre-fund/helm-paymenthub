@@ -53,13 +53,13 @@ spec:
               cpu: "{{ .Values.bancobu_connector.requests.cpu }}"
           ports:
             - containerPort: {{ .Values.bancobu_connector.containerPort }}
-          command: ["java"]
+          command: ["sh", "-c"]
           args:
-            - "-XX:InitialRAMPercentage=${JVM_INITIAL_RAM_PERCENT}"
-            - "-XX:MaxRAMPercentage=${JVM_MAX_RAM_PERCENT}"
-            - "-javaagent:/app/config/elastic/elastic-apm-agent.jar"
-            - "-jar"
-            - "/app/ph-ee-connector-bancobu.jar"
+            - > 
+              java -XX:InitialRAMPercentage=$JVM_INITIAL_RAM_PERCENT
+                   -XX:MaxRAMPercentage=$JVM_MAX_RAM_PERCENT
+                   -javaagent:/app/config/elastic/elastic-apm-agent.jar 
+                   -jar /app/ph-ee-connector-bancobu.jar
           env:
             - name: "ZEEBE_BROKER_CONTACTPOINT"
               value: "{{ .Values.bancobu_connector.zeebe_broker_contactpoint }}"
