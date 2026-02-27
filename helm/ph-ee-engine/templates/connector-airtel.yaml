@@ -110,9 +110,9 @@ spec:
                 secretKeyRef:
                   name: "airtel-secret"
                   key: "zambia-client-secret"
-            - name: "AIRTEL_CREDENTIALS_GRANT-TYPE"
+            - name: "AIRTEL_CREDENTIALS_RWANDA_GRANT-TYPE"
               value: "{{ .Values.airtel_connector.credentials.grant_type }}"
-            - name: "AIRTEL_ZAMBIA_CREDENTIALS_GRANT-TYPE"
+            - name: "AIRTEL_CREDENTIALS_ZAMBIA_GRANT-TYPE"
               value: "{{ .Values.airtel_connector.credentials.grant_type }}"
             - name: "AIRTEL_MAX-RETRY-COUNT"
               value: "{{ .Values.airtel_connector.max_retry_count}}"
