@@ -331,7 +331,7 @@ channel:
     secretKey: "changeme"
     amsIdentifier: "FINERACTACCOUNTID"
     amsValue: "fineract"
-    flow: "pos_payment-oaf"
+    flow: "pos_payment-nigeria"
     payerIdType: "VIRTUAL_ACCOUNT_NUMBER"
     successNotificationsEnabled: false
     failureNotificationsEnabled: false
@@ -343,7 +343,7 @@ channel:
     secretKey: "changeme"
     amsIdentifier: "FINERACTACCOUNTID"
     amsValue: "fineract"
-    flow: "pos_payment-oaf"
+    flow: "pos_payment-nigeria"
     payerIdType: "VIRTUAL_ACCOUNT_NUMBER"
     successNotificationsEnabled: false
     failureNotificationsEnabled: false
@@ -476,7 +476,7 @@ mpesa:
   LOGGING_LEVEL_ROOT: "INFO"
   hostname: ""
   zeebe_broker_contactpoint: "ph-zeebe-gateway:26500"
-  tenant: "oaf"
+  tenant: "kenya"
   callback_host: ""
   channel:
     host: ""
@@ -1272,6 +1272,7 @@ nbs_connector:
   LOGGING_LEVEL_ROOT: "INFO"
   SPRING_PROFILES_ACTIVE: ""
   CHANNEL_HOST: "http://ph-ee-connector-channel"
+  tenant: "malawi"
   containerPort: 5000
   limits:
     memory: "1Gi"
