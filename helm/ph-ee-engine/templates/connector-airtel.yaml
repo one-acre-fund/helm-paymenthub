@@ -90,6 +90,12 @@ spec:
               value: "{{ .Values.airtel_connector.api.collection_endpoint }}"
             - name: "AIRTEL_API_STATUS-ENDPOINT"
               value: "{{ .Values.airtel_connector.api.status_endpoint }}"
+            - name: "AIRTEL_CREDENTIALS_RWANDA_BASE-URL"
+              value: "{{ .Values.airtel_connector.credentials.base_url }}"
+            - name: "AIRTEL_CREDENTIALS_ZAMBIA_BASE-URL"
+              value: "{{ .Values.airtel_connector.credentials.zambia.base_url }}"
+            - name: "AIRTEL_CREDENTIALS_MALAWI_BASE-URL"
+              value: "{{ .Values.airtel_connector.credentials.malawi.base_url }}"
             - name: "AIRTEL_CREDENTIALS_RWANDA_CLIENTID"
               valueFrom:
                 secretKeyRef:
@@ -110,6 +116,16 @@ spec:
                 secretKeyRef:
                   name: "airtel-secret"
                   key: "zambia-client-secret"
+            - name: "AIRTEL_CREDENTIALS_MALAWI_CLIENTID"
+              valueFrom:
+                secretKeyRef:
+                  name: "airtel-secret"
+                  key: "malawi-client-id"
+            - name: "AIRTEL_CREDENTIALS_MALAWI_CLIENTSECRET"
+              valueFrom:
+                secretKeyRef:
+                  name: "airtel-secret"
+                  key: "malawi-client-secret"
             - name: "AIRTEL_CREDENTIALS_RWANDA_GRANT-TYPE"
               value: "{{ .Values.airtel_connector.credentials.grant_type }}"
             - name: "AIRTEL_CREDENTIALS_ZAMBIA_GRANT-TYPE"
@@ -146,6 +162,8 @@ data:
   client-secret: {{ .Values.airtel_connector.credentials.client_secret | b64enc }}
   zambia-client-id: {{ .Values.airtel_connector.credentials.zambia_client_id | b64enc}}
   zambia-client-secret: {{ .Values.airtel_connector.credentials.zambia_client_secret | b64enc }}
+  malawi-client-id: {{ .Values.airtel_connector.credentials.malawi_client_id | b64enc}}
+  malawi-client-secret: {{ .Values.airtel_connector.credentials.malawi_client_secret | b64enc }}
 
 --- 
 apiVersion: v1

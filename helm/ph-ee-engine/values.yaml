@@ -1159,15 +1159,19 @@ airtel_connector:
     memory: "512M"
     cpu: "100m"
   api:
-    base_url: "https://openapiuat.airtel.africa"
     auth_endpoint: "/auth/oauth2/token"
     collection_endpoint: "/merchant/v1/payments/"
     status_endpoint: "/standard/v1/payments"
   credentials:
     client_id: "abc"
     client_secret: "xyz"
+    base_url: "https://openapiuat.airtel.co.rw"
     zambia_client_id: "abc"
     zambia_client_secret: "xyz"
+    zambia_base_url: "https://openapiuat.airtel.co.zm"
+    malawi_client_id: "abc"
+    malawi_client_secret: "xyz"
+    malawi_base_url: "https://openapiuat.airtel.mw"
     grant_type: "client_credentials"
   max_retry_count: 3
   timeout: 6000
