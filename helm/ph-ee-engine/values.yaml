@@ -1166,8 +1166,13 @@ airtel_connector:
   credentials:
     client_id: "abc"
     client_secret: "xyz"
+    base_url: "https://openapiuat.airtel.co.rw"
     zambia_client_id: "abc"
     zambia_client_secret: "xyz"
+    zambia_base_url: "https://openapiuat.airtel.co.zm"
+    malawi_client_id: "abc"
+    malawi_client_secret: "xyz"
+    malawi_base_url: "https://openapiuat.airtel.mw"
     grant_type: "client_credentials"
   max_retry_count: 3
   timeout: 6000
