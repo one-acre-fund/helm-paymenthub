@@ -93,9 +93,9 @@ spec:
             - name: "AIRTEL_CREDENTIALS_RWANDA_BASE-URL"
               value: "{{ .Values.airtel_connector.credentials.base_url }}"
             - name: "AIRTEL_CREDENTIALS_ZAMBIA_BASE-URL"
-              value: "{{ .Values.airtel_connector.credentials.zambia.base_url }}"
+              value: "{{ .Values.airtel_connector.credentials.zambia_base_url }}"
             - name: "AIRTEL_CREDENTIALS_MALAWI_BASE-URL"
-              value: "{{ .Values.airtel_connector.credentials.malawi.base_url }}"
+              value: "{{ .Values.airtel_connector.credentials.malawi_base_url }}"
             - name: "AIRTEL_CREDENTIALS_RWANDA_CLIENTID"
               valueFrom:
                 secretKeyRef:

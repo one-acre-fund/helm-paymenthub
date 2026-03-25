@@ -1159,6 +1159,7 @@ airtel_connector:
     memory: "512M"
     cpu: "100m"
   api:
+    base_url: "https://openapiuat.airtel.africa"
     auth_endpoint: "/auth/oauth2/token"
     collection_endpoint: "/merchant/v1/payments/"
     status_endpoint: "/standard/v1/payments"
