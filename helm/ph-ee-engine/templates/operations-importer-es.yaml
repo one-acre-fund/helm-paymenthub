@@ -106,6 +106,12 @@ spec:
             value: "{{ .Values.importer_es.elasticsearch_security_enabled }}"
           - name: "ELASTICSEARCH_SSLVERIFICATION"
             value: "{{ .Values.importer_es.elasticsearch_sslverification }}"
+          - name: "IMPORTER_ELASTICSEARCH_URL"
+            value: {{ .Values.importer_es.importer.elasticsearch.url | quote }}
+          - name: "IMPORTER_ELASTICSEARCH_BULK_SIZE"
+            value: {{ .Values.importer_es.importer.elasticsearch.bulkSize | quote }}
+          - name: "IMPORTER_ELASTICSEARCH_INDEX_PREFIX"
+            value: {{ .Values.importer_es.importer.elasticsearch.indexPrefix | quote }}
           - name: "ELASTICSEARCH_USERNAME"
             valueFrom:
               secretKeyRef:
