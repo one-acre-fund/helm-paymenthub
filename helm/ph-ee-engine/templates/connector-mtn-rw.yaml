@@ -147,6 +147,17 @@ spec:
               value: "{{ .Values.elasticsearch.ELASTIC_APM_SECRET_TOKEN }}"
             - name: ELASTIC_APM_APPLICATION_PACKAGES
               value: "{{ .Values.mtn_rwanda_connector.ELASTIC_APM_APPLICATION_PACKAGES }}"
+            - name: "MTNZAMBIA_AUTH_HOST"
+              value: "{{ .Values.mtn_rwanda_connector.mtnz_auth_host }}"
+            - name: "MTNZAMBIA_API_HOST"
+              value: "{{ .Values.mtn_rwanda_connector.mtnz_api_host }}"
+            - name: "MTNZAMBIA_SUBSCRIPTIONKEY"
+              valueFrom:
+                secretKeyRef:
+                  name: "mtn-rw-secret"
+                  key: "zambia-subscription-key"
+            - name: "MTNZAMBIA_CALLBACK"
+              value: "{{ .Values.mtn_rwanda_connector.mtnz_callback }}"
 
 ---
 apiVersion: v1
@@ -160,6 +171,7 @@ data:
   zambia-client-key: {{ .Values.mtn_rwanda_connector.mtnz_client_key | b64enc}}
   zambia-client-secret: {{ .Values.mtn_rwanda_connector.mtnz_client_secret | b64enc }}
   subscription-key : {{ .Values.mtn_rwanda_connector.mtnrw_subscription_key | b64enc }}
+  zambia-subscription-key : {{ .Values.mtn_rwanda_connector.mtnz_subscription_key | b64enc }}
   paybill-username : {{ .Values.mtn_rwanda_connector.paybill.username | b64enc }}
   paybill-password : {{ .Values.mtn_rwanda_connector.paybill.password | b64enc }}
 
