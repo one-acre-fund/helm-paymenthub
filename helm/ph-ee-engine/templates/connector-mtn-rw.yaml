@@ -100,6 +100,8 @@ spec:
               value: "{{ .Values.mtn_rwanda_connector.mtnrw_api_host }}"
             - name: "MTNRW_ENVIRONMENT"
               value: "{{ .Values.mtn_rwanda_connector.mtnrw_environment}}"
+            - name: "MTNZAMBIA_ENVIRONMENT"
+              value: "{{ .Values.mtn_rwanda_connector.mtnz_environment}}"
             - name: "MTNRW_SUBSCRIPTIONKEY"
               valueFrom:
                 secretKeyRef:

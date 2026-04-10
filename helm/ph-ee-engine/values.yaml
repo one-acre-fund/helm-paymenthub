@@ -24,6 +24,7 @@ mtn_rwanda_connector:
   mtnz_subscription_key: ""
   mtnz_api_host: ""
   mtnz_auth_host: ""
+  mtnz_environment: ""
   spring_profiles_active: "bb"
   mtn_max_retry_count: 3
   mtn_api_timeout: 6000
