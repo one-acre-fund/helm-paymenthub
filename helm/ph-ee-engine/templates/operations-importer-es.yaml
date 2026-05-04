@@ -125,6 +125,12 @@ spec:
             value: "{{ .Values.elasticsearch.ELASTIC_APM_SECRET_TOKEN }}"
           - name: ELASTIC_APM_APPLICATION_PACKAGES
             value: "{{ .Values.importer_es.ELASTIC_APM_APPLICATION_PACKAGES }}"
+          - name: "IMPORTER_ELASTICSEARCH_URL"
+            value: {{ .Values.importer_es.importer.elasticsearch.url | quote }}
+          - name: "IMPORTER_ELASTICSEARCH_BULK_SIZE"
+            value: {{ .Values.importer_es.importer.elasticsearch.bulkSize | quote }}
+          - name: "IMPORTER_ELASTICSEARCH_INDEX_PREFIX"
+            value: {{ .Values.importer_es.importer.elasticsearch.indexPrefix | quote }}
           - name: "ELASTICSEARCH_USERNAME"
             valueFrom:
               secretKeyRef:

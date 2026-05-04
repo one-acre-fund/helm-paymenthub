@@ -791,6 +791,11 @@ importer_es:
       transferCreateFailed: false
       transferSettlementFailed: false
       transferResponseCREATE: false
+  importer:
+    elasticsearch:
+      url: "https://ph-ee-elasticsearch:9200/"
+      bulkSize: 150
+      indexPrefix: "zeebe-record"
   elasticsearch_sslverification: "true"
   elasticsearch_security_enabled: "true"
   logging:
