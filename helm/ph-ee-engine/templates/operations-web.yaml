@@ -42,7 +42,7 @@ spec:
               value: "{{ .Values.operations_web.oauth.keycloak.realm }}"
             - name: "KEYCLOAK_TOKEN_URL"
               value: "{{ .Values.operations_web.oauth.keycloak.token_url }}"
-            - name: "OPERATIONS_WEB_HOME_URL"
+            - name: "REDIRECT_URI"
               value: "{{ .Values.operations_web.oauth.keycloak.redirect_url }}"
           volumeMounts:
             - name: ph-ee-operations-web-config
