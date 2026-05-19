@@ -275,6 +275,8 @@ channel:
     clientSecret: ""
     tenant: ""
   hostname: ""
+  container:
+    port: 8080
   stub_hostname: ""
   limits:
     memory: "768M"

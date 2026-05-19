@@ -24,7 +24,7 @@ spec:
         - name: ph-ee-connector-channel
           image: "{{ .Values.channel.image }}:{{ .Values.channel.imageTag }}"
           ports:
-            - containerPort: 8080
+            - containerPort: {{ .Values.channel.container.port }}
           imagePullPolicy: "{{ .Values.channel.imagePullPolicy }}"
           resources:
             limits:
@@ -36,19 +36,19 @@ spec:
           livenessProbe:
             httpGet:
               path: /actuator/health/liveness
-              port: 8080
+              port: {{ .Values.channel.container.port }}
             initialDelaySeconds: 20
             periodSeconds: 30
           readinessProbe:
             httpGet:
               path: /actuator/health/readiness
-              port: 8080
+              port: {{ .Values.channel.container.port }}
             initialDelaySeconds: 20
             periodSeconds: 30
           startupProbe:
             httpGet:
               path: /actuator/health/readiness
-              port: 8080
+              port: {{ .Values.channel.container.port }}
             failureThreshold: 30
             periodSeconds: 60
           args:
@@ -227,11 +227,11 @@ spec:
     - name: port
       port: 80
       protocol: TCP
-      targetPort: 8080
+      targetPort: {{ .Values.channel.container.port }}
     - name: http
       port: 82
       protocol: TCP
-      targetPort: 8080
+      targetPort: {{ .Values.channel.container.port }}
   selector:
     app: ph-ee-connector-channel
   sessionAffinity: None
