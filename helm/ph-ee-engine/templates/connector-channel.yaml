@@ -237,6 +237,7 @@ spec:
   sessionAffinity: None
   type: ClusterIP
 
+
 ---
 apiVersion: v1
 kind: Secret
