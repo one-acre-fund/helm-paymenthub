@@ -33,17 +33,6 @@ spec:
             requests:
               memory: "{{ .Values.operations_web.requests.memory }}"
               cpu: "{{ .Values.operations_web.requests.cpu }}"
-          env:
-            - name: "KEYCLOAK_BASE_URL"
-              value: "{{ .Values.operations_web.oauth.keycloak.base_url }}"
-            - name: "KEYCLOAK_CLIENT_ID"
-              value: "{{ .Values.operations_web.oauth.keycloak.client_id }}"
-            - name: "KEYCLOAK_REALM"
-              value: "{{ .Values.operations_web.oauth.keycloak.realm }}"
-            - name: "KEYCLOAK_TOKEN_URL"
-              value: "{{ .Values.operations_web.oauth.keycloak.token_url }}"
-            - name: "REDIRECT_URI"
-              value: "{{ .Values.operations_web.oauth.keycloak.redirect_url }}"
           volumeMounts:
             - name: ph-ee-operations-web-config
               mountPath: "/usr/share/nginx/html/assets/configuration.properties"
@@ -61,7 +50,10 @@ data:
     oauth.enabled true
     oauth.basicAuth false
     oauth.basicAuthToken Y2xpZW50Og==
-    oauth.serverUrl https://{{ .Values.operations_web.oauth.keycloak.base_url }}
+    oauth.serverUrl {{ .Values.operations_web.oauth.keycloak.base_url }}
+    oauth.redirectUri {{ .Values.operations_web.oauth.keycloak.redirect_uri }}
+    oauth.realm {{ .Values.operations_web.oauth.keycloak.realm }}
+    oauth.client_id {{ .Values.operations_web.oauth.keycloak.client_id }}
     serverUrl https://{{ .Values.operations_app.hostname }}
 metadata:
   name: ph-ee-operations-web-config
