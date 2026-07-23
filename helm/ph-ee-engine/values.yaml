@@ -107,7 +107,7 @@ camunda-platform:
       - name: ZEEBE_BROKER_CLUSTER_MEMBERSHIP_SUSPECTPROBES
         value: "5"
       - name: ZEEBE_BROKER_CLUSTER_MEMBERSHIP_FAILURETIMEOUT
-        value: "30s"
+        value: "20s"
       - name: ZEEBE_BROKER_BACKPRESSURE_ENABLED
         value: "false"
       - name: ZEEBE_BROKER_EXECUTION_METRICS_EXPORTER_ENABLED
@@ -179,7 +179,7 @@ camunda-platform:
       - name: ZEEBE_GATEWAY_CLUSTER_MEMBERSHIP_SUSPECTPROBES
         value: "5"
       - name: ZEEBE_GATEWAY_CLUSTER_MEMBERSHIP_FAILURETIMEOUT
-        value: "30s"
+        value: "20s"
       - name: ZEEBE_GATEWAY_THREADS_MANAGEMENTTHREADS
         value: "4"
       - name: ZEEBE_GATEWAY_MONITORING_ENABLED
