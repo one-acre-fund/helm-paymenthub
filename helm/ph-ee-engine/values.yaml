@@ -100,6 +100,14 @@ camunda-platform:
       requests:
         cpu: 100m
     env:
+      - name: ZEEBE_BROKER_CLUSTER_MEMBERSHIP_PROBETIMEOUT
+        value: "2s"
+      - name: ZEEBE_BROKER_CLUSTER_MEMBERSHIP_PROBEINTERVAL
+        value: "2s"
+      - name: ZEEBE_BROKER_CLUSTER_MEMBERSHIP_SUSPECTPROBES
+        value: "5"
+      - name: ZEEBE_BROKER_CLUSTER_MEMBERSHIP_FAILURETIMEOUT
+        value: "30s"
       - name: ZEEBE_BROKER_BACKPRESSURE_ENABLED
         value: "false"
       - name: ZEEBE_BROKER_EXECUTION_METRICS_EXPORTER_ENABLED
@@ -164,6 +172,14 @@ camunda-platform:
       repository: camunda/zeebe
       tag: 8.5.6
     env:
+      - name: ZEEBE_GATEWAY_CLUSTER_MEMBERSHIP_PROBETIMEOUT
+        value: "2s"
+      - name: ZEEBE_GATEWAY_CLUSTER_MEMBERSHIP_PROBEINTERVAL
+        value: "2s"
+      - name: ZEEBE_GATEWAY_CLUSTER_MEMBERSHIP_SUSPECTPROBES
+        value: "5"
+      - name: ZEEBE_GATEWAY_CLUSTER_MEMBERSHIP_FAILURETIMEOUT
+        value: "30s"
       - name: ZEEBE_GATEWAY_THREADS_MANAGEMENTTHREADS
         value: "4"
       - name: ZEEBE_GATEWAY_MONITORING_ENABLED
