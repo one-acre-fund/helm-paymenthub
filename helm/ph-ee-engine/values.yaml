@@ -532,6 +532,8 @@ mpesa:
   retry_count: 3
   api_timeout: 60000
   zeebe_init_transfer_wait_timer: 15
+  zeebe_client_keep_alive: "30s"
+  zeebe_client_request_timeout: "30s"
   skip:
     enabled: false
   accounts:
@@ -1172,6 +1174,8 @@ fineract_connector:
   LOGGING_LEVEL_ROOT: "INFO"
   SPRING_PROFILES_ACTIVE: ""
   containerPort: 5000
+  zeebe_client_keep_alive: "30s"
+  zeebe_client_request_timeout: "30s"
   limits:
     memory: "1Gi"
     cpu: "200m"
