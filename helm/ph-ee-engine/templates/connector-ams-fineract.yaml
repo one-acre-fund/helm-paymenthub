@@ -61,6 +61,10 @@ spec:
               value: "{{ .Values.fineract_connector.SPRING_PROFILES_ACTIVE }}"
             - name: "ZEEBE_BROKER_CONTACTPOINT"
               value: {{ .Values.zeebe_broker_contactpoint }}
+            - name: "ZEEBE_CLIENT_KEEP-ALIVE"
+              value: "{{ .Values.fineract_connector.zeebe_client_keep_alive }}"
+            - name: "ZEEBE_CLIENT_REQUEST-TIMEOUT"
+              value: "{{ .Values.fineract_connector.zeebe_client_request_timeout }}"
             - name: "AMS_LOCAL_ENABLED"
               value: "{{ .Values.fineract_connector.ams.local.enabled }}"
             - name: "FINERACT_BASE-URL"
