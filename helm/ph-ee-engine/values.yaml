@@ -534,6 +534,7 @@ mpesa:
   zeebe_init_transfer_wait_timer: 15
   zeebe_client_keep_alive: "30s"
   zeebe_client_request_timeout: "30s"
+  zeebe_client_evenly_allocated_max_jobs: 64
   skip:
     enabled: false
   accounts:
