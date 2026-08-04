@@ -175,11 +175,20 @@ camunda-platform:
       co.elastic.logs/multiline.pattern: '^\d{4}-\d{2}-\d{2}\s(\d\d:){2}\d{2}.\d{3}\s'
       co.elastic.logs/multiline.negate: "true"
       co.elastic.logs/multiline.match: 'after'
-    initContainers:
+    # Camunda 8.2 chart key is extraInitContainers (not initContainers).
+    # resources must match limits for Guaranteed QoS on every container in the pod.
+    extraInitContainers:
       - name: init-ph-ee-kafka-exporter
         image: busybox:1.28
         command: ['/bin/sh', '-c']
         args: ['wget -O /exporters/ph-ee-kafka-exporter.jar https://raw.githubusercontent.com/one-acre-fund/helm-paymenthub/develop/helm/ph-ee-engine/exporter-1.1.0-SNAPSHOT.jar; ls -al /exporters/']
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
         volumeMounts:
           - name: exporters
             mountPath: /exporters/
