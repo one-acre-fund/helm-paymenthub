@@ -1,0 +1,20 @@
+{
+  "name": "mpesa-oauth-token",
+  "priority": 1,
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/oauth/v1/generate",
+    "queryParameters": {
+      "grant_type": { "equalTo": "client_credentials" }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": {
+      "access_token": "{{randomValue length=24 type='ALPHANUMERIC'}}",
+      "expires_in": "3599"
+    },
+    "transformers": ["response-template"]
+  }
+}

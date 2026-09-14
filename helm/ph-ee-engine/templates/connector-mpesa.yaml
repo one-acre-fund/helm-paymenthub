@@ -93,6 +93,24 @@ spec:
               value: "{{ .Values.mpesa.tenant }}"
             - name: "LOGGING_LEVEL_ROOT"
               value:  "{{ .Values.mpesa.LOGGING_LEVEL_ROOT }}"
+            # redis (shared distributed store: access tokens, correlation IDs, paybill state)
+            - name: "REDIS_HOST"
+              value: "{{ .Values.redis.host }}"
+            - name: "REDIS_PORT"
+              value: "{{ .Values.redis.port }}"
+            - name: "REDIS_PASSWORD"
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Values.redis.existingSecret }}"
+                  key: "{{ .Values.redis.existingSecretPasswordKey }}"
+            - name: "REDIS_KEY_PREFIX"
+              value: "{{ .Values.mpesa.redis.key_prefix }}"
+            - name: "REDIS_TTL_CORRELATION_SECONDS"
+              value: "{{ .Values.mpesa.redis.ttl_correlation_seconds }}"
+            - name: "REDIS_TTL_PAYBILL_RECONCILED_SECONDS"
+              value: "{{ .Values.mpesa.redis.ttl_paybill_reconciled_seconds }}"
+            - name: "REDIS_TTL_PAYBILL_WORKFLOW_SECONDS"
+              value: "{{ .Values.mpesa.redis.ttl_paybill_workflow_seconds }}"
             # roster
             - name: "ACCOUNTS_ROSTER_SHORTCODE"
               value: "{{ .Values.mpesa.accounts.roster.business_short_code }}"
