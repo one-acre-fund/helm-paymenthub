@@ -1,0 +1,27 @@
+{
+  "name": "mpesa-buygoods-stkpush-initiate-no-callback",
+  "priority": 1,
+  "request": {
+    "method": "POST",
+    "urlPath": "/mpesa/stkpush/v1/processrequest",
+    "headers": {
+      "Authorization": { "matches": "Bearer .+" }
+    },
+    "bodyPatterns": [
+      { "matchesJsonPath": "$.TransactionType" },
+      { "matchesJsonPath": "$[?(@.PhoneNumber == 254700000201)]" }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": {
+      "MerchantRequestID": "{{randomValue length=5 type='NUMERIC'}}-{{randomValue length=8 type='NUMERIC'}}-1",
+      "CheckoutRequestID": "ws_CO_{{jsonPath request.body '$.Timestamp'}}_PENDING",
+      "ResponseCode": "0",
+      "ResponseDescription": "Success. Request accepted for processing",
+      "CustomerMessage": "Success. Request accepted for processing"
+    },
+    "transformers": ["response-template"]
+  }
+}

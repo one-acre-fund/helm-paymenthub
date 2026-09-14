@@ -1,0 +1,43 @@
+{
+  "name": "mpesa-buygoods-stkpush-initiate",
+  "priority": 2,
+  "request": {
+    "method": "POST",
+    "urlPath": "/mpesa/stkpush/v1/processrequest",
+    "headers": {
+      "Authorization": { "matches": "Bearer .+" }
+    },
+    "bodyPatterns": [
+      { "matchesJsonPath": "$.TransactionType" }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": {
+      "MerchantRequestID": "{{randomValue length=5 type='NUMERIC'}}-{{randomValue length=8 type='NUMERIC'}}-1",
+      "CheckoutRequestID": "ws_CO_{{jsonPath request.body '$.Timestamp'}}",
+      "ResponseCode": "0",
+      "ResponseDescription": "Success. Request accepted for processing",
+      "CustomerMessage": "Success. Request accepted for processing"
+    },
+    "transformers": ["response-template"]
+  },
+  "postServeActions": [
+    {
+      "name": "webhook",
+      "parameters": {
+        "method": "POST",
+        "url": "{{{jsonPath originalRequest.body '$.CallBackURL'}}}",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{ \"Body\": { \"stkCallback\": { \"MerchantRequestID\": \"29115-34620561-1\", \"CheckoutRequestID\": \"ws_CO_{{jsonPath originalRequest.body '$.Timestamp'}}\", \"ResultCode\": 0, \"ResultDesc\": \"The service request is processed successfully.\", \"CallbackMetadata\": { \"Item\": [ { \"Name\": \"Amount\", \"Value\": {{jsonPath originalRequest.body '$.Amount'}} }, { \"Name\": \"MpesaReceiptNumber\", \"Value\": \"{{randomValue length=10 type='ALPHANUMERIC' uppercase=true}}\" }, { \"Name\": \"TransactionDate\", \"Value\": {{jsonPath originalRequest.body '$.Timestamp'}} }, { \"Name\": \"PhoneNumber\", \"Value\": {{jsonPath originalRequest.body '$.PhoneNumber'}} } ] } } } }",
+        "delay": {
+          "type": "fixed",
+          "milliseconds": 3000
+        }
+      }
+    }
+  ]
+}

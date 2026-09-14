@@ -1,0 +1,21 @@
+{
+  "name": "mpesa-buygoods-transaction-status-query-pending",
+  "priority": 1,
+  "request": {
+    "method": "POST",
+    "urlPath": "/mpesa/stkpushquery/v2/query",
+    "bodyPatterns": [
+      { "matchesJsonPath": { "expression": "$.CheckoutRequestID", "contains": "_PENDING" } }
+    ]
+  },
+  "response": {
+    "status": 500,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": {
+      "requestId": "{{randomValue length=5 type='NUMERIC'}}-{{randomValue length=8 type='NUMERIC'}}-1",
+      "errorCode": "500.001.1001",
+      "errorMessage": "The transaction is being processed"
+    },
+    "transformers": ["response-template"]
+  }
+}

@@ -1,0 +1,85 @@
+{{- if .Values.wiremock.enabled -}}
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: paymenthub-wiremock-mappings
+data:
+# Pulls in every connector's mappings/*.json (e.g. config/wiremock/mpesa/mappings/,
+# config/wiremock/mtn/mappings/, ...) into one flat ConfigMap. Filenames must stay
+# prefixed by connector (e.g. mpesa-01-oauth-token.json) since ConfigMap keys are the
+# bare filename — two connectors' files with the same name would otherwise collide.
+{{ (.Files.Glob "config/wiremock/*/mappings/*.json").AsConfig | nindent 2 }}
+---
+apiVersion: "apps/v1"
+kind: Deployment
+metadata:
+  name: "paymenthub-wiremock"
+  labels:
+    app: paymenthub-wiremock
+spec:
+  replicas: {{ .Values.wiremock.replicas }}
+  selector:
+    matchLabels:
+      app: paymenthub-wiremock
+  template:
+    metadata:
+      labels:
+        app: paymenthub-wiremock
+      annotations:
+{{- if .Values.wiremock.deployment.annotations }}
+{{ toYaml .Values.wiremock.deployment.annotations | indent 8 }}
+{{- end }}
+    spec:
+      containers:
+        - name: paymenthub-wiremock
+          image: "{{ .Values.wiremock.image }}:{{ .Values.wiremock.imageTag }}"
+          imagePullPolicy: "{{ .Values.wiremock.imagePullPolicy }}"
+          ports:
+            - containerPort: 8080
+          # WireMock's own health endpoint (see its Dockerfile HEALTHCHECK).
+          readinessProbe:
+            httpGet:
+              path: /__admin/health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /__admin/health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          resources:
+            limits:
+              memory: "{{ .Values.wiremock.limits.memory }}"
+              cpu: "{{ .Values.wiremock.limits.cpu }}"
+            requests:
+              memory: "{{ .Values.wiremock.requests.memory }}"
+              cpu: "{{ .Values.wiremock.requests.cpu }}"
+          volumeMounts:
+            - name: mappings
+              mountPath: /home/wiremock/mappings
+      volumes:
+        - name: mappings
+          configMap:
+            name: paymenthub-wiremock-mappings
+---
+apiVersion: {{ .Values.service.apiversion }}
+kind: Service
+metadata:
+  labels:
+    app: paymenthub-wiremock
+  name: paymenthub-wiremock
+spec:
+  ports:
+    - name: port
+      port: 80
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app: paymenthub-wiremock
+  sessionAffinity: None
+  type: ClusterIP
+
+{{- end }}

@@ -1,0 +1,25 @@
+{
+  "name": "mpesa-buygoods-stkpush-initiate-error-locked-subscriber",
+  "priority": 1,
+  "request": {
+    "method": "POST",
+    "urlPath": "/mpesa/stkpush/v1/processrequest",
+    "headers": {
+      "Authorization": { "matches": "Bearer .+" }
+    },
+    "bodyPatterns": [
+      { "matchesJsonPath": "$.TransactionType" },
+      { "matchesJsonPath": "$[?(@.PhoneNumber == 254700000001)]" }
+    ]
+  },
+  "response": {
+    "status": 500,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": {
+      "requestId": "{{randomValue length=5 type='NUMERIC'}}-{{randomValue length=8 type='NUMERIC'}}-1",
+      "errorCode": "500.001.1001",
+      "errorMessage": "Unable to lock subscriber, a transaction is already in process for the current subscriber."
+    },
+    "transformers": ["response-template"]
+  }
+}

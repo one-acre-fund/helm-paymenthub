@@ -1,0 +1,44 @@
+{
+  "name": "mpesa-buygoods-stkpush-initiate-callback-wrong-pin",
+  "priority": 1,
+  "request": {
+    "method": "POST",
+    "urlPath": "/mpesa/stkpush/v1/processrequest",
+    "headers": {
+      "Authorization": { "matches": "Bearer .+" }
+    },
+    "bodyPatterns": [
+      { "matchesJsonPath": "$.TransactionType" },
+      { "matchesJsonPath": "$[?(@.PhoneNumber == 254700000104)]" }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": {
+      "MerchantRequestID": "{{randomValue length=5 type='NUMERIC'}}-{{randomValue length=8 type='NUMERIC'}}-1",
+      "CheckoutRequestID": "ws_CO_{{jsonPath request.body '$.Timestamp'}}_WRONGPIN",
+      "ResponseCode": "0",
+      "ResponseDescription": "Success. Request accepted for processing",
+      "CustomerMessage": "Success. Request accepted for processing"
+    },
+    "transformers": ["response-template"]
+  },
+  "postServeActions": [
+    {
+      "name": "webhook",
+      "parameters": {
+        "method": "POST",
+        "url": "{{{jsonPath originalRequest.body '$.CallBackURL'}}}",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{ \"Body\": { \"stkCallback\": { \"MerchantRequestID\": \"29115-34620561-1\", \"CheckoutRequestID\": \"ws_CO_{{jsonPath originalRequest.body '$.Timestamp'}}_WRONGPIN\", \"ResultCode\": 2001, \"ResultDesc\": \"The initiator information is invalid.\" } } }",
+        "delay": {
+          "type": "fixed",
+          "milliseconds": 3000
+        }
+      }
+    }
+  ]
+}

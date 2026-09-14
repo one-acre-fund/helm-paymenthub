@@ -542,6 +542,17 @@ mpesa:
   zeebe_client_keep_alive: "30s"
   zeebe_client_request_timeout: "30s"
   zeebe_client_evenly_allocated_max_jobs: 64
+  # Redis is used as the connector's distributed store (access tokens, correlation IDs,
+  # paybill reconciliation/workflow state) so this data is shared and survives across
+  # pod restarts/rollouts instead of living in a single pod's memory. Connection details
+  # for *which* Redis to use live in the shared top-level `redis:` block below, since the
+  # same instance is meant to be reused by other connectors as they adopt it too — this
+  # block only holds settings specific to the mpesa connector's own keyspace.
+  redis:
+    key_prefix: "mpesa-connector"
+    ttl_correlation_seconds: 259200
+    ttl_paybill_reconciled_seconds: 900
+    ttl_paybill_workflow_seconds: 172800
   skip:
     enabled: false
   accounts:
@@ -636,6 +647,70 @@ mpesa:
       co.elastic.logs/multiline.pattern: '^\d{4}-\d{2}-\d{2}\s(\d\d:){2}\d{2}.\d{3}\s'
       co.elastic.logs/multiline.negate: 'true'
       co.elastic.logs/multiline.match: after
+# Shared Redis instance used as a distributed store/cache by ph-ee connectors that need
+# state visible across replicas and pods and to survive pod restarts/rollouts, instead of
+# living in a single pod's memory. Currently used by ph-ee-connector-mpesa (see mpesa.redis
+# above for its connector-specific settings); wire up other connectors the same way
+# (host/port/secret below, connector-specific key prefix/TTLs in that connector's own
+# values block) as they adopt it, rather than standing up a separate Redis per connector.
+redis:
+  # Deploys the bundled paymenthubredis subchart (see the `paymenthubredis:` block below).
+  # Set to false and point `host`/`port` elsewhere (e.g. a managed Redis instance) to use
+  # an external Redis instead.
+  enabled: true
+  host: "paymenthub-redis-master"
+  port: 6379
+  # Name/key of the secret holding the Redis password. Defaults to the secret the
+  # paymenthubredis subchart creates for itself (named after its fullnameOverride).
+  existingSecret: "paymenthub-redis"
+  existingSecretPasswordKey: "redis-password"
+# Bitnami Redis subchart backing the shared `redis:` instance above. Single-instance
+# ("standalone") on purpose: today's only consumer (the mpesa connector) talks to one
+# host:port pair with no Sentinel-aware client, so a replica without Sentinel would add
+# operational cost without giving the app real failover. Durability instead comes from AOF
+# persistence on a PVC, so pod restarts/rescheduling don't lose access tokens or in-flight
+# paybill reconciliation state.
+paymenthubredis:
+  fullnameOverride: "paymenthub-redis"
+  architecture: standalone
+  image:
+    registry: docker.io
+    # Bitnami's own registry now requires a paid subscription for current image tags;
+    # bitnamilegacy carries the last free, frozen builds (same approach as operationsmysql
+    # above using bitnamilegacy/mysql).
+    repository: bitnamilegacy/redis
+    tag: "8.2.1"
+  auth:
+    enabled: true
+    # CHANGE THIS per environment (e.g. via --set or a CI-injected secret). Left as an
+    # inline placeholder here to match how other credentials in this file are handled.
+    password: "changeme-paymenthub-redis-password"
+  # Base image ships with RediSearch/ReJSON modules loaded by default; today's only
+  # consumer only needs plain string GET/SET/DEL with TTLs, so keep the config to just
+  # persistence.
+  commonConfiguration: |-
+    appendonly yes
+    save ""
+  master:
+    persistence:
+      enabled: true
+      size: 5Gi
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "100m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+    # The mpesa connector's keys are all set with a TTL, so volatile-ttl is a safety net
+    # against unbounded growth, not something normal operation should ever hit. Revisit
+    # this if a future consumer writes keys without a TTL.
+    extraFlags:
+      - "--maxmemory 400mb"
+      - "--maxmemory-policy volatile-ttl"
+  networkPolicy:
+    enabled: true
+    allowExternal: true
 roster_connector:
   enabled: true
   replicas: 1
@@ -1006,6 +1081,33 @@ ph_ee_connector_slcb:
   requests:
     memory: "512M"
     cpu: "100m"
+  deployment:
+    annotations: {}
+# Shared WireMock instance standing in for the external payment APIs ph-ee connectors talk
+# to, so their flows can be exercised end-to-end without hitting a real sandbox. One
+# deployment serves stub mappings for every connector that opts in: currently
+# ph-ee-connector-mpesa (Safaricom's Daraja API — OAuth token, STK push initiate, and the
+# transaction status query, with the initiate stub also firing a WireMock webhook a few
+# seconds later to simulate Safaricom's asynchronous payment callback); wire up other
+# connectors (e.g. mtn) the same way as they need it, rather than standing up a separate
+# WireMock per connector. Each connector's mappings live under their own
+# config/wiremock/<connector>/mappings/ directory (glob'd together into one ConfigMap
+# below), with filenames prefixed by connector (e.g. mpesa-01-oauth-token.json) so two
+# connectors' mapping files never collide on the same ConfigMap key. See
+# config/wiremock/mpesa/README.md for the mpesa mappings' own walkthrough, including a
+# script to fire a callback manually (e.g. to test a specific ResultCode).
+wiremock:
+  enabled: false
+  replicas: 1
+  image: "docker.io/wiremock/wiremock"
+  imageTag: "3.13.2"
+  imagePullPolicy: IfNotPresent
+  limits:
+    memory: "256M"
+    cpu: "250m"
+  requests:
+    memory: "128M"
+    cpu: "50m"
   deployment:
     annotations: {}
 mock_oracle:
