@@ -27,6 +27,11 @@ spec:
       labels:
         app: paymenthub-wiremock
       annotations:
+        # WireMock only loads mappings/*.json at startup - it has no file watcher, so a
+        # ConfigMap update alone won't make a running pod pick up changed stubs. This
+        # checksum ties the pod template to the same glob backing the ConfigMap above, so
+        # any mapping change forces a rollout (see https://helm.sh/docs/howto/charts_tips_and_tricks/#automatically-roll-deployments).
+        checksum/mappings: {{ (.Files.Glob "config/wiremock/*/mappings/*.json").AsConfig | sha256sum }}
 {{- if .Values.wiremock.deployment.annotations }}
 {{ toYaml .Values.wiremock.deployment.annotations | indent 8 }}
 {{- end }}

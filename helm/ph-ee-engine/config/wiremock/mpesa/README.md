@@ -162,7 +162,16 @@ connector's callback handling without the wiremock stack running at all:
 # Failure — e.g. user cancelled on their phone (ResultCode 1032)
 ./simulate-safaricom-callback.sh http://ph-ee-connector-mpesa/buygoods/callback \
   ws_CO_20260831190500 1032
+
+# Failure with a ResultCode the script doesn't recognise — pass an explicit ResultDesc
+# as the 7th argument (amount/phone/receipt args still need placeholders, unused for a failure)
+./simulate-safaricom-callback.sh http://ph-ee-connector-mpesa/buygoods/callback \
+  ws_CO_20260831190500 9999 250 254712345678 NLJ7RT61SV "Some other Safaricom failure"
 ```
+
+The script picks `ResultDesc` automatically for the same well-known `ResultCode`s used by
+the `mpesa-02-stk-push-initiate-callback-*.json` stubs above (`1`, `1032`, `1037`, `2001`)
+— pass the 7th argument to override it for any other code.
 
 The `CheckoutRequestID` (second argument) must match the one returned by the STK push
 initiate call you're completing.

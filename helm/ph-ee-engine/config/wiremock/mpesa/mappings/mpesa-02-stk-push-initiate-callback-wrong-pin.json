@@ -16,7 +16,7 @@
     "status": 200,
     "headers": { "Content-Type": "application/json" },
     "jsonBody": {
-      "MerchantRequestID": "{{randomValue length=5 type='NUMERIC'}}-{{randomValue length=8 type='NUMERIC'}}-1",
+      "MerchantRequestID": "29115-34620561-1",
       "CheckoutRequestID": "ws_CO_{{jsonPath request.body '$.Timestamp'}}_WRONGPIN",
       "ResponseCode": "0",
       "ResponseDescription": "Success. Request accepted for processing",
