@@ -660,10 +660,16 @@ redis:
   enabled: true
   host: "paymenthub-redis-master"
   port: 6379
-  # Name/key of the secret holding the Redis password. Defaults to the secret the
-  # paymenthubredis subchart creates for itself (named after its fullnameOverride).
+  # Name/key of the secret holding the Redis password, created explicitly below
+  # (templates/redis-secret.yaml) like every other credential in this chart, rather than
+  # relying on the bundled paymenthubredis subchart to create its own - see that
+  # template's comment for why. The paymenthubredis subchart below is pointed at this
+  # same secret (via its own auth.existingSecret) so both sides read one password.
   existingSecret: "paymenthub-redis"
   existingSecretPasswordKey: "redis-password"
+  # CHANGE THIS per environment (e.g. via --set or a CI-injected secret). Left as an
+  # inline placeholder here to match how other credentials in this file are handled.
+  password: "changeme-paymenthub-redis-password"
 # Bitnami Redis subchart backing the shared `redis:` instance above. Single-instance
 # ("standalone") on purpose: today's only consumer (the mpesa connector) talks to one
 # host:port pair with no Sentinel-aware client, so a replica without Sentinel would add
@@ -682,9 +688,12 @@ paymenthubredis:
     tag: "8.2.1"
   auth:
     enabled: true
-    # CHANGE THIS per environment (e.g. via --set or a CI-injected secret). Left as an
-    # inline placeholder here to match how other credentials in this file are handled.
-    password: "changeme-paymenthub-redis-password"
+    # Use the explicit Secret this chart creates (templates/redis-secret.yaml, from
+    # `redis.password` above) instead of letting this subchart create its own - keeps the
+    # password in one place and matches how every other credential in this chart is
+    # managed (an explicit Secret template, not a subchart-generated one).
+    existingSecret: "paymenthub-redis"
+    existingSecretPasswordKey: "redis-password"
   # Base image ships with RediSearch/ReJSON modules loaded by default; today's only
   # consumer only needs plain string GET/SET/DEL with TTLs, so keep the config to just
   # persistence.
