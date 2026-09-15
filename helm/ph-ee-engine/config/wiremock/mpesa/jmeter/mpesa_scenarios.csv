@@ -1,0 +1,10 @@
+scenario,msisdn
+success,+254712345678
+sync_error_locked_subscriber,+254700000001
+sync_error_invalid_callback_url,+254700000002
+sync_error_invalid_phone_number,+254700000003
+callback_insufficient_funds,+254700000101
+callback_cancelled_by_user,+254700000102
+callback_timeout,+254700000103
+callback_wrong_pin,+254700000104
+no_callback_pending,+254700000201
