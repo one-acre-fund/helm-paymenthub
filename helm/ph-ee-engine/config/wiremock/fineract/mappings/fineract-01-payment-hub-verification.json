@@ -1,0 +1,24 @@
+{
+  "name": "fineract-payment-hub-verification",
+  "priority": 1,
+  "request": {
+    "method": "POST",
+    "urlPath": "/fineract-provider/api/v1/paymentHub/verification",
+    "headers": {
+      "Authorization": { "matches": "Bearer .+" },
+      "fineract-platform-tenantid": { "matches": " *default" }
+    },
+    "bodyPatterns": [
+      { "matchesJsonPath": "$.RemoteTransactionId" }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": {
+      "message": "Validation successful",
+      "transactionId": "{{randomValue length=24 type='ALPHANUMERIC'}}"
+    },
+    "transformers": ["response-template"]
+  }
+}
