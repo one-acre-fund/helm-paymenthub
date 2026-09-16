@@ -17,10 +17,12 @@ enable it. This file covers only the fineract-specific stubs below.
 | `fineract-01-payment-hub-verification.json` | `POST /fineract-provider/api/v1/paymentHub/verification` | Validates the payer/account before the payment is posted (Fineract's equivalent of Safaricom C2B's Validation step). Always succeeds: `{"message": "Validation successful", "transactionId": "<random>"}`, with a freshly generated `transactionId` per request (it is not an echo of the request's `RemoteTransactionId`). |
 | `fineract-02-payment-hub-confirmation.json` | `POST /fineract-provider/api/v1/paymentHub/confirmation` | Confirms a payment has been posted to the account. Always succeeds: `{"status": "CONFIRMED"}`. |
 
-Both stubs require an `Authorization: Bearer <token>` header (any non-empty token) and a
-`fineract-platform-tenantid: default` header (tolerating incidental leading whitespace in
-the value, e.g. `fineract-platform-tenantid:  default`), and expect the request body to
-carry a `RemoteTransactionId` field, matching real request shapes:
+Both expect the request body to carry a `RemoteTransactionId` field, matching real
+request shapes. Verification also requires an `Authorization: Bearer <token>` header (any
+non-empty token) and a `fineract-platform-tenantid: default` header (tolerating
+incidental leading whitespace in the value, e.g. `fineract-platform-tenantid:  default`);
+confirmation requires neither - the real caller doesn't send either on that call, so the
+stub doesn't require them.
 
 ```bash
 # Verification
@@ -37,12 +39,10 @@ curl -X POST http://paymenthub-wiremock/fineract-provider/api/v1/paymentHub/veri
     "RemoteTransactionId": "12ef28db9487pgBDO0xxxxx"
   }'
 
-# Confirmation
+# Confirmation (no Authorization or fineract-platform-tenantid header)
 curl -X POST http://paymenthub-wiremock/fineract-provider/api/v1/paymentHub/confirmation \
   -H "accept: application/json" \
-  -H "authorization: Bearer <token>" \
   -H "content-type: application/json" \
-  -H "fineract-platform-tenantid: default" \
   -d '{
     "RemoteTransactionId": "12ef28db9487pgBDO0xxxxx",
     "PhoneNumber": "254711297602",
