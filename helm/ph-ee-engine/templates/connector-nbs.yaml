@@ -54,7 +54,7 @@ spec:
           ports:
             - containerPort: {{ .Values.nbs_connector.containerPort }}
               protocol: TCP
-            - containerPort: 8080
+            - containerPort: 8085
               protocol: TCP
           command: ["java"]
           args:
@@ -119,7 +119,7 @@ spec:
     - name: tomcat
       port: 82
       protocol: TCP
-      targetPort: 8080
+      targetPort: 8085
   selector:
     app: ph-ee-connector-nbs
   sessionAffinity: None
