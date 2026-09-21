@@ -114,6 +114,27 @@ camunda-platform:
     resources:
       requests:
         cpu: 100m
+    # A broker replays its partitions after any restart (several minutes on
+    # prod with 12 partitions on 150Gi volumes). The startup probe owns that
+    # window: liveness and readiness only begin once /ready has answered, so a
+    # slow replay is never killed mid-way. 90 x 10 s = 15 minutes of grace.
+    # (2026-09-14: the 5 x 30 s liveness probe alone killed all three brokers
+    # repeatedly during a cold restart and turned it into a 20-minute outage.)
+    startupProbe:
+      enabled: true
+      probePath: /ready
+      scheme: HTTP
+      initialDelaySeconds: 30
+      timeoutSeconds: 3
+      periodSeconds: 10
+      successThreshold: 1
+      failureThreshold: 90
+    # Never let a drain, node upgrade or autoscaler take more than one broker
+    # at a time. The budget counts Ready pods, so the next broker can only go
+    # once the previous one has finished replaying.
+    podDisruptionBudget:
+      enabled: true
+      maxUnavailable: 1
     livenessProbe:
       enabled: true
       probePath: /health
@@ -198,6 +219,21 @@ camunda-platform:
         volumeMounts:
           - name: exporters
             mountPath: /exporters/
+  # camunda-platform 8.2.x reads the gateway values from the "zeebe-gateway"
+  # key (the "zeebeGateway" block below is not read by this chart version).
+  zeebe-gateway:
+    podDisruptionBudget:
+      enabled: true
+      maxUnavailable: 1
+    startupProbe:
+      enabled: true
+      probePath: /actuator/health/startup
+      scheme: HTTP
+      initialDelaySeconds: 10
+      timeoutSeconds: 3
+      periodSeconds: 10
+      successThreshold: 1
+      failureThreshold: 30
   zeebeGateway:
     replicas: 1
     image:
