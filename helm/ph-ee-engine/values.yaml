@@ -40,6 +40,21 @@ mtn_rwanda_connector:
     password: "changeme"
   channel:
     host: "http://ph-ee-connector-channel"
+  # Connection details for *which* Redis to use live in the shared top-level `redis:`
+  # block below; this block only holds settings specific to the mtn connector's own
+  # keyspace. Set the `type` fields to something other than "redis" to fall back to the
+  # connector's in-memory implementation (single pod only, lost on restart).
+  redis:
+    database: 0
+    store:
+      type: "redis"
+      key_prefix: "ph-ee-connector-mtn:"
+      workflow_ttl: "24h"
+    correlation_cache:
+      type: "redis"
+      key_prefix: "ph-ee-connector-mtn:momo:correlation:"
+      ttl: "180m"
+      maximum_size: 10000
   deployment:
     annotations: {}
     resources:
