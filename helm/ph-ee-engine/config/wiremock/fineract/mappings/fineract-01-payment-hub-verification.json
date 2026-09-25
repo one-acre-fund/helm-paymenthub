@@ -4,10 +4,6 @@
   "request": {
     "method": "POST",
     "urlPath": "/fineract-provider/api/v1/paymentHub/verification",
-    "headers": {
-      "Authorization": { "matches": "Bearer .+" },
-      "fineract-platform-tenantid": { "matches": " *default" }
-    },
     "bodyPatterns": [
       { "matchesJsonPath": "$.RemoteTransactionId" }
     ]

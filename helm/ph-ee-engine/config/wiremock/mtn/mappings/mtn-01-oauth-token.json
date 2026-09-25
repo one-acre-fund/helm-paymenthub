@@ -1,0 +1,22 @@
+{
+  "name": "mtn-collection-oauth-token",
+  "priority": 1,
+  "request": {
+    "method": "POST",
+    "urlPath": "/collection/token/",
+    "headers": {
+      "Authorization": { "matches": "Basic .+" },
+      "Ocp-Apim-Subscription-Key": { "matches": ".+" }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": {
+      "access_token": "{{randomValue length=32 type='ALPHANUMERIC'}}",
+      "token_type": "access_token",
+      "expires_in": 3600
+    },
+    "transformers": ["response-template"]
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "mtn-collection-request-to-pay-error-invalid-callback-url",
+  "priority": 1,
+  "request": {
+    "method": "POST",
+    "urlPath": "/collection/v1_0/requesttopay",
+    "headers": {
+      "Authorization": { "matches": "Bearer .+" }
+    },
+    "bodyPatterns": [
+      { "matchesJsonPath": "$[?(@.payer.partyId == '250780000001')]" }
+    ]
+  },
+  "response": {
+    "status": 400,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": {
+      "code": "INVALID_CALLBACK_URL_HOST",
+      "message": "Callback URL host is not registered for this API user."
+    }
+  }
+}
