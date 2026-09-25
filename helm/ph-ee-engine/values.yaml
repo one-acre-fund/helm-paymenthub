@@ -1102,15 +1102,17 @@ ph_ee_connector_slcb:
 # to, so their flows can be exercised end-to-end without hitting a real sandbox. One
 # deployment serves stub mappings for every connector that opts in: currently
 # ph-ee-connector-mpesa (Safaricom's Daraja API — OAuth token, STK push initiate, and the
-# transaction status query, with the initiate stub also firing a WireMock webhook a few
-# seconds later to simulate Safaricom's asynchronous payment callback); wire up other
-# connectors (e.g. mtn) the same way as they need it, rather than standing up a separate
-# WireMock per connector. Each connector's mappings live under their own
-# config/wiremock/<connector>/mappings/ directory (glob'd together into one ConfigMap
-# below), with filenames prefixed by connector (e.g. mpesa-01-oauth-token.json) so two
-# connectors' mapping files never collide on the same ConfigMap key. See
-# config/wiremock/mpesa/README.md for the mpesa mappings' own walkthrough, including a
-# script to fire a callback manually (e.g. to test a specific ResultCode).
+# transaction status query) and ph-ee-connector-mtn (MTN's MoMo Collection API — OAuth
+# token, request-to-pay, and the request-to-pay status query), in both cases with the
+# initiate stub also firing a WireMock webhook a few seconds later to simulate the
+# provider's asynchronous payment callback; wire up other connectors the same way as they
+# need it, rather than standing up a separate WireMock per connector. Each connector's
+# mappings live under their own config/wiremock/<connector>/mappings/ directory (glob'd
+# together into one ConfigMap below), with filenames prefixed by connector (e.g.
+# mpesa-01-oauth-token.json) so two connectors' mapping files never collide on the same
+# ConfigMap key. See config/wiremock/mpesa/README.md and config/wiremock/mtn/README.md for
+# each connector's own walkthrough, including a script to fire a callback manually (e.g.
+# to test a specific failure code).
 wiremock:
   enabled: false
   replicas: 1

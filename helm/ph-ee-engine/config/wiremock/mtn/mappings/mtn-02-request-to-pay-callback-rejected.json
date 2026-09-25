@@ -1,0 +1,52 @@
+{
+  "name": "mtn-collection-request-to-pay-callback-rejected",
+  "priority": 1,
+  "request": {
+    "method": "POST",
+    "urlPath": "/collection/v1_0/requesttopay",
+    "headers": {
+      "Authorization": {
+        "matches": "Bearer .+"
+      },
+      "X-Reference-Id": {
+        "matches": ".+"
+      }
+    },
+    "bodyPatterns": [
+      {
+        "matchesJsonPath": "$[?(@.payer.partyId == '250780000102')]"
+      }
+    ]
+  },
+  "response": {
+    "status": 202
+  },
+  "postServeActions": [
+    {
+      "name": "webhook",
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8080/__admin/mappings",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"name\": \"mtn-collection-request-to-pay-status-rejected-{{originalRequest.headers.X-Reference-Id}}\", \"priority\": 1, \"request\": {\"method\": \"GET\", \"urlPath\": \"/collection/v1_0/requesttopay/{{originalRequest.headers.X-Reference-Id}}\"}, \"response\": {\"status\": 200, \"headers\": {\"Content-Type\": \"application/json\"}, \"jsonBody\": {\"externalId\": \"{{jsonPath originalRequest.body '$.externalId'}}\", \"amount\": \"{{jsonPath originalRequest.body '$.amount'}}\", \"currency\": \"{{jsonPath originalRequest.body '$.currency'}}\", \"payer\": {\"partyIdType\": \"{{jsonPath originalRequest.body '$.payer.partyIdType'}}\", \"partyId\": \"{{jsonPath originalRequest.body '$.payer.partyId'}}\"}, \"payerMessage\": \"{{jsonPath originalRequest.body '$.payerMessage'}}\", \"payeeNote\": \"{{jsonPath originalRequest.body '$.payeeNote'}}\", \"status\": \"FAILED\", \"reason\": \"APPROVAL_REJECTED\"}}}"
+      }
+    },
+    {
+      "name": "webhook",
+      "parameters": {
+        "method": "POST",
+        "url": "{{{originalRequest.headers.X-Callback-Url}}}",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"externalId\": \"{{jsonPath originalRequest.body '$.externalId'}}\", \"amount\": \"{{jsonPath originalRequest.body '$.amount'}}\", \"currency\": \"{{jsonPath originalRequest.body '$.currency'}}\", \"payer\": {\"partyIdType\": \"{{jsonPath originalRequest.body '$.payer.partyIdType'}}\", \"partyId\": \"{{jsonPath originalRequest.body '$.payer.partyId'}}\"}, \"payerMessage\": \"{{jsonPath originalRequest.body '$.payerMessage'}}\", \"payeeNote\": \"{{jsonPath originalRequest.body '$.payeeNote'}}\", \"status\": \"FAILED\", \"reason\": \"APPROVAL_REJECTED\"}",
+        "delay": {
+          "type": "fixed",
+          "milliseconds": 3000
+        }
+      }
+    }
+  ]
+}
