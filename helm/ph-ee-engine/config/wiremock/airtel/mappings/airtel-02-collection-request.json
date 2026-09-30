@@ -1,0 +1,48 @@
+{
+  "name": "airtel-collection-request",
+  "priority": 2,
+  "request": {
+    "method": "POST",
+    "urlPathPattern": "/merchant/v1/payments/?",
+    "headers": {
+      "Authorization": { "matches": "(?i)bearer .+" },
+      "X-Country": { "matches": ".+" },
+      "X-Currency": { "matches": ".+" }
+    },
+    "bodyPatterns": [
+      { "matchesJsonPath": "$.transaction.id" }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": {
+      "data": {
+        "transaction": {
+          "id": "{{jsonPath request.body '$.transaction.id'}}",
+          "status": "TIP"
+        }
+      },
+      "status": {
+        "code": "200",
+        "message": "SUCCESS",
+        "result_code": "ESB000010",
+        "response_code": "DP00800001006",
+        "success": true
+      }
+    },
+    "transformers": ["response-template"]
+  },
+  "postServeActions": [
+    {
+      "name": "webhook",
+      "parameters": {
+        "method": "POST",
+        "url": "http://ph-ee-connector-airtel/collections/callback",
+        "headers": { "Content-Type": "application/json" },
+        "body": "{\"transaction\": {\"id\": \"{{jsonPath originalRequest.body '$.transaction.id'}}\", \"message\": \"Paid {{jsonPath originalRequest.body '$.transaction.currency'}} {{jsonPath originalRequest.body '$.transaction.amount'}} to One Acre Fund.\", \"status_code\": \"TS\", \"airtel_money_id\": \"MP{{jsonPath originalRequest.body '$.transaction.id'}}\"}, \"hash\": \"mock-hash-not-a-real-hmac\"}",
+        "delay": { "type": "fixed", "milliseconds": 3000 }
+      }
+    }
+  ]
+}

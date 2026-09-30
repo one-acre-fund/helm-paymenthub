@@ -1,0 +1,26 @@
+{
+  "name": "airtel-collection-request-error-bad-request",
+  "priority": 1,
+  "request": {
+    "method": "POST",
+    "urlPathPattern": "/merchant/v1/payments/?",
+    "headers": {
+      "Authorization": { "matches": "(?i)bearer .+" }
+    },
+    "bodyPatterns": [
+      { "matchesJsonPath": { "expression": "$.subscriber.msisdn", "equalTo": "730000002" } }
+    ]
+  },
+  "response": {
+    "status": 400,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": {
+      "status": {
+        "code": "400",
+        "message": "Bad Request",
+        "result_code": "ESB000004",
+        "success": false
+      }
+    }
+  }
+}
