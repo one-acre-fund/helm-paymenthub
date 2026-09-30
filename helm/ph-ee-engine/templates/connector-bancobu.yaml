@@ -71,6 +71,22 @@ spec:
               value: "{{ .Values.bancobu_connector.wait_bancobu_pay_request_period }}"
             - name: "CHANNEL_HOST"
               value: "{{ .Values.bancobu_connector.CHANNEL_HOST  }}"
+            # redis (shared distributed store: paybill workflow state)
+            - name: "REDIS_HOST"
+              value: "{{ .Values.redis.host }}"
+            - name: "REDIS_PORT"
+              value: "{{ .Values.redis.port }}"
+            - name: "REDIS_PASSWORD"
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Values.redis.existingSecret }}"
+                  key: "{{ .Values.redis.existingSecretPasswordKey }}"
+            - name: "BANCOBU_PAYBILL_STORE_TYPE"
+              value: "{{ .Values.bancobu_connector.redis.type }}"
+            - name: "REDIS_KEY_PREFIX"
+              value: "{{ .Values.bancobu_connector.redis.key_prefix }}"
+            - name: "REDIS_TTL_PAYBILL_WORKFLOW_SECONDS"
+              value: "{{ .Values.bancobu_connector.redis.ttl_paybill_workflow_seconds }}"
             - name: "ACCOUNTS_FINERACT_PAYBILL_SHORTCODE"
               value: "{{ .Values.bancobu_connector.paybill.fineract.business_short_code  }}"
             - name: "ACCOUNTS_FINERACT_CURRENCY"

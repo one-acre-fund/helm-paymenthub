@@ -664,10 +664,11 @@ mpesa:
       co.elastic.logs/multiline.match: after
 # Shared Redis instance used as a distributed store/cache by ph-ee connectors that need
 # state visible across replicas and pods and to survive pod restarts/rollouts, instead of
-# living in a single pod's memory. Currently used by ph-ee-connector-mpesa (see mpesa.redis
-# above for its connector-specific settings); wire up other connectors the same way
-# (host/port/secret below, connector-specific key prefix/TTLs in that connector's own
-# values block) as they adopt it, rather than standing up a separate Redis per connector.
+# living in a single pod's memory. Used by ph-ee-connector-mpesa, mtn, airtel, tnm, nbs,
+# and bancobu (see each connector's `.redis` block for keyspace/TTL settings). Wire up
+# further connectors the same way (host/port/secret below, connector-specific settings
+# in that connector's own values block) rather than standing up a separate Redis per
+# connector.
 redis:
   # Deploys the bundled paymenthubredis subchart (see the `paymenthubredis:` block below).
   # Set to false and point `host`/`port` elsewhere (e.g. a managed Redis instance) to use
@@ -680,11 +681,10 @@ redis:
   existingSecret: "paymenthub-redis"
   existingSecretPasswordKey: "redis-password"
 # Bitnami Redis subchart backing the shared `redis:` instance above. Single-instance
-# ("standalone") on purpose: today's only consumer (the mpesa connector) talks to one
-# host:port pair with no Sentinel-aware client, so a replica without Sentinel would add
-# operational cost without giving the app real failover. Durability instead comes from AOF
-# persistence on a PVC, so pod restarts/rescheduling don't lose access tokens or in-flight
-# paybill reconciliation state.
+# ("standalone") on purpose: current consumers talk to one host:port pair with no
+# Sentinel-aware client, so a replica without Sentinel would add operational cost without
+# giving the apps real failover. Durability instead comes from AOF persistence on a PVC,
+# so pod restarts/rescheduling don't lose access tokens or in-flight paybill state.
 paymenthubredis:
   fullnameOverride: "paymenthub-redis"
   architecture: standalone
@@ -700,9 +700,8 @@ paymenthubredis:
     # CHANGE THIS per environment (e.g. via --set or a CI-injected secret). Left as an
     # inline placeholder here to match how other credentials in this file are handled.
     password: "changeme-paymenthub-redis-password"
-  # Base image ships with RediSearch/ReJSON modules loaded by default; today's only
-  # consumer only needs plain string GET/SET/DEL with TTLs, so keep the config to just
-  # persistence.
+  # Base image ships with RediSearch/ReJSON modules loaded by default; current consumers
+  # only need plain string GET/SET/DEL with TTLs, so keep the config to just persistence.
   commonConfiguration: |-
     appendonly yes
     save ""
@@ -717,9 +716,9 @@ paymenthubredis:
       limits:
         memory: "512Mi"
         cpu: "500m"
-    # The mpesa connector's keys are all set with a TTL, so volatile-ttl is a safety net
-    # against unbounded growth, not something normal operation should ever hit. Revisit
-    # this if a future consumer writes keys without a TTL.
+    # Connector keys are all set with a TTL, so volatile-ttl is a safety net against
+    # unbounded growth, not something normal operation should ever hit. Revisit this if
+    # a future consumer writes keys without a TTL.
     extraFlags:
       - "--maxmemory 400mb"
       - "--maxmemory-policy volatile-ttl"
@@ -1358,6 +1357,15 @@ airtel_connector:
   timeout: 6000
   skip:
     enabled: false
+  # Connection details for *which* Redis to use live in the shared top-level `redis:`
+  # block below; this block only holds settings specific to the airtel connector's own
+  # keyspace. Set `type` to something other than "redis" to fall back to the
+  # connector's in-memory implementation (single pod only, lost on restart).
+  redis:
+    type: "redis"
+    key_prefix: "airtel-connector"
+    ttl_paybill_workflow_seconds: 172800
+    ttl_buy_goods_correlation_seconds: 10800
   deployment:
     annotations:
       co.elastic.logs/enabled: "true"
@@ -1431,6 +1439,14 @@ tnm_connector:
   wait_tnm_pay_request_period: 60
   skip:
     enabled: false
+  # Connection details for *which* Redis to use live in the shared top-level `redis:`
+  # block below; this block only holds settings specific to the tnm connector's own
+  # keyspace. Set `type` to something other than "redis" to fall back to the
+  # connector's in-memory implementation (single pod only, lost on restart).
+  redis:
+    type: "redis"
+    key_prefix: "tnm-connector"
+    ttl_paybill_workflow_seconds: 172800
   deployment:
     annotations:
       co.elastic.logs/enabled: "true"
@@ -1471,6 +1487,14 @@ nbs_connector:
   camel_server_port: 5000
   skip:
     enabled: false
+  # Connection details for *which* Redis to use live in the shared top-level `redis:`
+  # block below; this block only holds settings specific to the nbs connector's own
+  # keyspace. Set `type` to something other than "redis" to fall back to the
+  # connector's in-memory implementation (single pod only, lost on restart).
+  redis:
+    type: "redis"
+    key_prefix: "nbs-connector"
+    ttl_paybill_workflow_seconds: 172800
   deployment:
     annotations:
       co.elastic.logs/enabled: "true"
@@ -1510,6 +1534,14 @@ bancobu_connector:
   camel_server_port: 5000
   skip:
     enabled: false
+  # Connection details for *which* Redis to use live in the shared top-level `redis:`
+  # block below; this block only holds settings specific to the bancobu connector's own
+  # keyspace. Set `type` to something other than "redis" to fall back to the
+  # connector's in-memory implementation (single pod only, lost on restart).
+  redis:
+    type: "redis"
+    key_prefix: "bancobu-connector"
+    ttl_paybill_workflow_seconds: 172800
   deployment:
     annotations:
       co.elastic.logs/enabled: "true"
