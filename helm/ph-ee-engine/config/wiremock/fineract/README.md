@@ -16,6 +16,11 @@ enable it. This file covers only the fineract-specific stubs below.
 |---|---|---|
 | `fineract-01-payment-hub-verification.json` | `POST /fineract-provider/api/v1/paymentHub/verification` | Validates the payer/account before the payment is posted (Fineract's equivalent of Safaricom C2B's Validation step). Always succeeds: `{"message": "Validation successful", "transactionId": "<random>"}`, with a freshly generated `transactionId` per request (it is not an echo of the request's `RemoteTransactionId`). |
 | `fineract-02-payment-hub-confirmation.json` | `POST /fineract-provider/api/v1/paymentHub/confirmation` | Confirms a payment has been posted to the account. Always succeeds: `{"status": "CONFIRMED"}`. |
+<<<<<<< Updated upstream
+=======
+| `fineract-03-payment-validations-found.json` | `GET /fineract-provider/api/v1/payments/validations/{transactionId}` (any numeric ID or UUID, e.g. `51247578` or `5495feab-5711-46cd-b2ae-9de4d7b9228a`) | Looks up a payment validation by transaction ID. Returns a one-element array with a sample record (Beyonic, 300.00, account `14173835`) whose `transactionId` echoes the requested ID. |
+| `fineract-03-payment-validations-not-found.json` | `GET /fineract-provider/api/v1/payments/validations/0000…` | Any numeric or UUID transaction ID starting with `0000` (e.g. `00000001` or `0000feab-5711-46cd-b2ae-9de4d7b9228a`) returns `[]`, which is what Fineract returns when no transaction exists. Higher priority than the found stub. |
+>>>>>>> Stashed changes
 
 Both expect the request body to carry a `RemoteTransactionId` field, matching real
 request shapes. Verification also requires an `Authorization: Bearer <token>` header (any
@@ -52,6 +57,14 @@ curl -X POST http://paymenthub-wiremock/fineract-provider/api/v1/paymentHub/conf
     "Status": "successful",
     "ReceiptId": "F5MRPDTVMF76f"
   }'
+<<<<<<< Updated upstream
+=======
+
+# Payment validation lookup - any numeric/UUID ID returns a record; IDs starting with 0000 return []
+curl http://paymenthub-wiremock/fineract-provider/api/v1/payments/validations/51247578 \
+  -H "authorization: Bearer <token>" \
+  -H "fineract-platform-tenantid: default"
+>>>>>>> Stashed changes
 ```
 
 ## Only the success path is stubbed so far
