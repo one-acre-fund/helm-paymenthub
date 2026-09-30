@@ -1,0 +1,64 @@
+{
+  "name": "airtel-collection-request-no-callback",
+  "priority": 1,
+  "request": {
+    "method": "POST",
+    "urlPathPattern": "/merchant/v1/payments/?",
+    "headers": {
+      "Authorization": {
+        "matches": "(?i)bearer .+"
+      },
+      "X-Country": {
+        "matches": ".+"
+      },
+      "X-Currency": {
+        "matches": ".+"
+      }
+    },
+    "bodyPatterns": [
+      {
+        "matchesJsonPath": {
+          "expression": "$.subscriber.msisdn",
+          "equalTo": "730000201"
+        }
+      }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "data": {
+        "transaction": {
+          "id": "{{jsonPath request.body '$.transaction.id'}}",
+          "status": "TIP"
+        }
+      },
+      "status": {
+        "code": "200",
+        "message": "SUCCESS",
+        "result_code": "ESB000010",
+        "response_code": "DP00800001006",
+        "success": true
+      }
+    },
+    "transformers": [
+      "response-template"
+    ]
+  },
+  "postServeActions": [
+    {
+      "name": "webhook",
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8080/__admin/mappings",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"name\": \"airtel-collection-payment-status-in-progress-{{jsonPath originalRequest.body '$.transaction.id'}}\", \"priority\": 1, \"request\": {\"method\": \"GET\", \"urlPath\": \"/standard/v1/payments/{{jsonPath originalRequest.body '$.transaction.id'}}\"}, \"response\": {\"status\": 200, \"headers\": {\"Content-Type\": \"application/json\"}, \"jsonBody\": {\"data\": {\"transaction\": {\"id\": \"{{jsonPath originalRequest.body '$.transaction.id'}}\", \"message\": \"Transaction is in progress\", \"status\": \"TIP\"}}, \"status\": {\"code\": \"200\", \"message\": \"Transaction is in progress\", \"result_code\": \"ESB000010\", \"response_code\": \"DP00800001007\", \"success\": true}}}}"
+      }
+    }
+  ]
+}
