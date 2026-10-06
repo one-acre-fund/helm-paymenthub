@@ -137,6 +137,32 @@ spec:
               value: "{{ .Values.mtn_rwanda_connector.paybill.paymentCompletedUrl }}"
             - name: "CHANNEL_HOST"
               value: "{{ .Values.mtn_rwanda_connector.channel.host }}"
+            # redis (shared distributed store: workflow state, correlation IDs)
+            - name: "REDIS_HOST"
+              value: "{{ .Values.redis.host }}"
+            - name: "REDIS_PORT"
+              value: "{{ .Values.redis.port }}"
+            - name: "REDIS_PASSWORD"
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Values.redis.existingSecret }}"
+                  key: "{{ .Values.redis.existingSecretPasswordKey }}"
+            - name: "REDIS_DATABASE"
+              value: "{{ .Values.mtn_rwanda_connector.redis.database }}"
+            - name: "MTN_STORE_TYPE"
+              value: "{{ .Values.mtn_rwanda_connector.redis.store.type }}"
+            - name: "MTN_STORE_KEY_PREFIX"
+              value: "{{ .Values.mtn_rwanda_connector.redis.store.key_prefix }}"
+            - name: "MTN_STORE_WORKFLOW_TTL"
+              value: "{{ .Values.mtn_rwanda_connector.redis.store.workflow_ttl }}"
+            - name: "MTN_CORRELATION_CACHE_TYPE"
+              value: "{{ .Values.mtn_rwanda_connector.redis.correlation_cache.type }}"
+            - name: "MTN_CORRELATION_CACHE_KEY_PREFIX"
+              value: "{{ .Values.mtn_rwanda_connector.redis.correlation_cache.key_prefix }}"
+            - name: "MTN_CORRELATION_CACHE_TTL"
+              value: "{{ .Values.mtn_rwanda_connector.redis.correlation_cache.ttl }}"
+            - name: "MTN_CORRELATION_CACHE_MAXIMUM_SIZE"
+              value: "{{ .Values.mtn_rwanda_connector.redis.correlation_cache.maximum_size }}"
             - name: JVM_INITIAL_RAM_PERCENT
               value: "{{ .Values.mtn_rwanda_connector.JVM_INITIAL_RAM_PERCENT }}"
             - name: JVM_MAX_RAM_PERCENT

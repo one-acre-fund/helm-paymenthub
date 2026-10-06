@@ -1,0 +1,27 @@
+{
+  "name": "airtel-collection-request-error-invalid-amount",
+  "priority": 1,
+  "request": {
+    "method": "POST",
+    "urlPathPattern": "/merchant/v1/payments/?",
+    "headers": {
+      "Authorization": { "matches": "(?i)bearer .+" }
+    },
+    "bodyPatterns": [
+      { "matchesJsonPath": { "expression": "$.subscriber.msisdn", "equalTo": "730000001" } }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": {
+      "status": {
+        "code": "200",
+        "message": "Invalid Amount",
+        "result_code": "ESB000011",
+        "response_code": "DP00800001004",
+        "success": false
+      }
+    }
+  }
+}

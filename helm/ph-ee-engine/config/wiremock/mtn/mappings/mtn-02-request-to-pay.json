@@ -1,0 +1,35 @@
+{
+  "name": "mtn-collection-request-to-pay",
+  "priority": 2,
+  "request": {
+    "method": "POST",
+    "urlPath": "/collection/v1_0/requesttopay",
+    "headers": {
+      "Authorization": { "matches": "Bearer .+" },
+      "X-Reference-Id": { "matches": ".+" }
+    },
+    "bodyPatterns": [
+      { "matchesJsonPath": "$.payer.partyId" }
+    ]
+  },
+  "response": {
+    "status": 202
+  },
+  "postServeActions": [
+    {
+      "name": "webhook",
+      "parameters": {
+        "method": "POST",
+        "url": "{{{originalRequest.headers.X-Callback-Url}}}",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{ \"financialTransactionId\": \"{{substring (replace originalRequest.headers.X-Reference-Id '-' '') 0 12}}\", \"externalId\": \"{{jsonPath originalRequest.body '$.externalId'}}\", \"amount\": \"{{jsonPath originalRequest.body '$.amount'}}\", \"currency\": \"{{jsonPath originalRequest.body '$.currency'}}\", \"payer\": { \"partyIdType\": \"{{jsonPath originalRequest.body '$.payer.partyIdType'}}\", \"partyId\": \"{{jsonPath originalRequest.body '$.payer.partyId'}}\" }, \"payerMessage\": \"{{jsonPath originalRequest.body '$.payerMessage'}}\", \"payeeNote\": \"{{jsonPath originalRequest.body '$.payeeNote'}}\", \"status\": \"SUCCESSFUL\" }",
+        "delay": {
+          "type": "fixed",
+          "milliseconds": 3000
+        }
+      }
+    }
+  ]
+}

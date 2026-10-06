@@ -1,0 +1,22 @@
+{
+  "name": "airtel-collection-oauth-token",
+  "priority": 1,
+  "request": {
+    "method": "POST",
+    "urlPath": "/auth/oauth2/token",
+    "bodyPatterns": [
+      { "matchesJsonPath": "$.client_id" },
+      { "matchesJsonPath": "$.client_secret" }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": {
+      "access_token": "{{randomValue length=32 type='ALPHANUMERIC'}}",
+      "expires_in": 3600,
+      "token_type": "Bearer"
+    },
+    "transformers": ["response-template"]
+  }
+}

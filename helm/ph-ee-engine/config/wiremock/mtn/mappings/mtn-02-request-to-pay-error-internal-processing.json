@@ -1,0 +1,22 @@
+{
+  "name": "mtn-collection-request-to-pay-error-internal-processing",
+  "priority": 1,
+  "request": {
+    "method": "POST",
+    "urlPath": "/collection/v1_0/requesttopay",
+    "headers": {
+      "Authorization": { "matches": "Bearer .+" }
+    },
+    "bodyPatterns": [
+      { "matchesJsonPath": "$[?(@.payer.partyId == '250780000003')]" }
+    ]
+  },
+  "response": {
+    "status": 500,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": {
+      "code": "INTERNAL_PROCESSING_ERROR",
+      "message": "Internal error while processing the request."
+    }
+  }
+}

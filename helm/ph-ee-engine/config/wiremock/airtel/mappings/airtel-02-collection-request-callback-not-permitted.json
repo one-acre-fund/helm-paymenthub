@@ -1,0 +1,79 @@
+{
+  "name": "airtel-collection-request-callback-not-permitted",
+  "priority": 1,
+  "request": {
+    "method": "POST",
+    "urlPathPattern": "/merchant/v1/payments/?",
+    "headers": {
+      "Authorization": {
+        "matches": "(?i)bearer .+"
+      },
+      "X-Country": {
+        "matches": ".+"
+      },
+      "X-Currency": {
+        "matches": ".+"
+      }
+    },
+    "bodyPatterns": [
+      {
+        "matchesJsonPath": {
+          "expression": "$.subscriber.msisdn",
+          "equalTo": "730000104"
+        }
+      }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "data": {
+        "transaction": {
+          "id": "{{jsonPath request.body '$.transaction.id'}}",
+          "status": "TIP"
+        }
+      },
+      "status": {
+        "code": "200",
+        "message": "SUCCESS",
+        "result_code": "ESB000010",
+        "response_code": "DP00800001006",
+        "success": true
+      }
+    },
+    "transformers": [
+      "response-template"
+    ]
+  },
+  "postServeActions": [
+    {
+      "name": "webhook",
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8080/__admin/mappings",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"name\": \"airtel-collection-payment-status-not-permitted-{{jsonPath originalRequest.body '$.transaction.id'}}\", \"priority\": 1, \"request\": {\"method\": \"GET\", \"urlPath\": \"/standard/v1/payments/{{jsonPath originalRequest.body '$.transaction.id'}}\"}, \"response\": {\"status\": 200, \"headers\": {\"Content-Type\": \"application/json\"}, \"jsonBody\": {\"data\": {\"transaction\": {\"id\": \"{{jsonPath originalRequest.body '$.transaction.id'}}\", \"message\": \"Transaction not permitted to Payee\", \"status\": \"TF\"}}, \"status\": {\"code\": \"200\", \"message\": \"Transaction not permitted to Payee\", \"result_code\": \"ESB000011\", \"response_code\": \"DP00800001010\", \"success\": true}}}}"
+      }
+    },
+    {
+      "name": "webhook",
+      "parameters": {
+        "method": "POST",
+        "url": "http://ph-ee-connector-airtel/collections/callback",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"transaction\": {\"id\": \"{{jsonPath originalRequest.body '$.transaction.id'}}\", \"message\": \"Transaction not permitted to Payee\", \"status_code\": \"TF\"}, \"hash\": \"mock-hash-not-a-real-hmac\"}",
+        "delay": {
+          "type": "fixed",
+          "milliseconds": 3000
+        }
+      }
+    }
+  ]
+}

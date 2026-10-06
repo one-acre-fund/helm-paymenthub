@@ -74,6 +74,22 @@ spec:
               value: "{{ .Values.nbs_connector.wait_nbs_pay_request_period }}"
             - name: "CHANNEL_HOST"
               value: "{{ .Values.nbs_connector.CHANNEL_HOST  }}"
+            # redis (shared distributed store: paybill workflow state)
+            - name: "REDIS_HOST"
+              value: "{{ .Values.redis.host }}"
+            - name: "REDIS_PORT"
+              value: "{{ .Values.redis.port }}"
+            - name: "REDIS_PASSWORD"
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Values.redis.existingSecret }}"
+                  key: "{{ .Values.redis.existingSecretPasswordKey }}"
+            - name: "NBS_PAYBILL_STORE_TYPE"
+              value: "{{ .Values.nbs_connector.redis.type }}"
+            - name: "REDIS_KEY_PREFIX"
+              value: "{{ .Values.nbs_connector.redis.key_prefix }}"
+            - name: "REDIS_TTL_PAYBILL_WORKFLOW_SECONDS"
+              value: "{{ .Values.nbs_connector.redis.ttl_paybill_workflow_seconds }}"
             - name: "ACCOUNTS_FINERACT_PAYBILL_SHORTCODE"
               value: "{{ .Values.nbs_connector.paybill.fineract.business_short_code  }}"
             - name: "ACCOUNTS_FINERACT_CURRENCY"
