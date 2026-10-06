@@ -151,7 +151,7 @@ spec:
             - name: "REDIS_KEY_PREFIX"
               value: "{{ .Values.airtel_connector.redis.key_prefix }}"
             - name: "REDIS_TTL_PAYBILL_WORKFLOW_SECONDS"
-              value: "{{ .Values.airtel_connector.redis.ttl_paybill_workflow_seconds }}"
+              value: "{{ .Values.airtel_connector.redis.ttl_paybill_workflow_seconds | int64 }}"
             - name: "PAYBILL_ACCOUNT-HOLDING-INSTITUTION-ID"
               value: "{{ .Values.airtel_connector.paybill.account_holding_institution_id }}"
             - name: "PAYBILL_TIMER"

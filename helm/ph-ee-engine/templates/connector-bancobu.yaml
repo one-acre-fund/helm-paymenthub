@@ -86,7 +86,7 @@ spec:
             - name: "REDIS_KEY_PREFIX"
               value: "{{ .Values.bancobu_connector.redis.key_prefix }}"
             - name: "REDIS_TTL_PAYBILL_WORKFLOW_SECONDS"
-              value: "{{ .Values.bancobu_connector.redis.ttl_paybill_workflow_seconds }}"
+              value: "{{ .Values.bancobu_connector.redis.ttl_paybill_workflow_seconds | int64 }}"
             - name: "ACCOUNTS_FINERACT_PAYBILL_SHORTCODE"
               value: "{{ .Values.bancobu_connector.paybill.fineract.business_short_code  }}"
             - name: "ACCOUNTS_FINERACT_CURRENCY"
