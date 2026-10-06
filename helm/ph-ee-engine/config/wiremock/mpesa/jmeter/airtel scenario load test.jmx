@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.5">
   <hashTree>
     <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="paymenthub-collection mpesa/mtn/airtel scenario load test" enabled="true">
-      <stringProp name="TestPlan.comments">Drives the /channel/channel/collection flow across every phone-number scenario documented in config/wiremock/{mpesa,mtn,airtel}/README.md (success, synchronous provider errors, failing callbacks, and the never-delivered callback). One collection thread group per connector, each cycling its own *_scenarios.csv at a steady 50 requests/minute for 5 minutes (150 req/min of collections by default); plus an airtel paybill group sending validation + confirmation pairs that share one unique transactionId, at 50 transactions/minute. Set a group's *_THREADS property to 0 to skip it. Point HOST/PROTOCOL/PORT at whichever environment has paymenthub-wiremock enabled (default: the QA channel host).</stringProp>
+      <stringProp name="TestPlan.comments">Drives the /channel/channel/collection flow across every phone-number scenario documented in config/wiremock/{mpesa,mtn,airtel}/README.md (success, synchronous provider errors, failing callbacks, and the never-delivered callback). One collection thread group per connector, each cycling its own *_scenarios.csv at a steady 50 requests/minute for 5 minutes (150 req/min of collections by default); plus an airtel paybill group sending validation + confirmation pairs that share one unique transactionId, at 50 transactions/minute. Set a group&apos;s *_THREADS property to 0 to skip it. Point HOST/PROTOCOL/PORT at whichever environment has paymenthub-wiremock enabled (default: the QA channel host).</stringProp>
       <boolProp name="TestPlan.functional_mode">false</boolProp>
       <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
       <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
@@ -104,14 +104,15 @@
           </elementProp>
         </collectionProp>
       </elementProp>
+      <stringProp name="TestPlan.user_define_classpath"></stringProp>
     </TestPlan>
     <hashTree>
       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="mpesa collection - 50/min for 5min" enabled="true">
         <stringProp name="ThreadGroup.comments">5 threads is just enough concurrency for the Constant Throughput Timer below to hold ~50 req/min without any single thread queuing; the timer - not the thread/loop count - is what actually caps throughput.</stringProp>
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
-          <boolProp name="LoopController.continue_forever">true</boolProp>
-          <stringProp name="LoopController.loops">-1</stringProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <intProp name="LoopController.loops">-1</intProp>
         </elementProp>
         <stringProp name="ThreadGroup.num_threads">${__P(MPESA_THREADS,5)}</stringProp>
         <stringProp name="ThreadGroup.ramp_time">5</stringProp>
@@ -121,7 +122,6 @@
         <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
       </ThreadGroup>
       <hashTree>
-
         <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="mpesa scenarios" enabled="true">
           <stringProp name="filename">mpesa_scenarios.csv</stringProp>
           <stringProp name="fileEncoding">UTF-8</stringProp>
@@ -134,13 +134,11 @@
           <stringProp name="shareMode">shareMode.all</stringProp>
         </CSVDataSet>
         <hashTree/>
-
         <ConstantThroughputTimer guiclass="TestBeanGUI" testclass="ConstantThroughputTimer" testname="50 requests per minute" enabled="true">
           <stringProp name="throughput">${__P(MPESA_THROUGHPUT_PER_MIN,50)}</stringProp>
           <intProp name="calcMode">2</intProp>
         </ConstantThroughputTimer>
         <hashTree/>
-
         <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="collection headers" enabled="true">
           <collectionProp name="HeaderManager.headers">
             <elementProp name="" elementType="Header">
@@ -158,34 +156,33 @@
           </collectionProp>
         </HeaderManager>
         <hashTree/>
-
         <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="mpesa - POST /channel/channel/collection - ${scenario}" enabled="true">
           <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
             <collectionProp name="Arguments.arguments">
               <elementProp name="" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.value">{
-  "payer": [
-    {
-      "key": "MSISDN",
-      "value": "${msisdn}"
-    },
-    {
-      "key": "FINERACTACCOUNTID",
-      "value": "${FINERACT_ACCOUNT_ID}"
-    }
-  ],
-  "amount": {
-    "amount": "${MPESA_AMOUNT}",
-    "currency": "${MPESA_CURRENCY}"
-  },
-  "transactionType": {
-    "scenario": "MPESA",
-    "subScenario": "BUYGOODS",
-    "initiator": "PAYEE",
-    "initiatorType": "BUSINESS"
-  }
+                <stringProp name="Argument.value">{&#xd;
+  &quot;payer&quot;: [&#xd;
+    {&#xd;
+      &quot;key&quot;: &quot;MSISDN&quot;,&#xd;
+      &quot;value&quot;: &quot;${msisdn}&quot;&#xd;
+    },&#xd;
+    {&#xd;
+      &quot;key&quot;: &quot;FINERACTACCOUNTID&quot;,&#xd;
+      &quot;value&quot;: &quot;${FINERACT_ACCOUNT_ID}&quot;&#xd;
+    }&#xd;
+  ],&#xd;
+  &quot;amount&quot;: {&#xd;
+    &quot;amount&quot;: &quot;${MPESA_AMOUNT}&quot;,&#xd;
+    &quot;currency&quot;: &quot;${MPESA_CURRENCY}&quot;&#xd;
+  },&#xd;
+  &quot;transactionType&quot;: {&#xd;
+    &quot;scenario&quot;: &quot;MPESA&quot;,&#xd;
+    &quot;subScenario&quot;: &quot;BUYGOODS&quot;,&#xd;
+    &quot;initiator&quot;: &quot;PAYEE&quot;,&#xd;
+    &quot;initiatorType&quot;: &quot;BUSINESS&quot;&#xd;
+  }&#xd;
 }</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
               </elementProp>
@@ -206,14 +203,13 @@
           <stringProp name="HTTPSampler.response_timeout"></stringProp>
         </HTTPSamplerProxy>
         <hashTree/>
-
       </hashTree>
       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="mtn collection - 50/min for 5min" enabled="true">
         <stringProp name="ThreadGroup.comments">5 threads is just enough concurrency for the Constant Throughput Timer below to hold ~50 req/min without any single thread queuing; the timer - not the thread/loop count - is what actually caps throughput.</stringProp>
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
-          <boolProp name="LoopController.continue_forever">true</boolProp>
-          <stringProp name="LoopController.loops">-1</stringProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <intProp name="LoopController.loops">-1</intProp>
         </elementProp>
         <stringProp name="ThreadGroup.num_threads">${__P(MTN_THREADS,5)}</stringProp>
         <stringProp name="ThreadGroup.ramp_time">5</stringProp>
@@ -223,7 +219,6 @@
         <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
       </ThreadGroup>
       <hashTree>
-
         <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="mtn scenarios" enabled="true">
           <stringProp name="filename">mtn_scenarios.csv</stringProp>
           <stringProp name="fileEncoding">UTF-8</stringProp>
@@ -236,13 +231,11 @@
           <stringProp name="shareMode">shareMode.all</stringProp>
         </CSVDataSet>
         <hashTree/>
-
         <ConstantThroughputTimer guiclass="TestBeanGUI" testclass="ConstantThroughputTimer" testname="50 requests per minute" enabled="true">
           <stringProp name="throughput">${__P(MTN_THROUGHPUT_PER_MIN,50)}</stringProp>
           <intProp name="calcMode">2</intProp>
         </ConstantThroughputTimer>
         <hashTree/>
-
         <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="collection headers" enabled="true">
           <collectionProp name="HeaderManager.headers">
             <elementProp name="" elementType="Header">
@@ -260,34 +253,33 @@
           </collectionProp>
         </HeaderManager>
         <hashTree/>
-
         <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="mtn - POST /channel/channel/collection - ${scenario}" enabled="true">
           <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
             <collectionProp name="Arguments.arguments">
               <elementProp name="" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.value">{
-  "payer": [
-    {
-      "key": "MSISDN",
-      "value": "${msisdn}"
-    },
-    {
-      "key": "FINERACTACCOUNTID",
-      "value": "${FINERACT_ACCOUNT_ID}"
-    }
-  ],
-  "amount": {
-    "amount": "${MTN_AMOUNT}",
-    "currency": "${MTN_CURRENCY}"
-  },
-  "transactionType": {
-    "scenario": "MPESA",
-    "subScenario": "BUYGOODS",
-    "initiator": "PAYEE",
-    "initiatorType": "BUSINESS"
-  }
+                <stringProp name="Argument.value">{&#xd;
+  &quot;payer&quot;: [&#xd;
+    {&#xd;
+      &quot;key&quot;: &quot;MSISDN&quot;,&#xd;
+      &quot;value&quot;: &quot;${msisdn}&quot;&#xd;
+    },&#xd;
+    {&#xd;
+      &quot;key&quot;: &quot;FINERACTACCOUNTID&quot;,&#xd;
+      &quot;value&quot;: &quot;${FINERACT_ACCOUNT_ID}&quot;&#xd;
+    }&#xd;
+  ],&#xd;
+  &quot;amount&quot;: {&#xd;
+    &quot;amount&quot;: &quot;${MTN_AMOUNT}&quot;,&#xd;
+    &quot;currency&quot;: &quot;${MTN_CURRENCY}&quot;&#xd;
+  },&#xd;
+  &quot;transactionType&quot;: {&#xd;
+    &quot;scenario&quot;: &quot;MPESA&quot;,&#xd;
+    &quot;subScenario&quot;: &quot;BUYGOODS&quot;,&#xd;
+    &quot;initiator&quot;: &quot;PAYEE&quot;,&#xd;
+    &quot;initiatorType&quot;: &quot;BUSINESS&quot;&#xd;
+  }&#xd;
 }</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
               </elementProp>
@@ -308,14 +300,13 @@
           <stringProp name="HTTPSampler.response_timeout"></stringProp>
         </HTTPSamplerProxy>
         <hashTree/>
-
       </hashTree>
       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="airtel collection - 50/min for 5min" enabled="true">
         <stringProp name="ThreadGroup.comments">5 threads is just enough concurrency for the Constant Throughput Timer below to hold ~50 req/min without any single thread queuing; the timer - not the thread/loop count - is what actually caps throughput.</stringProp>
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
-          <boolProp name="LoopController.continue_forever">true</boolProp>
-          <stringProp name="LoopController.loops">-1</stringProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <intProp name="LoopController.loops">-1</intProp>
         </elementProp>
         <stringProp name="ThreadGroup.num_threads">${__P(AIRTEL_THREADS,5)}</stringProp>
         <stringProp name="ThreadGroup.ramp_time">5</stringProp>
@@ -325,7 +316,6 @@
         <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
       </ThreadGroup>
       <hashTree>
-
         <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="airtel scenarios" enabled="true">
           <stringProp name="filename">airtel_scenarios.csv</stringProp>
           <stringProp name="fileEncoding">UTF-8</stringProp>
@@ -338,13 +328,11 @@
           <stringProp name="shareMode">shareMode.all</stringProp>
         </CSVDataSet>
         <hashTree/>
-
         <ConstantThroughputTimer guiclass="TestBeanGUI" testclass="ConstantThroughputTimer" testname="50 requests per minute" enabled="true">
           <stringProp name="throughput">${__P(AIRTEL_THROUGHPUT_PER_MIN,50)}</stringProp>
           <intProp name="calcMode">2</intProp>
         </ConstantThroughputTimer>
         <hashTree/>
-
         <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="collection headers" enabled="true">
           <collectionProp name="HeaderManager.headers">
             <elementProp name="" elementType="Header">
@@ -362,34 +350,33 @@
           </collectionProp>
         </HeaderManager>
         <hashTree/>
-
         <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="airtel - POST /channel/channel/collection - ${scenario}" enabled="true">
           <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
             <collectionProp name="Arguments.arguments">
               <elementProp name="" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.value">{
-  "payer": [
-    {
-      "key": "MSISDN",
-      "value": "${msisdn}"
-    },
-    {
-      "key": "FINERACTACCOUNTID",
-      "value": "${FINERACT_ACCOUNT_ID}"
-    }
-  ],
-  "amount": {
-    "amount": "${AIRTEL_AMOUNT}",
-    "currency": "${AIRTEL_CURRENCY}"
-  },
-  "transactionType": {
-    "scenario": "MPESA",
-    "subScenario": "BUYGOODS",
-    "initiator": "PAYEE",
-    "initiatorType": "BUSINESS"
-  }
+                <stringProp name="Argument.value">{&#xd;
+  &quot;payer&quot;: [&#xd;
+    {&#xd;
+      &quot;key&quot;: &quot;MSISDN&quot;,&#xd;
+      &quot;value&quot;: &quot;${msisdn}&quot;&#xd;
+    },&#xd;
+    {&#xd;
+      &quot;key&quot;: &quot;FINERACTACCOUNTID&quot;,&#xd;
+      &quot;value&quot;: &quot;${FINERACT_ACCOUNT_ID}&quot;&#xd;
+    }&#xd;
+  ],&#xd;
+  &quot;amount&quot;: {&#xd;
+    &quot;amount&quot;: &quot;${AIRTEL_AMOUNT}&quot;,&#xd;
+    &quot;currency&quot;: &quot;${AIRTEL_CURRENCY}&quot;&#xd;
+  },&#xd;
+  &quot;transactionType&quot;: {&#xd;
+    &quot;scenario&quot;: &quot;MPESA&quot;,&#xd;
+    &quot;subScenario&quot;: &quot;BUYGOODS&quot;,&#xd;
+    &quot;initiator&quot;: &quot;PAYEE&quot;,&#xd;
+    &quot;initiatorType&quot;: &quot;BUSINESS&quot;&#xd;
+  }&#xd;
 }</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
               </elementProp>
@@ -410,15 +397,13 @@
           <stringProp name="HTTPSampler.response_timeout"></stringProp>
         </HTTPSamplerProxy>
         <hashTree/>
-
       </hashTree>
-
       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="airtel paybill - 50 txn/min for 5min" enabled="true">
         <stringProp name="ThreadGroup.comments">Each iteration is one paybill transaction: validation then confirmation, sharing one freshly generated transactionId. The throughput timer sits on the validation sampler only, so it caps transactions (not requests) - 50 txn/min = 100 req/min.</stringProp>
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
-          <boolProp name="LoopController.continue_forever">true</boolProp>
-          <stringProp name="LoopController.loops">-1</stringProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <intProp name="LoopController.loops">-1</intProp>
         </elementProp>
         <stringProp name="ThreadGroup.num_threads">${__P(AIRTEL_PAYBILL_THREADS,5)}</stringProp>
         <stringProp name="ThreadGroup.ramp_time">5</stringProp>
@@ -428,19 +413,18 @@
         <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
       </ThreadGroup>
       <hashTree>
-
         <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="airtel paybill - POST /airtel/paybill/validation" enabled="true">
           <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
             <collectionProp name="Arguments.arguments">
               <elementProp name="" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.value">{
-  "businessShortCode": "${AIRTEL_PAYBILL_SHORTCODE}",
-  "msisdn": "250986086783",
-  "currency": "${AIRTEL_PAYBILL_CURRENCY}",
-  "accountNumber": "${AIRTEL_PAYBILL_ACCOUNT_NUMBER}",
-  "transactionId": "${transactionId}"
+                <stringProp name="Argument.value">{&#xd;
+  &quot;businessShortCode&quot;: &quot;${AIRTEL_PAYBILL_SHORTCODE}&quot;,&#xd;
+  &quot;msisdn&quot;: &quot;250986086783&quot;,&#xd;
+  &quot;currency&quot;: &quot;${AIRTEL_PAYBILL_CURRENCY}&quot;,&#xd;
+  &quot;accountNumber&quot;: &quot;${AIRTEL_PAYBILL_ACCOUNT_NUMBER}&quot;,&#xd;
+  &quot;transactionId&quot;: &quot;${transactionId}&quot;&#xd;
 }</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
               </elementProp>
@@ -462,12 +446,12 @@
         </HTTPSamplerProxy>
         <hashTree>
           <UserParameters guiclass="UserParametersGui" testclass="UserParameters" testname="new transactionId" enabled="true">
-            <stringProp name="TestPlan.comments">One transactionId per paybill transaction, shared by its validation and confirmation (this runs only before validation; confirmation reuses the variable). 27 digits like Airtel's: epoch millis (13) + 100+thread number (3) + random (11).</stringProp>
+            <stringProp name="TestPlan.comments">One transactionId per paybill transaction, shared by its validation and confirmation (this runs only before validation; confirmation reuses the variable). 27 digits like Airtel&apos;s: epoch millis (13) + 100+thread number (3) + random (11).</stringProp>
             <collectionProp name="UserParameters.names">
               <stringProp name="transactionId">transactionId</stringProp>
             </collectionProp>
             <collectionProp name="UserParameters.thread_values">
-              <collectionProp name="thread_1">
+              <collectionProp name="981689699">
                 <stringProp name="value">${__time(,)}${__intSum(${__threadNum},100,)}${__Random(10000000000,99999999999,)}</stringProp>
               </collectionProp>
             </collectionProp>
@@ -481,44 +465,43 @@
           <hashTree/>
           <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="validation headers" enabled="true">
             <collectionProp name="HeaderManager.headers">
-            <elementProp name="" elementType="Header">
-              <stringProp name="Header.name">accept</stringProp>
-              <stringProp name="Header.value">application/json</stringProp>
-            </elementProp>
-            <elementProp name="" elementType="Header">
-              <stringProp name="Header.name">content-type</stringProp>
-              <stringProp name="Header.value">application/json</stringProp>
-            </elementProp>
-            <elementProp name="" elementType="Header">
-              <stringProp name="Header.name">businessshortcode</stringProp>
-              <stringProp name="Header.value">${AIRTEL_PAYBILL_HEADER_SHORTCODE}</stringProp>
-            </elementProp>
-            <elementProp name="" elementType="Header">
-              <stringProp name="Header.name">currency</stringProp>
-              <stringProp name="Header.value">${AIRTEL_PAYBILL_CURRENCY}</stringProp>
-            </elementProp>
-            <elementProp name="" elementType="Header">
-              <stringProp name="Header.name">msisdn</stringProp>
-              <stringProp name="Header.value">${AIRTEL_PAYBILL_MSISDN}</stringProp>
-            </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">accept</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">content-type</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">businessshortcode</stringProp>
+                <stringProp name="Header.value">${AIRTEL_PAYBILL_HEADER_SHORTCODE}</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">currency</stringProp>
+                <stringProp name="Header.value">${AIRTEL_PAYBILL_CURRENCY}</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">msisdn</stringProp>
+                <stringProp name="Header.value">${AIRTEL_PAYBILL_MSISDN}</stringProp>
+              </elementProp>
             </collectionProp>
           </HeaderManager>
           <hashTree/>
         </hashTree>
-
         <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="airtel paybill - POST /airtel/paybill/confirmation" enabled="true">
           <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
             <collectionProp name="Arguments.arguments">
               <elementProp name="" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.value">{
-  "msisdn": "${AIRTEL_PAYBILL_MSISDN}",
-  "amount": "${AIRTEL_PAYBILL_AMOUNT}",
-  "transactionId": "${transactionId}",
-  "accountNumber": "${AIRTEL_PAYBILL_ACCOUNT_NUMBER}",
-  "businessShortCode": "${AIRTEL_PAYBILL_SHORTCODE}",
-  "currency": "${AIRTEL_PAYBILL_CURRENCY}"
+                <stringProp name="Argument.value">{&#xd;
+  &quot;msisdn&quot;: &quot;${AIRTEL_PAYBILL_MSISDN}&quot;,&#xd;
+  &quot;amount&quot;: &quot;${AIRTEL_PAYBILL_AMOUNT}&quot;,&#xd;
+  &quot;transactionId&quot;: &quot;${transactionId}&quot;,&#xd;
+  &quot;accountNumber&quot;: &quot;${AIRTEL_PAYBILL_ACCOUNT_NUMBER}&quot;,&#xd;
+  &quot;businessShortCode&quot;: &quot;${AIRTEL_PAYBILL_SHORTCODE}&quot;,&#xd;
+  &quot;currency&quot;: &quot;${AIRTEL_PAYBILL_CURRENCY}&quot;&#xd;
 }</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
               </elementProp>
@@ -541,29 +524,27 @@
         <hashTree>
           <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="confirmation headers" enabled="true">
             <collectionProp name="HeaderManager.headers">
-            <elementProp name="" elementType="Header">
-              <stringProp name="Header.name">accept</stringProp>
-              <stringProp name="Header.value">application/json</stringProp>
-            </elementProp>
-            <elementProp name="" elementType="Header">
-              <stringProp name="Header.name">content-type</stringProp>
-              <stringProp name="Header.value">application/json</stringProp>
-            </elementProp>
-            <elementProp name="" elementType="Header">
-              <stringProp name="Header.name">businessshortcode</stringProp>
-              <stringProp name="Header.value">${AIRTEL_PAYBILL_HEADER_SHORTCODE}</stringProp>
-            </elementProp>
-            <elementProp name="" elementType="Header">
-              <stringProp name="Header.name">currency</stringProp>
-              <stringProp name="Header.value">RWF</stringProp>
-            </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">accept</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">content-type</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">businessshortcode</stringProp>
+                <stringProp name="Header.value">${AIRTEL_PAYBILL_HEADER_SHORTCODE}</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">currency</stringProp>
+                <stringProp name="Header.value">RWF</stringProp>
+              </elementProp>
             </collectionProp>
           </HeaderManager>
           <hashTree/>
         </hashTree>
-
       </hashTree>
-
       <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report" enabled="true">
         <boolProp name="ResultCollector.error_logging">false</boolProp>
         <objProp>
@@ -591,49 +572,13 @@
             <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
             <assertionsResultsToSave>0</assertionsResultsToSave>
             <bytes>true</bytes>
-            <threadCounts>true</threadCounts>
             <sentBytes>true</sentBytes>
+            <threadCounts>true</threadCounts>
           </value>
         </objProp>
         <stringProp name="filename">results.jtl</stringProp>
       </ResultCollector>
       <hashTree/>
-
-      <ResultCollector guiclass="AggregateReport" testclass="ResultCollector" testname="Aggregate Report" enabled="true">
-        <boolProp name="ResultCollector.error_logging">false</boolProp>
-        <objProp>
-          <name>saveConfig</name>
-          <value class="SampleSaveConfiguration">
-            <time>true</time>
-            <latency>true</latency>
-            <timestamp>true</timestamp>
-            <success>true</success>
-            <label>true</label>
-            <code>true</code>
-            <message>true</message>
-            <threadName>true</threadName>
-            <dataType>true</dataType>
-            <encoding>false</encoding>
-            <assertions>true</assertions>
-            <subresults>true</subresults>
-            <responseData>false</responseData>
-            <samplerData>false</samplerData>
-            <xml>false</xml>
-            <fieldNames>true</fieldNames>
-            <responseHeaders>false</responseHeaders>
-            <requestHeaders>false</requestHeaders>
-            <responseDataOnError>true</responseDataOnError>
-            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
-            <assertionsResultsToSave>0</assertionsResultsToSave>
-            <bytes>true</bytes>
-            <threadCounts>true</threadCounts>
-            <sentBytes>true</sentBytes>
-          </value>
-        </objProp>
-        <stringProp name="filename"></stringProp>
-      </ResultCollector>
-      <hashTree/>
-
     </hashTree>
   </hashTree>
 </jmeterTestPlan>

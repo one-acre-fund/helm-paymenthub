@@ -558,16 +558,20 @@ mpesa:
   zeebe_client_request_timeout: "30s"
   zeebe_client_evenly_allocated_max_jobs: 64
   # Redis is used as the connector's distributed store (access tokens, correlation IDs,
-  # paybill reconciliation/workflow state) so this data is shared and survives across
-  # pod restarts/rollouts instead of living in a single pod's memory. Connection details
-  # for *which* Redis to use live in the shared top-level `redis:` block below, since the
-  # same instance is meant to be reused by other connectors as they adopt it too — this
-  # block only holds settings specific to the mpesa connector's own keyspace.
+  # paybill reconciliation/workflow state, error-code cache) so this data is shared and
+  # survives across pod restarts/rollouts instead of living in a single pod's memory.
+  # Connection details for *which* Redis to use live in the shared top-level `redis:`
+  # block below; this block only holds settings specific to the mpesa connector's own
+  # keyspace. Set `type` to "memory" to fall back to in-memory for paybill/access-token/
+  # correlation (single pod only, lost on restart). Error-code cache always uses Redis.
   redis:
+    type: "redis"
     key_prefix: "mpesa-connector"
     ttl_correlation_seconds: 259200
     ttl_paybill_reconciled_seconds: 900
     ttl_paybill_workflow_seconds: 172800
+    ttl_error_code_fresh_seconds: 3600
+    ttl_error_code_retention_seconds: 2592000
   skip:
     enabled: false
   accounts:
@@ -1359,13 +1363,12 @@ airtel_connector:
     enabled: false
   # Connection details for *which* Redis to use live in the shared top-level `redis:`
   # block below; this block only holds settings specific to the airtel connector's own
-  # keyspace. Set `type` to something other than "redis" to fall back to the
-  # connector's in-memory implementation (single pod only, lost on restart).
+  # keyspace. Set `type` to "memory" to fall back to the connector's in-memory paybill
+  # workflow store (single pod only, lost on restart). Access tokens always use Redis.
   redis:
     type: "redis"
     key_prefix: "airtel-connector"
     ttl_paybill_workflow_seconds: 172800
-    ttl_buy_goods_correlation_seconds: 10800
   deployment:
     annotations:
       co.elastic.logs/enabled: "true"

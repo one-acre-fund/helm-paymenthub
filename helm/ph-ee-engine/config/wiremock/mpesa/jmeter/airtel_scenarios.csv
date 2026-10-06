@@ -1,0 +1,10 @@
+scenario,msisdn
+success,+250730000000
+sync_error_invalid_amount,+250730000001
+sync_error_bad_request,+250730000002
+sync_error_internal_server_error,+250730000003
+callback_not_enough_balance,+250730000101
+callback_incorrect_pin,+250730000102
+callback_timed_out,+250730000103
+callback_not_permitted,+250730000104
+no_callback_pending,+250730000201

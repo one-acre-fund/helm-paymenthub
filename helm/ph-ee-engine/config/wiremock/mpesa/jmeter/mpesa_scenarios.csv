@@ -8,3 +8,5 @@ callback_cancelled_by_user,+254700000102
 callback_timeout,+254700000103
 callback_wrong_pin,+254700000104
 no_callback_pending,+254700000201
+callback_empty_body,+254700000301
+callback_no_result_code,+254700000302
