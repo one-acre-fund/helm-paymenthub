@@ -1,0 +1,33 @@
+{
+  "name": "mpesa-buygoods-transaction-status-query-no-result-code",
+  "priority": 1,
+  "request": {
+    "method": "POST",
+    "urlPath": "/mpesa/stkpushquery/v2/query",
+    "bodyPatterns": [
+      {
+        "matchesJsonPath": {
+          "expression": "$.CheckoutRequestID",
+          "contains": "_NORESULTCODE"
+        }
+      }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "ResponseCode": "0",
+      "ResponseDescription": "The service request has been accepted successfully",
+      "MerchantRequestID": "29115-34620561-1",
+      "CheckoutRequestID": "{{jsonPath request.body '$.CheckoutRequestID'}}",
+      "ResultDesc": "The service request is processed successfully.",
+      "MpesaReceiptNumber": "{{randomValue length=10 type='ALPHANUMERIC' uppercase=true}}"
+    },
+    "transformers": [
+      "response-template"
+    ]
+  }
+}

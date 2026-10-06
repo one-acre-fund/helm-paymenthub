@@ -1,0 +1,584 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.5">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="paymenthub-collection mpesa/mtn/airtel scenario load test" enabled="true">
+      <stringProp name="TestPlan.comments">Drives the /channel/channel/collection flow across every phone-number scenario documented in config/wiremock/{mpesa,mtn,airtel}/README.md (success, synchronous provider errors, failing callbacks, and the never-delivered callback). One collection thread group per connector, each cycling its own *_scenarios.csv at a steady 50 requests/minute for 5 minutes (150 req/min of collections by default); plus an airtel paybill group sending validation + confirmation pairs that share one unique transactionId, at 50 transactions/minute. Set a group&apos;s *_THREADS property to 0 to skip it. Point HOST/PROTOCOL/PORT at whichever environment has paymenthub-wiremock enabled (default: the QA channel host).</stringProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="PROTOCOL" elementType="Argument">
+            <stringProp name="Argument.name">PROTOCOL</stringProp>
+            <stringProp name="Argument.value">${__P(PROTOCOL,https)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="HOST" elementType="Argument">
+            <stringProp name="Argument.name">HOST</stringProp>
+            <stringProp name="Argument.value">${__P(HOST,paymenthub.qa.oneacrefund.org)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="PORT" elementType="Argument">
+            <stringProp name="Argument.name">PORT</stringProp>
+            <stringProp name="Argument.value">${__P(PORT,443)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="FINERACT_ACCOUNT_ID" elementType="Argument">
+            <stringProp name="Argument.name">FINERACT_ACCOUNT_ID</stringProp>
+            <stringProp name="Argument.value">${__P(FINERACT_ACCOUNT_ID,43810827)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="MPESA_TENANT" elementType="Argument">
+            <stringProp name="Argument.name">MPESA_TENANT</stringProp>
+            <stringProp name="Argument.value">${__P(MPESA_TENANT,kenya)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="MPESA_AMOUNT" elementType="Argument">
+            <stringProp name="Argument.name">MPESA_AMOUNT</stringProp>
+            <stringProp name="Argument.value">${__P(MPESA_AMOUNT,20)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="MPESA_CURRENCY" elementType="Argument">
+            <stringProp name="Argument.name">MPESA_CURRENCY</stringProp>
+            <stringProp name="Argument.value">${__P(MPESA_CURRENCY,KES)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="MTN_TENANT" elementType="Argument">
+            <stringProp name="Argument.name">MTN_TENANT</stringProp>
+            <stringProp name="Argument.value">${__P(MTN_TENANT,rwanda)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="MTN_AMOUNT" elementType="Argument">
+            <stringProp name="Argument.name">MTN_AMOUNT</stringProp>
+            <stringProp name="Argument.value">${__P(MTN_AMOUNT,15)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="MTN_CURRENCY" elementType="Argument">
+            <stringProp name="Argument.name">MTN_CURRENCY</stringProp>
+            <stringProp name="Argument.value">${__P(MTN_CURRENCY,RWF)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="AIRTEL_TENANT" elementType="Argument">
+            <stringProp name="Argument.name">AIRTEL_TENANT</stringProp>
+            <stringProp name="Argument.value">${__P(AIRTEL_TENANT,rwanda)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="AIRTEL_AMOUNT" elementType="Argument">
+            <stringProp name="Argument.name">AIRTEL_AMOUNT</stringProp>
+            <stringProp name="Argument.value">${__P(AIRTEL_AMOUNT,15)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="AIRTEL_CURRENCY" elementType="Argument">
+            <stringProp name="Argument.name">AIRTEL_CURRENCY</stringProp>
+            <stringProp name="Argument.value">${__P(AIRTEL_CURRENCY,RWF)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="AIRTEL_PAYBILL_HEADER_SHORTCODE" elementType="Argument">
+            <stringProp name="Argument.name">AIRTEL_PAYBILL_HEADER_SHORTCODE</stringProp>
+            <stringProp name="Argument.value">${__P(AIRTEL_PAYBILL_HEADER_SHORTCODE,24322607)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="AIRTEL_PAYBILL_SHORTCODE" elementType="Argument">
+            <stringProp name="Argument.name">AIRTEL_PAYBILL_SHORTCODE</stringProp>
+            <stringProp name="Argument.value">${__P(AIRTEL_PAYBILL_SHORTCODE,789012)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="AIRTEL_PAYBILL_ACCOUNT_NUMBER" elementType="Argument">
+            <stringProp name="Argument.name">AIRTEL_PAYBILL_ACCOUNT_NUMBER</stringProp>
+            <stringProp name="Argument.value">${__P(AIRTEL_PAYBILL_ACCOUNT_NUMBER,24039542)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="AIRTEL_PAYBILL_MSISDN" elementType="Argument">
+            <stringProp name="Argument.name">AIRTEL_PAYBILL_MSISDN</stringProp>
+            <stringProp name="Argument.value">${__P(AIRTEL_PAYBILL_MSISDN,07912345672)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="AIRTEL_PAYBILL_AMOUNT" elementType="Argument">
+            <stringProp name="Argument.name">AIRTEL_PAYBILL_AMOUNT</stringProp>
+            <stringProp name="Argument.value">${__P(AIRTEL_PAYBILL_AMOUNT,200)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="AIRTEL_PAYBILL_CURRENCY" elementType="Argument">
+            <stringProp name="Argument.name">AIRTEL_PAYBILL_CURRENCY</stringProp>
+            <stringProp name="Argument.value">${__P(AIRTEL_PAYBILL_CURRENCY,MWK)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+        </collectionProp>
+      </elementProp>
+      <stringProp name="TestPlan.user_define_classpath"></stringProp>
+    </TestPlan>
+    <hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="mpesa collection - 50/min for 5min" enabled="true">
+        <stringProp name="ThreadGroup.comments">5 threads is just enough concurrency for the Constant Throughput Timer below to hold ~50 req/min without any single thread queuing; the timer - not the thread/loop count - is what actually caps throughput.</stringProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <intProp name="LoopController.loops">-1</intProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">${__P(MPESA_THREADS,5)}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">5</stringProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.duration">${__P(DURATION_SECONDS,300)}</stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+      </ThreadGroup>
+      <hashTree>
+        <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="mpesa scenarios" enabled="true">
+          <stringProp name="filename">mpesa_scenarios.csv</stringProp>
+          <stringProp name="fileEncoding">UTF-8</stringProp>
+          <stringProp name="variableNames">scenario,msisdn</stringProp>
+          <boolProp name="ignoreFirstLine">true</boolProp>
+          <stringProp name="delimiter">,</stringProp>
+          <boolProp name="quotedData">false</boolProp>
+          <boolProp name="recycle">true</boolProp>
+          <boolProp name="stopThread">false</boolProp>
+          <stringProp name="shareMode">shareMode.all</stringProp>
+        </CSVDataSet>
+        <hashTree/>
+        <ConstantThroughputTimer guiclass="TestBeanGUI" testclass="ConstantThroughputTimer" testname="50 requests per minute" enabled="true">
+          <stringProp name="throughput">${__P(MPESA_THROUGHPUT_PER_MIN,50)}</stringProp>
+          <intProp name="calcMode">2</intProp>
+        </ConstantThroughputTimer>
+        <hashTree/>
+        <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="collection headers" enabled="true">
+          <collectionProp name="HeaderManager.headers">
+            <elementProp name="" elementType="Header">
+              <stringProp name="Header.name">content-type</stringProp>
+              <stringProp name="Header.value">application/json</stringProp>
+            </elementProp>
+            <elementProp name="" elementType="Header">
+              <stringProp name="Header.name">platform-tenantid</stringProp>
+              <stringProp name="Header.value">${MPESA_TENANT}</stringProp>
+            </elementProp>
+            <elementProp name="" elementType="Header">
+              <stringProp name="Header.name">x-correlationid</stringProp>
+              <stringProp name="Header.value">${__UUID()}</stringProp>
+            </elementProp>
+          </collectionProp>
+        </HeaderManager>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="mpesa - POST /channel/channel/collection - ${scenario}" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+  &quot;payer&quot;: [&#xd;
+    {&#xd;
+      &quot;key&quot;: &quot;MSISDN&quot;,&#xd;
+      &quot;value&quot;: &quot;${msisdn}&quot;&#xd;
+    },&#xd;
+    {&#xd;
+      &quot;key&quot;: &quot;FINERACTACCOUNTID&quot;,&#xd;
+      &quot;value&quot;: &quot;${FINERACT_ACCOUNT_ID}&quot;&#xd;
+    }&#xd;
+  ],&#xd;
+  &quot;amount&quot;: {&#xd;
+    &quot;amount&quot;: &quot;${MPESA_AMOUNT}&quot;,&#xd;
+    &quot;currency&quot;: &quot;${MPESA_CURRENCY}&quot;&#xd;
+  },&#xd;
+  &quot;transactionType&quot;: {&#xd;
+    &quot;scenario&quot;: &quot;MPESA&quot;,&#xd;
+    &quot;subScenario&quot;: &quot;BUYGOODS&quot;,&#xd;
+    &quot;initiator&quot;: &quot;PAYEE&quot;,&#xd;
+    &quot;initiatorType&quot;: &quot;BUSINESS&quot;&#xd;
+  }&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${HOST}</stringProp>
+          <stringProp name="HTTPSampler.port">${PORT}</stringProp>
+          <stringProp name="HTTPSampler.protocol">${PROTOCOL}</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
+          <stringProp name="HTTPSampler.path">/channel/channel/collection</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="mtn collection - 50/min for 5min" enabled="true">
+        <stringProp name="ThreadGroup.comments">5 threads is just enough concurrency for the Constant Throughput Timer below to hold ~50 req/min without any single thread queuing; the timer - not the thread/loop count - is what actually caps throughput.</stringProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <intProp name="LoopController.loops">-1</intProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">${__P(MTN_THREADS,5)}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">5</stringProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.duration">${__P(DURATION_SECONDS,300)}</stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+      </ThreadGroup>
+      <hashTree>
+        <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="mtn scenarios" enabled="true">
+          <stringProp name="filename">mtn_scenarios.csv</stringProp>
+          <stringProp name="fileEncoding">UTF-8</stringProp>
+          <stringProp name="variableNames">scenario,msisdn</stringProp>
+          <boolProp name="ignoreFirstLine">true</boolProp>
+          <stringProp name="delimiter">,</stringProp>
+          <boolProp name="quotedData">false</boolProp>
+          <boolProp name="recycle">true</boolProp>
+          <boolProp name="stopThread">false</boolProp>
+          <stringProp name="shareMode">shareMode.all</stringProp>
+        </CSVDataSet>
+        <hashTree/>
+        <ConstantThroughputTimer guiclass="TestBeanGUI" testclass="ConstantThroughputTimer" testname="50 requests per minute" enabled="true">
+          <stringProp name="throughput">${__P(MTN_THROUGHPUT_PER_MIN,50)}</stringProp>
+          <intProp name="calcMode">2</intProp>
+        </ConstantThroughputTimer>
+        <hashTree/>
+        <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="collection headers" enabled="true">
+          <collectionProp name="HeaderManager.headers">
+            <elementProp name="" elementType="Header">
+              <stringProp name="Header.name">content-type</stringProp>
+              <stringProp name="Header.value">application/json</stringProp>
+            </elementProp>
+            <elementProp name="" elementType="Header">
+              <stringProp name="Header.name">platform-tenantid</stringProp>
+              <stringProp name="Header.value">${MTN_TENANT}</stringProp>
+            </elementProp>
+            <elementProp name="" elementType="Header">
+              <stringProp name="Header.name">x-correlationid</stringProp>
+              <stringProp name="Header.value">${__UUID()}</stringProp>
+            </elementProp>
+          </collectionProp>
+        </HeaderManager>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="mtn - POST /channel/channel/collection - ${scenario}" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+  &quot;payer&quot;: [&#xd;
+    {&#xd;
+      &quot;key&quot;: &quot;MSISDN&quot;,&#xd;
+      &quot;value&quot;: &quot;${msisdn}&quot;&#xd;
+    },&#xd;
+    {&#xd;
+      &quot;key&quot;: &quot;FINERACTACCOUNTID&quot;,&#xd;
+      &quot;value&quot;: &quot;${FINERACT_ACCOUNT_ID}&quot;&#xd;
+    }&#xd;
+  ],&#xd;
+  &quot;amount&quot;: {&#xd;
+    &quot;amount&quot;: &quot;${MTN_AMOUNT}&quot;,&#xd;
+    &quot;currency&quot;: &quot;${MTN_CURRENCY}&quot;&#xd;
+  },&#xd;
+  &quot;transactionType&quot;: {&#xd;
+    &quot;scenario&quot;: &quot;MPESA&quot;,&#xd;
+    &quot;subScenario&quot;: &quot;BUYGOODS&quot;,&#xd;
+    &quot;initiator&quot;: &quot;PAYEE&quot;,&#xd;
+    &quot;initiatorType&quot;: &quot;BUSINESS&quot;&#xd;
+  }&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${HOST}</stringProp>
+          <stringProp name="HTTPSampler.port">${PORT}</stringProp>
+          <stringProp name="HTTPSampler.protocol">${PROTOCOL}</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
+          <stringProp name="HTTPSampler.path">/channel/channel/collection</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="airtel collection - 50/min for 5min" enabled="true">
+        <stringProp name="ThreadGroup.comments">5 threads is just enough concurrency for the Constant Throughput Timer below to hold ~50 req/min without any single thread queuing; the timer - not the thread/loop count - is what actually caps throughput.</stringProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <intProp name="LoopController.loops">-1</intProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">${__P(AIRTEL_THREADS,5)}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">5</stringProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.duration">${__P(DURATION_SECONDS,300)}</stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+      </ThreadGroup>
+      <hashTree>
+        <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="airtel scenarios" enabled="true">
+          <stringProp name="filename">airtel_scenarios.csv</stringProp>
+          <stringProp name="fileEncoding">UTF-8</stringProp>
+          <stringProp name="variableNames">scenario,msisdn</stringProp>
+          <boolProp name="ignoreFirstLine">true</boolProp>
+          <stringProp name="delimiter">,</stringProp>
+          <boolProp name="quotedData">false</boolProp>
+          <boolProp name="recycle">true</boolProp>
+          <boolProp name="stopThread">false</boolProp>
+          <stringProp name="shareMode">shareMode.all</stringProp>
+        </CSVDataSet>
+        <hashTree/>
+        <ConstantThroughputTimer guiclass="TestBeanGUI" testclass="ConstantThroughputTimer" testname="50 requests per minute" enabled="true">
+          <stringProp name="throughput">${__P(AIRTEL_THROUGHPUT_PER_MIN,50)}</stringProp>
+          <intProp name="calcMode">2</intProp>
+        </ConstantThroughputTimer>
+        <hashTree/>
+        <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="collection headers" enabled="true">
+          <collectionProp name="HeaderManager.headers">
+            <elementProp name="" elementType="Header">
+              <stringProp name="Header.name">content-type</stringProp>
+              <stringProp name="Header.value">application/json</stringProp>
+            </elementProp>
+            <elementProp name="" elementType="Header">
+              <stringProp name="Header.name">platform-tenantid</stringProp>
+              <stringProp name="Header.value">${AIRTEL_TENANT}</stringProp>
+            </elementProp>
+            <elementProp name="" elementType="Header">
+              <stringProp name="Header.name">x-correlationid</stringProp>
+              <stringProp name="Header.value">${__UUID()}</stringProp>
+            </elementProp>
+          </collectionProp>
+        </HeaderManager>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="airtel - POST /channel/channel/collection - ${scenario}" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+  &quot;payer&quot;: [&#xd;
+    {&#xd;
+      &quot;key&quot;: &quot;MSISDN&quot;,&#xd;
+      &quot;value&quot;: &quot;${msisdn}&quot;&#xd;
+    },&#xd;
+    {&#xd;
+      &quot;key&quot;: &quot;FINERACTACCOUNTID&quot;,&#xd;
+      &quot;value&quot;: &quot;${FINERACT_ACCOUNT_ID}&quot;&#xd;
+    }&#xd;
+  ],&#xd;
+  &quot;amount&quot;: {&#xd;
+    &quot;amount&quot;: &quot;${AIRTEL_AMOUNT}&quot;,&#xd;
+    &quot;currency&quot;: &quot;${AIRTEL_CURRENCY}&quot;&#xd;
+  },&#xd;
+  &quot;transactionType&quot;: {&#xd;
+    &quot;scenario&quot;: &quot;MPESA&quot;,&#xd;
+    &quot;subScenario&quot;: &quot;BUYGOODS&quot;,&#xd;
+    &quot;initiator&quot;: &quot;PAYEE&quot;,&#xd;
+    &quot;initiatorType&quot;: &quot;BUSINESS&quot;&#xd;
+  }&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${HOST}</stringProp>
+          <stringProp name="HTTPSampler.port">${PORT}</stringProp>
+          <stringProp name="HTTPSampler.protocol">${PROTOCOL}</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
+          <stringProp name="HTTPSampler.path">/channel/channel/collection</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="airtel paybill - 50 txn/min for 5min" enabled="true">
+        <stringProp name="ThreadGroup.comments">Each iteration is one paybill transaction: validation then confirmation, sharing one freshly generated transactionId. The throughput timer sits on the validation sampler only, so it caps transactions (not requests) - 50 txn/min = 100 req/min.</stringProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <intProp name="LoopController.loops">-1</intProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">${__P(AIRTEL_PAYBILL_THREADS,5)}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">5</stringProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.duration">${__P(DURATION_SECONDS,300)}</stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+      </ThreadGroup>
+      <hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="airtel paybill - POST /airtel/paybill/validation" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+  &quot;businessShortCode&quot;: &quot;${AIRTEL_PAYBILL_SHORTCODE}&quot;,&#xd;
+  &quot;msisdn&quot;: &quot;250986086783&quot;,&#xd;
+  &quot;currency&quot;: &quot;${AIRTEL_PAYBILL_CURRENCY}&quot;,&#xd;
+  &quot;accountNumber&quot;: &quot;${AIRTEL_PAYBILL_ACCOUNT_NUMBER}&quot;,&#xd;
+  &quot;transactionId&quot;: &quot;${transactionId}&quot;&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${HOST}</stringProp>
+          <stringProp name="HTTPSampler.port">${PORT}</stringProp>
+          <stringProp name="HTTPSampler.protocol">${PROTOCOL}</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
+          <stringProp name="HTTPSampler.path">/airtel/paybill/validation</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <UserParameters guiclass="UserParametersGui" testclass="UserParameters" testname="new transactionId" enabled="true">
+            <stringProp name="TestPlan.comments">One transactionId per paybill transaction, shared by its validation and confirmation (this runs only before validation; confirmation reuses the variable). 27 digits like Airtel&apos;s: epoch millis (13) + 100+thread number (3) + random (11).</stringProp>
+            <collectionProp name="UserParameters.names">
+              <stringProp name="transactionId">transactionId</stringProp>
+            </collectionProp>
+            <collectionProp name="UserParameters.thread_values">
+              <collectionProp name="981689699">
+                <stringProp name="value">${__time(,)}${__intSum(${__threadNum},100,)}${__Random(10000000000,99999999999,)}</stringProp>
+              </collectionProp>
+            </collectionProp>
+            <boolProp name="UserParameters.per_iteration">false</boolProp>
+          </UserParameters>
+          <hashTree/>
+          <ConstantThroughputTimer guiclass="TestBeanGUI" testclass="ConstantThroughputTimer" testname="50 transactions per minute" enabled="true">
+            <stringProp name="throughput">${__P(AIRTEL_PAYBILL_THROUGHPUT_PER_MIN,50)}</stringProp>
+            <intProp name="calcMode">2</intProp>
+          </ConstantThroughputTimer>
+          <hashTree/>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="validation headers" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">accept</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">content-type</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">businessshortcode</stringProp>
+                <stringProp name="Header.value">${AIRTEL_PAYBILL_HEADER_SHORTCODE}</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">currency</stringProp>
+                <stringProp name="Header.value">${AIRTEL_PAYBILL_CURRENCY}</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">msisdn</stringProp>
+                <stringProp name="Header.value">${AIRTEL_PAYBILL_MSISDN}</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="airtel paybill - POST /airtel/paybill/confirmation" enabled="true">
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+  &quot;msisdn&quot;: &quot;${AIRTEL_PAYBILL_MSISDN}&quot;,&#xd;
+  &quot;amount&quot;: &quot;${AIRTEL_PAYBILL_AMOUNT}&quot;,&#xd;
+  &quot;transactionId&quot;: &quot;${transactionId}&quot;,&#xd;
+  &quot;accountNumber&quot;: &quot;${AIRTEL_PAYBILL_ACCOUNT_NUMBER}&quot;,&#xd;
+  &quot;businessShortCode&quot;: &quot;${AIRTEL_PAYBILL_SHORTCODE}&quot;,&#xd;
+  &quot;currency&quot;: &quot;${AIRTEL_PAYBILL_CURRENCY}&quot;&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">${HOST}</stringProp>
+          <stringProp name="HTTPSampler.port">${PORT}</stringProp>
+          <stringProp name="HTTPSampler.protocol">${PROTOCOL}</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
+          <stringProp name="HTTPSampler.path">/airtel/paybill/confirmation</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="confirmation headers" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">accept</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">content-type</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">businessshortcode</stringProp>
+                <stringProp name="Header.value">${AIRTEL_PAYBILL_HEADER_SHORTCODE}</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">currency</stringProp>
+                <stringProp name="Header.value">RWF</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+        </hashTree>
+      </hashTree>
+      <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report" enabled="true">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <encoding>false</encoding>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <responseData>false</responseData>
+            <samplerData>false</samplerData>
+            <xml>false</xml>
+            <fieldNames>true</fieldNames>
+            <responseHeaders>false</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>true</responseDataOnError>
+            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
+            <bytes>true</bytes>
+            <sentBytes>true</sentBytes>
+            <threadCounts>true</threadCounts>
+          </value>
+        </objProp>
+        <stringProp name="filename">results.jtl</stringProp>
+      </ResultCollector>
+      <hashTree/>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>

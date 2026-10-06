@@ -1,0 +1,23 @@
+{
+  "name": "mpesa-buygoods-transaction-status-query-empty-body",
+  "priority": 1,
+  "request": {
+    "method": "POST",
+    "urlPath": "/mpesa/stkpushquery/v2/query",
+    "bodyPatterns": [
+      {
+        "matchesJsonPath": {
+          "expression": "$.CheckoutRequestID",
+          "contains": "_EMPTYBODY"
+        }
+      }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": ""
+  }
+}

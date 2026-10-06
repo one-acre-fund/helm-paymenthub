@@ -67,6 +67,17 @@ this to exercise the connector's own timeout/reconciliation path (polling
 |---|---|
 | `254700000201` | Initiate succeeds, no webhook ever fires. A status query for this transaction always reports "still processing" (see below) — it never resolves on its own. |
 
+**Callback / status query with an invalid body** — the initiate call succeeds normally,
+but the callback webhook fired ~3s later, and any status query for that transaction,
+both return `200 OK` with `Content-Type: application/json` and a body that isn't a usable
+Daraja result. Use this to exercise the connector's handling of a "successful" HTTP
+status it can't actually interpret:
+
+| `PhoneNumber` | Callback body | Status query body |
+|---|---|---|
+| `254700000301` | Empty (zero-length) | Empty (zero-length) |
+| `254700000302` | Success-shaped `stkCallback` (with `CallbackMetadata`) but **no `ResultCode`** | Success-shaped query response (`ResponseCode: "0"`, `MpesaReceiptNumber`) but **no `ResultCode`** |
+
 Any other `PhoneNumber` falls through to the default success stub
 (`mpesa-02-stk-push-initiate.json`).
 
@@ -85,6 +96,8 @@ being processed — indefinitely, since nothing ever resolves it):
 | `_CANCELLED` | `ResultCode: "1032"`, "Request cancelled by user." |
 | `_TIMEOUT` | `ResultCode: "1037"`, "DS timeout user cannot be reached." |
 | `_WRONGPIN` | `ResultCode: "2001"`, "The initiator information is invalid." |
+| `_EMPTYBODY` | HTTP 200, empty body |
+| `_NORESULTCODE` | HTTP 200, success-shaped JSON with no `ResultCode` |
 | `_PENDING` | HTTP 500, `errorCode: "500.001.1001"`, "The transaction is being processed" |
 | (none — default success) | `ResultCode: "0"`, with a randomly generated `MpesaReceiptNumber` |
 

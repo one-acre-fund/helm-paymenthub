@@ -1,0 +1,10 @@
+scenario,msisdn
+success,+250788111222
+sync_error_invalid_callback_url,+250780000001
+sync_error_duplicate_reference_id,+250780000002
+sync_error_internal_processing,+250780000003
+callback_not_enough_funds,+250780000101
+callback_approval_rejected,+250780000102
+callback_expired,+250780000103
+callback_payer_limit_reached,+250780000104
+no_callback_pending,+250780000201

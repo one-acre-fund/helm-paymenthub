@@ -93,7 +93,7 @@ spec:
               value: "{{ .Values.mpesa.tenant }}"
             - name: "LOGGING_LEVEL_ROOT"
               value:  "{{ .Values.mpesa.LOGGING_LEVEL_ROOT }}"
-            # redis (shared distributed store: access tokens, correlation IDs, paybill state)
+            # redis (shared distributed store: access tokens, correlation IDs, paybill state, error codes)
             - name: "REDIS_HOST"
               value: "{{ .Values.redis.host }}"
             - name: "REDIS_PORT"
@@ -103,6 +103,8 @@ spec:
                 secretKeyRef:
                   name: "{{ .Values.redis.existingSecret }}"
                   key: "{{ .Values.redis.existingSecretPasswordKey }}"
+            - name: "MPESA_STORE_TYPE"
+              value: "{{ .Values.mpesa.redis.type }}"
             - name: "REDIS_KEY_PREFIX"
               value: "{{ .Values.mpesa.redis.key_prefix }}"
             - name: "REDIS_TTL_CORRELATION_SECONDS"
@@ -111,6 +113,10 @@ spec:
               value: "{{ .Values.mpesa.redis.ttl_paybill_reconciled_seconds }}"
             - name: "REDIS_TTL_PAYBILL_WORKFLOW_SECONDS"
               value: "{{ .Values.mpesa.redis.ttl_paybill_workflow_seconds }}"
+            - name: "REDIS_TTL_ERROR_CODE_FRESH_SECONDS"
+              value: "{{ .Values.mpesa.redis.ttl_error_code_fresh_seconds }}"
+            - name: "REDIS_TTL_ERROR_CODE_RETENTION_SECONDS"
+              value: "{{ .Values.mpesa.redis.ttl_error_code_retention_seconds }}"
             # roster
             - name: "ACCOUNTS_ROSTER_SHORTCODE"
               value: "{{ .Values.mpesa.accounts.roster.business_short_code }}"
