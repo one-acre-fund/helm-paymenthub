@@ -213,7 +213,8 @@ ph-ee-engine:
                     number: 80
   kafka:
     enabled: true
-    image: "spotify/kafka"
+    image: "apache/kafka"
+    imageTag: "4.3.1"
     advertised:
       host: "kafka"
       port: "9092"

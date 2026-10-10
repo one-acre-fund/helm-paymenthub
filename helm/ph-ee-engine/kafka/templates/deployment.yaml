@@ -1,14 +1,14 @@
 {{- if .Values.enabled -}}
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: kafka
   labels:
     app: kafka
-  annotations:
 spec:
   replicas: {{ .Values.replicas }}
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: kafka
@@ -16,18 +16,79 @@ spec:
     metadata:
       labels:
         app: kafka
+      {{- with .Values.deployment.annotations }}
       annotations:
-{{- if .Values.deployment.annotations }}
-{{ toYaml .Values.deployment.annotations | indent 8 }}
-{{- end }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
     spec:
+      {{- with (.Values.podSecurityContext | default .Values.deployment.securityContext) }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: kafka
-          image: "{{ .Values.image }}"
+          image: "{{ .Values.image }}:{{ .Values.imageTag }}"
           imagePullPolicy: "{{ .Values.imagePullPolicy }}"
           ports:
-            - containerPort: 2181
-            - containerPort: 9092
+            - name: plaintext
+              containerPort: 9092
+            - name: controller
+              containerPort: 9093
+          # Single-node KRaft: broker and controller in one process. The apache/kafka image
+          # drops its bundled server.properties as soon as any KAFKA_* env is set, so the whole
+          # config must be spelled out here. Internal topics use replication factor 1.
+          env:
+            - name: KAFKA_NODE_ID
+              value: "1"
+            - name: KAFKA_PROCESS_ROLES
+              value: "broker,controller"
+            - name: KAFKA_LISTENERS
+              value: "PLAINTEXT://:9092,CONTROLLER://:9093"
+            - name: KAFKA_ADVERTISED_LISTENERS
+              value: "PLAINTEXT://{{ .Values.advertised.host }}:{{ .Values.advertised.port }}"
+            - name: KAFKA_CONTROLLER_QUORUM_VOTERS
+              value: "1@localhost:9093"
+            - name: KAFKA_CONTROLLER_LISTENER_NAMES
+              value: "CONTROLLER"
+            - name: KAFKA_INTER_BROKER_LISTENER_NAME
+              value: "PLAINTEXT"
+            - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
+              value: "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT"
+            - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
+              value: "1"
+            - name: KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR
+              value: "1"
+            - name: KAFKA_TRANSACTION_STATE_LOG_MIN_ISR
+              value: "1"
+            - name: KAFKA_SHARE_COORDINATOR_STATE_TOPIC_REPLICATION_FACTOR
+              value: "1"
+            - name: KAFKA_SHARE_COORDINATOR_STATE_TOPIC_MIN_ISR
+              value: "1"
+            - name: KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS
+              value: "0"
+            - name: KAFKA_LOG_DIRS
+              value: /var/lib/kafka/data
+            - name: CLUSTER_ID
+              value: "{{ .Values.clusterId }}"
+            - name: KAFKA_HEAP_OPTS
+              value: "{{ .Values.heapOpts }}"
+            {{- with (.Values.extraEnvs | default .Values.deployment.extraEnvs) }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- with (.Values.envFrom | default .Values.deployment.envFrom) }}
+          envFrom:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          readinessProbe:
+            tcpSocket:
+              port: plaintext
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: plaintext
+            initialDelaySeconds: 60
+            periodSeconds: 20
           resources:
             limits:
               memory: "{{ .Values.limits.memory }}"
@@ -35,20 +96,15 @@ spec:
             requests:
               memory: "{{ .Values.requests.memory }}"
               cpu: "{{ .Values.requests.cpu }}"
-          env:
-            - name: "ADVERTISED_HOST"
-              value: "{{ .Values.advertised.host }}"
-            - name: "ADVERTISED_PORT"
-              value: "{{ .Values.advertised.port }}"
-{{- if .Values.extraEnvs | default .Values.deployment.extraEnvs }}
-{{ toYaml ( .Values.extraEnvs | default .Values.deployment.extraEnvs ) | indent 10 }}
-{{- end }}        
-          envFrom: {{ toYaml ( .Values.envFrom | default .Values.deployment.envFrom ) | nindent 12 }}
-          securityContext: {{ toYaml ( .Values.podSecurityContext | default .Values.deployment.securityContext ) | nindent 12 }}              
-
-          resources:
-                limits:
-                  memory: "1536M"
-      restartPolicy: Always
-
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/kafka/data
+      volumes:
+        - name: data
+          {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: kafka-data
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
 {{- end }}

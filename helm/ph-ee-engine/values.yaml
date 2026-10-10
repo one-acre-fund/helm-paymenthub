@@ -1432,13 +1432,14 @@ mockpayment:
 kafka:
   enabled: false
   replicas: 1
-  image: "spotify/kafka"
-  imagePullPolicy: "Always"
+  image: "apache/kafka"
+  imageTag: "4.3.1"
+  imagePullPolicy: "IfNotPresent"
   advertised:
     host: "kafka"
-    port: "9093"
+    port: "9092"
   limits:
-    memory: "512M"
+    memory: "1G"
     cpu: "500m"
   requests:
     memory: "512M"
