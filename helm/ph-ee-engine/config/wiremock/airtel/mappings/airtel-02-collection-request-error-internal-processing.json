@@ -1,0 +1,26 @@
+{
+  "name": "airtel-collection-request-error-internal-processing",
+  "priority": 1,
+  "request": {
+    "method": "POST",
+    "urlPathPattern": "/merchant/v1/payments/?",
+    "headers": {
+      "Authorization": { "matches": "(?i)bearer .+" }
+    },
+    "bodyPatterns": [
+      { "matchesJsonPath": { "expression": "$.subscriber.msisdn", "equalTo": "730000003" } }
+    ]
+  },
+  "response": {
+    "status": 500,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": {
+      "status": {
+        "code": "500",
+        "message": "Internal Server Error",
+        "result_code": "ESB000004",
+        "success": false
+      }
+    }
+  }
+}

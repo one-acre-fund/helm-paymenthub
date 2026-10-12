@@ -28,7 +28,7 @@ spec:
             - containerPort: 5000
           readinessProbe:
             httpGet:
-              path: /oauth/token_key
+              path: /v3/api-docs
               port: 5000
             periodSeconds: 30
             timeoutSeconds: 5
@@ -39,6 +39,13 @@ spec:
             requests:
               memory: "{{ .Values.operations_app.requests.memory }}"
               cpu: "{{ .Values.operations_app.requests.cpu }}"
+          args:
+            - java
+            - -XX:InitialRAMPercentage=$(JVM_INITIAL_RAM_PERCENT)
+            - -XX:MaxRAMPercentage=$(JVM_MAX_RAM_PERCENT)
+            - -javaagent:/config/elastic/elastic-apm-agent.jar
+            - -jar
+            - app.jar
           env:
             - name: "FINERACT_DATASOURCE_CORE_USERNAME"
               value: "{{ .Values.operations_app.datasource.username }}" 
@@ -63,9 +70,26 @@ spec:
               value: "{{ .Values.operations_app.LOGGING_LEVEL_ROOT }}"
             - name: "LOGGING_PATTERN_CONSOLE"
               value: "{{ .Values.operations_app.LOGGING_PATTERN_CONSOLE }}"
-          volumeMounts:
-            - name: ph-ee-config
-              mountPath: "/config"
+            - name: "KEYCLOAK_BASE_URL"
+              value: "{{ .Values.operations_app.keycloak.base_url }}"
+            - name: "KEYCLOAK_CLIENT_ID"
+              value: "{{ .Values.operations_app.keycloak.client_id }}"
+            - name: "KEYCLOAK_REALM"
+              value: "{{ .Values.operations_app.keycloak.realm }}"
+            - name: "PH_OPERATIONS_APP_SWAGGER_REDIRECT_URL"
+              value: "{{ .Values.operations_app.keycloak.ops_app_swagger_redirection_url }}"
+            - name: JVM_INITIAL_RAM_PERCENT
+              value: "{{ .Values.operations_app.JVM_INITIAL_RAM_PERCENT }}"
+            - name: JVM_MAX_RAM_PERCENT
+              value: "{{ .Values.operations_app.JVM_MAX_RAM_PERCENT }}"
+            - name: ELASTIC_APM_SERVICE_NAME
+              value: "{{ .Values.operations_app.APM_SERVICE_NAME }}"
+            - name: ELASTIC_APM_SERVER_URLS
+              value: "{{ .Values.elasticsearch.APM_SERVER_URLS }}"
+            - name: ELASTIC_APM_SECRET_TOKEN
+              value: "{{ .Values.elasticsearch.ELASTIC_APM_SECRET_TOKEN }}"
+            - name: ELASTIC_APM_APPLICATION_PACKAGES
+              value: "{{ .Values.operations_app.ELASTIC_APM_APPLICATION_PACKAGES }}"
       initContainers:
         - name: wait-db
           image: jwilder/dockerize
@@ -74,10 +98,6 @@ spec:
             - -timeout=120s
             - -wait
             - tcp://{{ .Values.operations_app.datasource.host }}:3306
-      volumes:
-        - name: ph-ee-config
-          configMap:
-            name: ph-ee-config
 
 ---
 apiVersion: {{ .Values.service.apiversion }}

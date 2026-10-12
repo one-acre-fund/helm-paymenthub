@@ -51,6 +51,13 @@ spec:
             requests:
               memory: "{{ .Values.mpesa.requests.memory }}"
               cpu: "{{ .Values.mpesa.requests.cpu }}"
+          args:
+            - java
+            - -XX:InitialRAMPercentage=$(JVM_INITIAL_RAM_PERCENT)
+            - -XX:MaxRAMPercentage=$(JVM_MAX_RAM_PERCENT)
+            - -javaagent:/config/elastic/elastic-apm-agent.jar
+            - -jar
+            - /app/app.jar
           env:
             - name: "SPRING_PROFILES_ACTIVE"
               value: "{{ .Values.mpesa.SPRING_PROFILES_ACTIVE }}"
@@ -58,16 +65,58 @@ spec:
               value: "{{ .Values.mpesa.zeebe_broker_contactpoint }}"
             - name: "ZEEBE_INIT-TRANSFER_WAIT-TIMER"
               value: "{{ .Values.mpesa.zeebe_init_transfer_wait_timer }}"
+            - name: "ZEEBE_CLIENT_KEEP-ALIVE"
+              value: "{{ .Values.mpesa.zeebe_client_keep_alive }}"
+            - name: "ZEEBE_CLIENT_REQUEST-TIMEOUT"
+              value: "{{ .Values.mpesa.zeebe_client_request_timeout }}"
+            - name: "ZEEBE_CLIENT_EVENLY-ALLOCATED-MAX-JOBS"
+              value: "{{ .Values.mpesa.zeebe_client_evenly_allocated_max_jobs }}"
             - name: "MPESA_LOCAL_HOST"
               value: "{{ .Values.mpesa.callback_host }}"
             - name: "MPESA_API_TIMEOUT"
               value: "{{ .Values.mpesa.api_timeout }}"
+            - name: "MPESA_API_CONNECTION_TIME_TO_LIVE"
+              value: "{{ .Values.mpesa.connection_time_to_live }}"
+            - name: "MPESA_API_CONNECTION_IDLE_EVICT"
+              value: "{{ .Values.mpesa.connection_idle_evict }}"
+            - name: "MPESA_API_VALIDATE_AFTER_INACTIVITY"
+              value: "{{ .Values.mpesa.validate_after_inactivity }}"
+            - name: "MPESA_API_MAX_TOTAL_CONNECTIONS"
+              value: "{{ .Values.mpesa.max_total_connections }}"
+            - name: "MPESA_API_CONNECTIONS_PER_ROUTE"
+              value: "{{ .Values.mpesa.connections_per_route }}"
+            - name: "OPERATIONS_TIMEOUT"
+              value: "{{ .Values.mpesa.operations_timeout }}"
             - name: "MPESA_MAX-RETRY-COUNT"
               value: "{{ .Values.mpesa.retry_count }}"
             - name: "TENANT"
               value: "{{ .Values.mpesa.tenant }}"
             - name: "LOGGING_LEVEL_ROOT"
               value:  "{{ .Values.mpesa.LOGGING_LEVEL_ROOT }}"
+            # redis (shared distributed store: access tokens, correlation IDs, paybill state, error codes)
+            - name: "REDIS_HOST"
+              value: "{{ .Values.redis.host }}"
+            - name: "REDIS_PORT"
+              value: "{{ .Values.redis.port }}"
+            - name: "REDIS_PASSWORD"
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Values.redis.existingSecret }}"
+                  key: "{{ .Values.redis.existingSecretPasswordKey }}"
+            - name: "MPESA_STORE_TYPE"
+              value: "{{ .Values.mpesa.redis.type }}"
+            - name: "REDIS_KEY_PREFIX"
+              value: "{{ .Values.mpesa.redis.key_prefix }}"
+            - name: "REDIS_TTL_CORRELATION_SECONDS"
+              value: "{{ .Values.mpesa.redis.ttl_correlation_seconds | int64 }}"
+            - name: "REDIS_TTL_PAYBILL_RECONCILED_SECONDS"
+              value: "{{ .Values.mpesa.redis.ttl_paybill_reconciled_seconds | int64 }}"
+            - name: "REDIS_TTL_PAYBILL_WORKFLOW_SECONDS"
+              value: "{{ .Values.mpesa.redis.ttl_paybill_workflow_seconds | int64 }}"
+            - name: "REDIS_TTL_ERROR_CODE_FRESH_SECONDS"
+              value: "{{ .Values.mpesa.redis.ttl_error_code_fresh_seconds | int64 }}"
+            - name: "REDIS_TTL_ERROR_CODE_RETENTION_SECONDS"
+              value: "{{ .Values.mpesa.redis.ttl_error_code_retention_seconds | int64 }}"
             # roster
             - name: "ACCOUNTS_ROSTER_SHORTCODE"
               value: "{{ .Values.mpesa.accounts.roster.business_short_code }}"
@@ -237,6 +286,18 @@ spec:
                 secretKeyRef:
                   name: "mpesa-secret-odoo"
                   key: "pass-key"
+            - name: JVM_INITIAL_RAM_PERCENT
+              value: "{{ .Values.mpesa.JVM_INITIAL_RAM_PERCENT }}"
+            - name: JVM_MAX_RAM_PERCENT
+              value: "{{ .Values.mpesa.JVM_MAX_RAM_PERCENT }}"
+            - name: ELASTIC_APM_SERVICE_NAME
+              value: "{{ .Values.mpesa.APM_SERVICE_NAME }}"
+            - name: ELASTIC_APM_SERVER_URLS
+              value: "{{ .Values.elasticsearch.APM_SERVER_URLS }}"
+            - name: ELASTIC_APM_SECRET_TOKEN
+              value: "{{ .Values.elasticsearch.ELASTIC_APM_SECRET_TOKEN }}"
+            - name: ELASTIC_APM_APPLICATION_PACKAGES
+              value: "{{ .Values.mpesa.ELASTIC_APM_APPLICATION_PACKAGES }}"
 
 ---
 apiVersion: {{ .Values.service.apiversion }}

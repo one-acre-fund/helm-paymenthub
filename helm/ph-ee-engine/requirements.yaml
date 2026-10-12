@@ -26,3 +26,8 @@ dependencies:
     version: 18.3.0
     repository: https://codecentric.github.io/helm-charts
     condition: "keycloak.enabled"
+  - name: redis
+    version: 28.0.12
+    repository: "https://charts.bitnami.com/bitnami"
+    alias: paymenthubredis
+    condition: "redis.enabled"

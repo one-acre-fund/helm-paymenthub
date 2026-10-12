@@ -56,6 +56,13 @@ spec:
               protocol: TCP
             - containerPort: 8080
               protocol: TCP
+          command: ["java"]
+          args:
+            - "-XX:InitialRAMPercentage=$(JVM_INITIAL_RAM_PERCENT)"
+            - "-XX:MaxRAMPercentage=$(JVM_MAX_RAM_PERCENT)"
+            - "-javaagent:/app/config/elastic/elastic-apm-agent.jar"
+            - "-jar"
+            - "/app/ph-ee-connector-airtel.jar"
           env:
             - name: "ZEEBE_BROKER_CONTACTPOINT"
               value: "{{ .Values.airtel_connector.zeebe_broker_contactpoint }}"
@@ -67,21 +74,61 @@ spec:
               value: "{{ .Values.airtel_connector.api.auth_endpoint }}"
             - name: "SPRING_PROFILES_ACTIVE"
               value: "{{ .Values.airtel_connector.spring_profiles_active }}"
+            - name: ELASTIC_APM_SERVER_URLS
+              value: "{{ .Values.elasticsearch.APM_SERVER_URLS }}"
+            - name: ELASTIC_APM_SECRET_TOKEN
+              value: "{{ .Values.elasticsearch.ELASTIC_APM_SECRET_TOKEN }}"
+            - name: JVM_INITIAL_RAM_PERCENT
+              value: "{{ .Values.airtel_connector.JVM_INITIAL_RAM_PERCENT }}"
+            - name: JVM_MAX_RAM_PERCENT
+              value: "{{ .Values.airtel_connector.JVM_MAX_RAM_PERCENT }}"
+            - name: ELASTIC_APM_SERVICE_NAME
+              value: "{{ .Values.airtel_connector.APM_SERVICE_NAME }}"
+            - name: ELASTIC_APM_APPLICATION_PACKAGES
+              value: "{{ .Values.airtel_connector.ELASTIC_APM_APPLICATION_PACKAGES }}"
             - name: "AIRTEL_API_COLLECTION-ENDPOINT"
               value: "{{ .Values.airtel_connector.api.collection_endpoint }}"
             - name: "AIRTEL_API_STATUS-ENDPOINT"
               value: "{{ .Values.airtel_connector.api.status_endpoint }}"
-            - name: "AIRTEL_CREDENTIALS_CLIENT-ID"
+            - name: "AIRTEL_CREDENTIALS_RWANDA_BASE-URL"
+              value: "{{ .Values.airtel_connector.credentials.base_url }}"
+            - name: "AIRTEL_CREDENTIALS_ZAMBIA_BASE-URL"
+              value: "{{ .Values.airtel_connector.credentials.zambia_base_url }}"
+            - name: "AIRTEL_CREDENTIALS_MALAWI_BASE-URL"
+              value: "{{ .Values.airtel_connector.credentials.malawi_base_url }}"
+            - name: "AIRTEL_CREDENTIALS_RWANDA_CLIENTID"
               valueFrom:
                 secretKeyRef:
                   name: "airtel-secret"
                   key: "client-id"
-            - name: "AIRTEL_CREDENTIALS_CLIENT-SECRET"
+            - name: "AIRTEL_CREDENTIALS_RWANDA_CLIENTSECRET"
               valueFrom:
                 secretKeyRef:
                   name: "airtel-secret"
                   key: "client-secret"
-            - name: "AIRTEL_CREDENTIALS_GRANT-TYPE"
+            - name: "AIRTEL_CREDENTIALS_ZAMBIA_CLIENTID"
+              valueFrom:
+                secretKeyRef:
+                  name: "airtel-secret"
+                  key: "zambia-client-id"
+            - name: "AIRTEL_CREDENTIALS_ZAMBIA_CLIENTSECRET"
+              valueFrom:
+                secretKeyRef:
+                  name: "airtel-secret"
+                  key: "zambia-client-secret"
+            - name: "AIRTEL_CREDENTIALS_MALAWI_CLIENTID"
+              valueFrom:
+                secretKeyRef:
+                  name: "airtel-secret"
+                  key: "malawi-client-id"
+            - name: "AIRTEL_CREDENTIALS_MALAWI_CLIENTSECRET"
+              valueFrom:
+                secretKeyRef:
+                  name: "airtel-secret"
+                  key: "malawi-client-secret"
+            - name: "AIRTEL_CREDENTIALS_RWANDA_GRANT-TYPE"
+              value: "{{ .Values.airtel_connector.credentials.grant_type }}"
+            - name: "AIRTEL_CREDENTIALS_ZAMBIA_GRANT-TYPE"
               value: "{{ .Values.airtel_connector.credentials.grant_type }}"
             - name: "AIRTEL_MAX-RETRY-COUNT"
               value: "{{ .Values.airtel_connector.max_retry_count}}"
@@ -89,6 +136,22 @@ spec:
               value: "{{ .Values.airtel_connector.timeout }}"
             - name: "CHANNEL_HOST"
               value: "{{ .Values.airtel_connector.channel_host }}"
+            # redis (shared distributed store: paybill workflow state; access tokens always Redis)
+            - name: "REDIS_HOST"
+              value: "{{ .Values.redis.host }}"
+            - name: "REDIS_PORT"
+              value: "{{ .Values.redis.port }}"
+            - name: "REDIS_PASSWORD"
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Values.redis.existingSecret }}"
+                  key: "{{ .Values.redis.existingSecretPasswordKey }}"
+            - name: "AIRTEL_PAYBILL_STORE_TYPE"
+              value: "{{ .Values.airtel_connector.redis.type }}"
+            - name: "REDIS_KEY_PREFIX"
+              value: "{{ .Values.airtel_connector.redis.key_prefix }}"
+            - name: "REDIS_TTL_PAYBILL_WORKFLOW_SECONDS"
+              value: "{{ .Values.airtel_connector.redis.ttl_paybill_workflow_seconds | int64 }}"
             - name: "PAYBILL_ACCOUNT-HOLDING-INSTITUTION-ID"
               value: "{{ .Values.airtel_connector.paybill.account_holding_institution_id }}"
             - name: "PAYBILL_TIMER"
@@ -113,6 +176,10 @@ type: Opaque
 data:
   client-id: {{ .Values.airtel_connector.credentials.client_id | b64enc}}
   client-secret: {{ .Values.airtel_connector.credentials.client_secret | b64enc }}
+  zambia-client-id: {{ .Values.airtel_connector.credentials.zambia_client_id | b64enc}}
+  zambia-client-secret: {{ .Values.airtel_connector.credentials.zambia_client_secret | b64enc }}
+  malawi-client-id: {{ .Values.airtel_connector.credentials.malawi_client_id | b64enc}}
+  malawi-client-secret: {{ .Values.airtel_connector.credentials.malawi_client_secret | b64enc }}
 
 --- 
 apiVersion: v1

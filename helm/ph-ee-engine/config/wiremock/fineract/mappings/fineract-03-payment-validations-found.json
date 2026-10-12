@@ -1,0 +1,29 @@
+{
+  "name": "fineract-payment-validations-found",
+  "priority": 5,
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/fineract-provider/api/v1/payments/validations/([0-9]+|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})"
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": [
+      {
+        "transactionId": "{{request.path.[5]}}",
+        "amount": 300.000000,
+        "accountNumber": "14173835",
+        "phoneNumber": "+250 791 307 531",
+        "provider": "beyonic",
+        "clientFirstname": "Marie rose",
+        "clientLastname": "UWIZEYIMANA",
+        "clientAccountNumber": "14173835",
+        "clientMobileNo": null,
+        "startedAt": "15:11:21",
+        "endedAt": "15:11:21",
+        "transactionDate": "2023-08-11"
+      }
+    ],
+    "transformers": ["response-template"]
+  }
+}

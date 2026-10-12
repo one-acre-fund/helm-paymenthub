@@ -1,0 +1,24 @@
+{
+  "name": "mpesa-buygoods-transaction-status-query-insufficient-funds",
+  "priority": 1,
+  "request": {
+    "method": "POST",
+    "urlPath": "/mpesa/stkpushquery/v2/query",
+    "bodyPatterns": [
+      { "matchesJsonPath": { "expression": "$.CheckoutRequestID", "contains": "_INSUFFICIENTFUNDS" } }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": {
+      "ResponseCode": "0",
+      "ResponseDescription": "The service request has been accepted successfully",
+      "MerchantRequestID": "29115-34620561-1",
+      "CheckoutRequestID": "{{jsonPath request.body '$.CheckoutRequestID'}}",
+      "ResultCode": "1",
+      "ResultDesc": "The balance is insufficient for the transaction."
+    },
+    "transformers": ["response-template"]
+  }
+}
