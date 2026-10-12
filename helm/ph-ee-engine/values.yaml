@@ -990,6 +990,7 @@ importer_es:
       co.elastic.logs/enabled: "true"
 kafka:
   enabled: true
+  # Must stay 1: single-node KRaft broker with a fixed node id and one data volume.
   replicas: 1
   # Apache Kafka 4.x in KRaft mode, no ZooKeeper. See UPGRADE-kafka.md.
   image: "apache/kafka"

@@ -8,7 +8,12 @@ metadata:
   labels:
     app: kafka
 spec:
-  replicas: {{ .Values.kafka.replicas }}
+  # Single-node KRaft: node id, quorum voter and data volume are fixed, so more than one pod
+  # would start as the same broker. A multi-broker setup needs a StatefulSet with per-pod ids.
+  {{- if ne (int (.Values.kafka.replicas | default 1)) 1 }}
+  {{- fail "kafka.replicas must be 1: this Deployment runs a single-node KRaft broker (node id 1, one data volume)" }}
+  {{- end }}
+  replicas: 1
   strategy:
     type: Recreate
   selector:
