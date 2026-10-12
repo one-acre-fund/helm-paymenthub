@@ -1,0 +1,25 @@
+{
+  "name": "mpesa-buygoods-stkpush-initiate-error-invalid-phone-number",
+  "priority": 1,
+  "request": {
+    "method": "POST",
+    "urlPath": "/mpesa/stkpush/v1/processrequest",
+    "headers": {
+      "Authorization": { "matches": "Bearer .+" }
+    },
+    "bodyPatterns": [
+      { "matchesJsonPath": "$.TransactionType" },
+      { "matchesJsonPath": "$[?(@.PhoneNumber == 254700000003)]" }
+    ]
+  },
+  "response": {
+    "status": 400,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": {
+      "requestId": "{{randomValue length=5 type='NUMERIC'}}-{{randomValue length=8 type='NUMERIC'}}-1",
+      "errorCode": "400.002.05",
+      "errorMessage": "Bad Request - Invalid PhoneNumber"
+    },
+    "transformers": ["response-template"]
+  }
+}

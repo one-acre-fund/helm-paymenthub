@@ -1,0 +1,27 @@
+timeStamp,elapsed,label,responseCode,responseMessage,threadName,dataType,success,failureMessage,bytes,sentBytes,grpThreads,allThreads,Latency
+1789420189607,19,POST /channel/channel/collection - success,200,OK,collection - 50/min for 5min 1-1,text,true,,145,640,1,1,18
+1789420190071,4,POST /channel/channel/collection - sync_error_locked_subscriber,200,OK,collection - 50/min for 5min 1-1,text,true,,145,640,1,1,4
+1789420190567,5,POST /channel/channel/collection - sync_error_invalid_callback_url,200,OK,collection - 50/min for 5min 1-1,text,true,,145,640,1,1,5
+1789420191066,1,POST /channel/channel/collection - sync_error_invalid_phone_number,200,OK,collection - 50/min for 5min 1-1,text,true,,145,640,1,1,1
+1789420191230,1,POST /channel/channel/collection - callback_cancelled_by_user,200,OK,collection - 50/min for 5min 1-2,text,true,,145,640,2,2,1
+1789420191568,3,POST /channel/channel/collection - callback_insufficient_funds,200,OK,collection - 50/min for 5min 1-1,text,true,,145,640,2,2,3
+1789420192230,2,POST /channel/channel/collection - callback_timeout,200,OK,collection - 50/min for 5min 1-2,text,true,,145,640,2,2,2
+1789420192569,3,POST /channel/channel/collection - callback_wrong_pin,200,OK,collection - 50/min for 5min 1-1,text,true,,145,640,2,2,3
+1789420192893,2,POST /channel/channel/collection - sync_error_locked_subscriber,200,OK,collection - 50/min for 5min 1-3,text,true,,145,640,3,3,2
+1789420193235,3,POST /channel/channel/collection - no_callback_pending,200,OK,collection - 50/min for 5min 1-2,text,true,,145,640,3,3,3
+1789420193569,5,POST /channel/channel/collection - success,200,OK,collection - 50/min for 5min 1-1,text,true,,145,640,3,3,5
+1789420194399,2,POST /channel/channel/collection - sync_error_invalid_callback_url,200,OK,collection - 50/min for 5min 1-3,text,true,,145,640,3,3,2
+1789420194733,6,POST /channel/channel/collection - sync_error_invalid_phone_number,200,OK,collection - 50/min for 5min 1-2,text,true,,145,640,3,3,6
+1789420195068,5,POST /channel/channel/collection - callback_insufficient_funds,200,OK,collection - 50/min for 5min 1-1,text,true,,145,640,3,3,5
+1789420195897,4,POST /channel/channel/collection - callback_cancelled_by_user,200,OK,collection - 50/min for 5min 1-3,text,true,,145,640,3,3,4
+1789420196236,3,POST /channel/channel/collection - callback_timeout,200,OK,collection - 50/min for 5min 1-2,text,true,,145,640,3,3,3
+1789420196568,5,POST /channel/channel/collection - callback_wrong_pin,200,OK,collection - 50/min for 5min 1-1,text,true,,145,640,3,3,5
+1789420197394,5,POST /channel/channel/collection - no_callback_pending,200,OK,collection - 50/min for 5min 1-3,text,true,,145,640,3,3,5
+1789420197736,5,POST /channel/channel/collection - success,200,OK,collection - 50/min for 5min 1-2,text,true,,145,640,3,3,4
+1789420198066,4,POST /channel/channel/collection - sync_error_locked_subscriber,200,OK,collection - 50/min for 5min 1-1,text,true,,145,640,3,3,4
+1789420198895,4,POST /channel/channel/collection - sync_error_invalid_callback_url,200,OK,collection - 50/min for 5min 1-3,text,true,,145,640,3,3,3
+1789420199233,1,POST /channel/channel/collection - sync_error_invalid_phone_number,200,OK,collection - 50/min for 5min 1-2,text,true,,145,640,3,3,1
+1789420199571,5,POST /channel/channel/collection - callback_insufficient_funds,200,OK,collection - 50/min for 5min 1-1,text,true,,145,640,3,3,5
+1789420200393,1,POST /channel/channel/collection - callback_cancelled_by_user,200,OK,collection - 50/min for 5min 1-3,text,true,,145,640,3,3,1
+1789420200733,4,POST /channel/channel/collection - callback_timeout,200,OK,collection - 50/min for 5min 1-2,text,true,,145,640,2,2,4
+1789420201068,3,POST /channel/channel/collection - callback_wrong_pin,200,OK,collection - 50/min for 5min 1-1,text,true,,145,640,1,1,2

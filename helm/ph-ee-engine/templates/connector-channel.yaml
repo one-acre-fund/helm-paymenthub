@@ -24,7 +24,7 @@ spec:
         - name: ph-ee-connector-channel
           image: "{{ .Values.channel.image }}:{{ .Values.channel.imageTag }}"
           ports:
-            - containerPort: 8080
+            - containerPort: {{ .Values.channel.container.port }}
           imagePullPolicy: "{{ .Values.channel.imagePullPolicy }}"
           resources:
             limits:
@@ -36,24 +36,33 @@ spec:
           livenessProbe:
             httpGet:
               path: /actuator/health/liveness
-              port: 8080
+              port: {{ .Values.channel.container.port }}
             initialDelaySeconds: 20
             periodSeconds: 30
           readinessProbe:
             httpGet:
               path: /actuator/health/readiness
-              port: 8080
+              port: {{ .Values.channel.container.port }}
             initialDelaySeconds: 20
             periodSeconds: 30
           startupProbe:
             httpGet:
               path: /actuator/health/readiness
-              port: 8080
+              port: {{ .Values.channel.container.port }}
             failureThreshold: 30
             periodSeconds: 60
+          args:
+            - java
+            - -XX:InitialRAMPercentage=$(JVM_INITIAL_RAM_PERCENT)
+            - -XX:MaxRAMPercentage=$(JVM_MAX_RAM_PERCENT)
+            - -javaagent:/config/elastic/elastic-apm-agent.jar
+            - -jar
+            - /app/app.jar
           env:
             - name: "SPRING_PROFILES_ACTIVE"
               value: "{{ .Values.channel.SPRING_PROFILES_ACTIVE }}"
+            - name: "ZEEBE_BROKER_CONTACTPOINT"
+              value: "{{ .Values.channel.zeebe_broker_contactpoint }}"
             - name: "DFSPIDS"
               value: "{{ .Values.channel.DFSPIDS }}"
             - name: "TRANSACTION-ID-LENGTH"
@@ -66,6 +75,10 @@ spec:
               value: "{{ .Values.channel.LOGGING_LEVEL_ROOT }}"
             - name:  "CHANNEL_TENANTPRIMARY_TENANT"
               value: "{{ .Values.channel.tenantPrimary.tenant }}"
+            - name:  "CHANNEL_TENANTPRIMARY_CLIENTID"
+              value: "{{ .Values.channel.tenantPrimary.clientId }}"
+            - name:  "CHANNEL_TENANTPRIMARY_CLIENTSECRET"
+              value: "{{ .Values.channel.tenantPrimary.clientSecret }}"
             - name:  "OPERATIONS_URL"
               value: "{{ .Values.channel.operations.url }}"
             - name: "AMS"
@@ -135,13 +148,18 @@ spec:
               value: "{{ .Values.channel.operations.authExpiryDefault }}"
             - name: "AUTHENTICATION_EXPIRY_BUFFER_DEFAULT"
               value: "{{ .Values.channel.operations.authExpiryBufferDefault }}"
-          volumeMounts:
-            - name: ph-ee-config
-              mountPath: "/config"
-      volumes:
-        - name: ph-ee-config
-          configMap:
-            name: ph-ee-config
+            - name: JVM_INITIAL_RAM_PERCENT
+              value: "{{ .Values.channel.JVM_INITIAL_RAM_PERCENT }}"
+            - name: JVM_MAX_RAM_PERCENT
+              value: "{{ .Values.channel.JVM_MAX_RAM_PERCENT }}"
+            - name: ELASTIC_APM_SERVICE_NAME
+              value: "{{ .Values.channel.APM_SERVICE_NAME }}"
+            - name: ELASTIC_APM_SERVER_URLS
+              value: "{{ .Values.elasticsearch.APM_SERVER_URLS }}"
+            - name: ELASTIC_APM_SECRET_TOKEN
+              value: "{{ .Values.elasticsearch.ELASTIC_APM_SECRET_TOKEN }}"
+            - name: ELASTIC_APM_APPLICATION_PACKAGES
+              value: "{{ .Values.channel.ELASTIC_APM_APPLICATION_PACKAGES }}"
 
 ---
 {{- if .Values.channel.ingress.enabled }}
@@ -209,15 +227,16 @@ spec:
     - name: port
       port: 80
       protocol: TCP
-      targetPort: 8080
+      targetPort: {{ .Values.channel.container.port }}
     - name: http
       port: 82
       protocol: TCP
-      targetPort: 8080
+      targetPort: {{ .Values.channel.container.port }}
   selector:
     app: ph-ee-connector-channel
   sessionAffinity: None
   type: ClusterIP
+
 
 ---
 apiVersion: v1
@@ -229,5 +248,6 @@ data:
   squad-secret-key: {{ .Values.channel.squad.secretKey | b64enc }}
   monnify-secret-key: {{ .Values.channel.monnify.secretKey | b64enc }}
   squad-token: {{ .Values.channel.squad.token | b64enc }}
+
 
   {{- end }}

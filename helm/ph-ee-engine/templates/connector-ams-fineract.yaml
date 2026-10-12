@@ -49,17 +49,40 @@ spec:
               port: 5004
             failureThreshold: 90
             periodSeconds: 15
+          command: ["java"]
+          args:
+            - "-XX:InitialRAMPercentage=$(JVM_INITIAL_RAM_PERCENT)"
+            - "-XX:MaxRAMPercentage=$(JVM_MAX_RAM_PERCENT)"
+            - "-javaagent:/app/config/elastic/elastic-apm-agent.jar"
+            - "-jar"
+            - "/app/ph-ee-connector-ams-fineract.jar"
           env:
             - name: "SPRING_PROFILES_ACTIVE"
               value: "{{ .Values.fineract_connector.SPRING_PROFILES_ACTIVE }}"
             - name: "ZEEBE_BROKER_CONTACTPOINT"
               value: {{ .Values.zeebe_broker_contactpoint }}
+            - name: "ZEEBE_CLIENT_KEEP-ALIVE"
+              value: "{{ .Values.fineract_connector.zeebe_client_keep_alive }}"
+            - name: "ZEEBE_CLIENT_REQUEST-TIMEOUT"
+              value: "{{ .Values.fineract_connector.zeebe_client_request_timeout }}"
             - name: "AMS_LOCAL_ENABLED"
               value: "{{ .Values.fineract_connector.ams.local.enabled }}"
             - name: "FINERACT_BASE-URL"
               value: "{{ .Values.fineract_connector.fineract.base_url }}"
             - name: "LOGGING_LEVEL_ROOT"
               value: "{{ .Values.fineract_connector.LOGGING_LEVEL_ROOT }}"
+            - name: JVM_INITIAL_RAM_PERCENT
+              value: "{{ .Values.fineract_connector.JVM_INITIAL_RAM_PERCENT }}"
+            - name: JVM_MAX_RAM_PERCENT
+              value: "{{ .Values.fineract_connector.JVM_MAX_RAM_PERCENT }}"
+            - name: ELASTIC_APM_SERVICE_NAME
+              value: "{{ .Values.fineract_connector.APM_SERVICE_NAME }}"
+            - name: ELASTIC_APM_SERVER_URLS
+              value: "{{ .Values.elasticsearch.APM_SERVER_URLS }}"
+            - name: ELASTIC_APM_SECRET_TOKEN
+              value: "{{ .Values.elasticsearch.ELASTIC_APM_SECRET_TOKEN }}"
+            - name: ELASTIC_APM_APPLICATION_PACKAGES
+              value: "{{ .Values.fineract_connector.ELASTIC_APM_APPLICATION_PACKAGES }}"
           resources:
             limits:
               memory: "{{ .Values.fineract_connector.limits.memory }}"

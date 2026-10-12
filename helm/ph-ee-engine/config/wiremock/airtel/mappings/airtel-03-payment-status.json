@@ -1,0 +1,33 @@
+{
+  "name": "airtel-collection-payment-status",
+  "priority": 2,
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/standard/v1/payments/[^/]+",
+    "headers": {
+      "Authorization": { "matches": "(?i)bearer .+" }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": {
+      "data": {
+        "transaction": {
+          "id": "{{request.path.[3]}}",
+          "message": "Success",
+          "status": "TS",
+          "airtel_money_id": "MP{{request.path.[3]}}"
+        }
+      },
+      "status": {
+        "code": "200",
+        "message": "SUCCESS",
+        "result_code": "ESB000010",
+        "response_code": "DP00800001006",
+        "success": true
+      }
+    },
+    "transformers": ["response-template"]
+  }
+}

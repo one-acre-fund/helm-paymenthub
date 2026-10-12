@@ -48,9 +48,12 @@ kind: ConfigMap
 data:
   configuration.properties: |
     oauth.enabled true
-    oauth.basicAuth true
+    oauth.basicAuth false
     oauth.basicAuthToken Y2xpZW50Og==
-    oauth.serverUrl https://{{ .Values.identity.hostname }}
+    oauth.serverUrl {{ .Values.operations_web.oauth.keycloak.base_url }}
+    oauth.redirectUri {{ .Values.operations_web.oauth.keycloak.redirect_uri }}
+    oauth.realm {{ .Values.operations_web.oauth.keycloak.realm }}
+    oauth.client_id {{ .Values.operations_web.oauth.keycloak.client_id }}
     serverUrl https://{{ .Values.operations_app.hostname }}
 metadata:
   name: ph-ee-operations-web-config
