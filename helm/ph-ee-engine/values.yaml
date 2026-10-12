@@ -990,14 +990,32 @@ importer_es:
       co.elastic.logs/enabled: "true"
 kafka:
   enabled: true
+  # Must stay 1: single-node KRaft broker with a fixed node id and one data volume.
   replicas: 1
-  image: "spotify/kafka"
+  # Apache Kafka 4.x in KRaft mode, no ZooKeeper. See UPGRADE-kafka.md.
+  image: "apache/kafka"
+  imageTag: "4.3.1"
   imagePullPolicy: "IfNotPresent"
+  nodePort: 30092
   advertised:
     host: "kafka"
     port: "9092"
+  # Fixed KRaft cluster id (base64 UUID). Keep it stable: a persisted log dir formatted
+  # with a different id refuses to start.
+  clusterId: "Kex3emHGSJSKbQVLxW0v_w"
+  # Image default is 1G heap; keep below limits.memory.
+  heapOpts: "-Xmx512m -Xms512m"
+  persistence:
+    enabled: false
+    # One topic, 7-day default retention. PVCs grow but never shrink, so start small.
+    size: 2Gi
+    storageClass: ""
+  # apache/kafka runs as uid 1000 (appuser); fsGroup makes the data volume writable.
+  podSecurityContext:
+    fsGroup: 1000
+  extraEnvs: []
   limits:
-    memory: "512M"
+    memory: "1G"
     cpu: "500m"
   requests:
     memory: "512M"
