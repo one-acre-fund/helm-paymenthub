@@ -34,7 +34,7 @@ Chart (`values.yaml`, `importer_rdbms.*` and `importer_es.*`):
 ## Cutover
 
 1. Merge and deploy the chart first; with `autoscaling.enabled=false` and the old image tags it is inert. Then run `db/FD-1931-unique-keys.sql` in every tenant schema (review the duplicate SELECTs it prints first) and `db/FD-1931-tenants-db.sql` once against the tenants database. It also adds the `VERSION BIGINT NOT NULL DEFAULT 0` columns; run it before the 1.2.0 image starts so existing rows read as version 0 rather than NULL.
-2. Deploy the new importer images with `autoscaling.enabled=false`. Only behaviour change: offsets persist across restarts, so the first restart replays what it missed instead of skipping it.
+2. Deploy the new importer images with `autoscaling.enabled=false`. The fixed group ids have no committed offsets yet and both importers default to `auto.offset.reset=earliest`, so the first start replays the retained topic (idempotent: unique keys and redelivery matching in rdbms, record-derived document ids in Elasticsearch). Expect lag and load for a while; with `latest` the records exported during the rollout window would be skipped instead. To avoid the replay, copy the old hostname groups' committed offsets to `ph-ee-importer-rdbms` and `ph-ee-importer-es` with `kafka-consumer-groups.sh --reset-offsets --to-offset` before scaling the new image up. After that, offsets persist across restarts, so a restart resumes where it stopped. The offset reset, retry pause and poll timeout are importer settings (`kafka.auto-offset-reset`, `kafka.retry-backoff-ms` 1000, `kafka.poll-timeout-ms` 3000) with defaults baked into the images; the chart does not pass them as env yet, add them to the importer templates if they ever need tuning per environment.
 3. Deploy the rebuilt exporter jar and the `ZEEBE_KAFKAEXPORT_*` env, restart the Zeebe brokers. Kafka uses `emptyDir` by default, so the topic is recreated with 6 partitions on the next Kafka restart; with persistence on, run `kafka-topics.sh --alter --topic zeebe-export --partitions 6` once instead.
 4. Check importer logs show `partitions assigned` spread over the pods, and `kafka-consumer-groups.sh --describe --group ph-ee-importer-rdbms` lists 6 partitions.
 5. Set `importer_rdbms.autoscaling.enabled=true` and `importer_es.autoscaling.enabled=true` (KEDA must be installed in the cluster; acc-qa has 2.20.1).
@@ -68,6 +68,19 @@ Same namespace, rebuilt with the flat `develop` templates (`templates/dev-kafka.
 | Same run, defects | Elasticsearch hit its disk flood-stage watermark (host disk 95% full) and the es importer dropped 2,602 records after its retry budget; one transfer lost `TRANSACTION_ID` to a stale write from the OOM-killed pod. Both fixed (see above). |
 | Full replay of all 144,000 records from offset 0 on the fixed images, 2 replicas each | transfers 36,000, variables 72,000, ES docs 144,000, payments 36,000; 0 duplicate keys; every transfer completed with its transaction id; 0 optimistic-lock retries; 0 errors |
 | KEDA with the develop `ScaledObject` template, max 2 | 1 replica at lag 0; 2 replicas within a minute of a 12,000-record replay; counts unchanged (idempotent); back to 1 after the HPA window. `autoscaling.enabled=false` removed ScaledObjects and PDBs and rendered `replicas` again |
+
+## Verified on minikube after the review follow-ups (2026-10-16)
+
+rdbms image rebuilt from the review fixes, es image from the batch-scoped bulk change. MySQL 8.0.43 in the cluster, QA runs 5.7.43 (generated columns exist since 5.7.6).
+
+| Check | Result |
+|---|---|
+| `db/FD-1931-unique-keys.sql` on a copy of the pre-1.2.0 tables with fixture duplicates | Reports and removes NULL-id duplicates of ordinary transfers, keeps two CSV rows without a request id, adds `VERSION`, `TRANSFER_KEY`, all unique keys and `call_activity_links`; a second NULL-id row for the same instance is rejected (`Duplicate entry '1-0-'`), a second CSV row without an id is accepted; `db/FD-1931-tenants-db.sql` creates `process_definitions`. Pass. |
+| Tenant schema rebuilt through the real migration, full replay of 156,000 records from offset 0, 2 replicas each | 36,000 transfers, 0 duplicates, 36,000 completed with their transaction id, 72,000 variables, 144,000 Elasticsearch docs, 36,000 payments; `TRANSFER_KEY` equals the transaction id on every row, versions 4 to 6; no skipped records in the rotated container logs, only APM errors. One rdbms pod was OOM-killed once and the Kafka pod restarted once under load during the run; the counts are still exact. Pass. |
+| Unroutable record (VARIABLE without `bpmnProcessId`, unknown `processDefinitionKey`) | The owning partition holds with lag 1 and `is not registered yet` retries about once a second; after `INSERT INTO tenants.process_definitions` the partition drains and the transfer row appears. Pass. |
+| es-only replay from offset 0 on the batch-scoped bulk image, 2 replicas | 156,002 records in about two minutes, 144,001 `zeebe-record` docs, 36,002 payments, 0 retried batches, 0 skipped records. Pass. |
+| Document Elasticsearch rejects for good (string `key` against the `long` mapping) | Logged once as `rejected document … with BAD_REQUEST, dropping it`, the rest of the batch committed, the group kept moving. Pass. |
+| Unit tests | rdbms 86 (1 pre-existing skip), es 9. |
 
 ## Rollback
 
