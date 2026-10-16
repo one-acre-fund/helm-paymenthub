@@ -32,8 +32,8 @@ Chart (`values.yaml`, `importer_rdbms.*` and `importer_es.*`):
 
 ## Cutover
 
-1. Deploy the new importer images with `autoscaling.enabled=false`. Only behaviour change: offsets persist across restarts, so the first restart replays what it missed instead of skipping it.
-2. Run `db/FD-1931-unique-keys.sql` in every tenant schema (review the duplicate SELECTs it prints first). It also adds the `VERSION BIGINT NOT NULL DEFAULT 0` columns; run it before the 1.2.0 image starts so existing rows read as version 0 rather than NULL.
+1. Merge and deploy the chart first; with `autoscaling.enabled=false` and the old image tags it is inert. Then run `db/FD-1931-unique-keys.sql` in every tenant schema (review the duplicate SELECTs it prints first). It also adds the `VERSION BIGINT NOT NULL DEFAULT 0` columns; run it before the 1.2.0 image starts so existing rows read as version 0 rather than NULL.
+2. Deploy the new importer images with `autoscaling.enabled=false`. Only behaviour change: offsets persist across restarts, so the first restart replays what it missed instead of skipping it.
 3. Deploy the rebuilt exporter jar and the `ZEEBE_KAFKAEXPORT_*` env, restart the Zeebe brokers. Kafka uses `emptyDir` by default, so the topic is recreated with 6 partitions on the next Kafka restart; with persistence on, run `kafka-topics.sh --alter --topic zeebe-export --partitions 6` once instead.
 4. Check importer logs show `partitions assigned` spread over the pods, and `kafka-consumer-groups.sh --describe --group ph-ee-importer-rdbms` lists 6 partitions.
 5. Set `importer_rdbms.autoscaling.enabled=true` and `importer_es.autoscaling.enabled=true` (KEDA must be installed in the cluster; acc-qa has 2.20.1).
