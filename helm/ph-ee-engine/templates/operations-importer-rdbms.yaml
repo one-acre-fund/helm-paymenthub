@@ -7,7 +7,14 @@ metadata:
   labels:
     app: ph-ee-importer-rdbms
 spec:
+  {{- if not .Values.importer_rdbms.autoscaling.enabled }}
   replicas: {{ .Values.importer_rdbms.replicas }}
+  {{- end }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
       app: ph-ee-importer-rdbms
@@ -20,6 +27,8 @@ spec:
 {{ toYaml .Values.importer_rdbms.deployment.annotations | indent 8 }}
 {{- end }}
     spec:
+      # Let the consumer finish its current poll batch and commit before a rebalance.
+      terminationGracePeriodSeconds: {{ .Values.importer_rdbms.terminationGracePeriodSeconds }}
       containers:
         - name: ph-ee-importer-rdbms
           image: "{{ .Values.importer_rdbms.image }}:{{ .Values.importer_rdbms.imageTag }}"
@@ -49,6 +58,14 @@ spec:
               value: "{{ .Values.importer_rdbms.datasource.port }}"
             - name: "DATASOURCE_CORE_SCHEMA"
               value: "{{ .Values.importer_rdbms.datasource.schema }}"
+            - name: "KAFKA_BROKERS"
+              value: "{{ .Values.importer_rdbms.kafka.brokers }}"
+            - name: "IMPORTER_KAFKA_TOPIC"
+              value: "{{ .Values.importer_rdbms.kafka.topic }}"
+            - name: "KAFKA_CONSUMER_GROUP"
+              value: "{{ .Values.importer_rdbms.kafka.consumerGroup }}"
+            - name: "KAFKA_CONCURRENCY"
+              value: "{{ .Values.importer_rdbms.kafka.concurrency }}"
             - name: "LOGGING_LEVEL_ROOT"
               value: "{{ .Values.importer_rdbms.LOGGING_LEVEL_ROOT }}"
             - name: "LOGGING_PATTERN_CONSOLE"

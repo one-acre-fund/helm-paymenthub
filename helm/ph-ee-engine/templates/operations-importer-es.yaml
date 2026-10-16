@@ -11,7 +11,14 @@ metadata:
 {{ toYaml .Values.importer_es.deployment.annotations | indent 8 }}
 {{- end }}
 spec:
+  {{- if not .Values.importer_es.autoscaling.enabled }}
   replicas: {{ .Values.importer_es.replicas }}
+  {{- end }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
       app: ph-ee-importer-es
@@ -20,6 +27,8 @@ spec:
       labels:
         app: ph-ee-importer-es
     spec:
+      # Let the consumer finish its current poll batch and commit before a rebalance.
+      terminationGracePeriodSeconds: {{ .Values.importer_es.terminationGracePeriodSeconds }}
       containers:
         - name: ph-ee-importer-es
           image: "{{ .Values.importer_es.image }}:{{ .Values.importer_es.imageTag }}"
@@ -47,6 +56,14 @@ spec:
             value: "{{ .Values.importer_es.javaToolOptions}}"
           - name: "LOGGING_PATTERN_CONSOLE"
             value: "{{ .Values.importer_es.logging.pattern.console}}"
+          - name: "KAFKA_BROKERS"
+            value: "{{ .Values.importer_es.kafka.brokers }}"
+          - name: "IMPORTER_KAFKA_TOPIC"
+            value: "{{ .Values.importer_es.kafka.topic }}"
+          - name: "KAFKA_CONSUMER_GROUP"
+            value: "{{ .Values.importer_es.kafka.consumerGroup }}"
+          - name: "KAFKA_CONCURRENCY"
+            value: "{{ .Values.importer_es.kafka.concurrency }}"
           - name: "reporting.fields.amount"
             value: "{{ .Values.importer_es.reporting.fields.amount }}"
           - name: "reporting.fields.accountId"
