@@ -7,7 +7,9 @@ metadata:
   labels:
     app: ph-ee-connector-ams-mtn-rw
 spec:
+  {{- if not .Values.mtn_rwanda_connector.autoscaling.enabled }}
   replicas: {{ .Values.mtn_rwanda_connector.replicas }}
+  {{- end }}
   selector:
     matchLabels:
       app: ph-ee-connector-ams-mtn-rw

@@ -65,6 +65,17 @@ mtn_rwanda_connector:
         memory: 128Mi
         cpu: 100m
   replicas: 3
+  # KEDA ScaledObject on the Zeebe job backlog for this connector's job type. Off by default;
+  # when on, Helm stops rendering `replicas` and KEDA owns the count. Thresholds and bounds
+  # are placeholders until set from a load test.
+  autoscaling:
+    enabled: false
+    jobType: init-momo-transfer
+    minReplicas: 2
+    maxReplicas: 6
+    waitingJobsPerPod: 10
+    pollingInterval: 30
+    cooldownPeriod: 300
   env: []
 camunda-platform:
   global:
@@ -570,6 +581,17 @@ identity:
 mpesa:
   enabled: true
   replicas: 1
+  # KEDA ScaledObject on the Zeebe job backlog for this connector's job type. Off by default;
+  # when on, Helm stops rendering `replicas` and KEDA owns the count. Thresholds and bounds
+  # are placeholders until set from a load test.
+  autoscaling:
+    enabled: false
+    jobType: init-transfer
+    minReplicas: 2
+    maxReplicas: 6
+    waitingJobsPerPod: 10
+    pollingInterval: 30
+    cooldownPeriod: 300
   image: "oaftech.azurecr.io/phee-ns/ph-ee-connector-mpesa"
   imageTag: "v1.4.1"
   imagePullPolicy: IfNotPresent
@@ -1429,6 +1451,17 @@ fineract_connector:
 airtel_connector:
   enabled: true
   replicas: 1
+  # KEDA ScaledObject on the Zeebe job backlog for this connector's job type. Off by default;
+  # when on, Helm stops rendering `replicas` and KEDA owns the count. Thresholds and bounds
+  # are placeholders until set from a load test.
+  autoscaling:
+    enabled: false
+    jobType: init-airtel-transfer
+    minReplicas: 2
+    maxReplicas: 6
+    waitingJobsPerPod: 10
+    pollingInterval: 30
+    cooldownPeriod: 300
   image: "oaftech.azurecr.io/oneacrefund/airtel-connector"
   imageTag: "0.0.1"
   imagePullPolicy: "IfNotPresent"
@@ -1658,3 +1691,8 @@ bancobu_connector:
       business_short_code: "24322607"
       currency: "BIF"
       base_url: "http://ph-ee-connector-ams-fineract"
+
+# Shared by the connector ScaledObjects: the Prometheus that serves the Zeebe job recording
+# rules from zeebe-monitoring.yaml.
+autoscaling:
+  prometheusServer: http://prometheus-kube-prometheus-prometheus.itoplane.svc.cluster.local:9090
