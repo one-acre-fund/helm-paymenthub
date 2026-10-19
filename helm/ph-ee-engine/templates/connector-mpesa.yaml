@@ -71,6 +71,8 @@ spec:
               value: "{{ .Values.mpesa.zeebe_client_request_timeout }}"
             - name: "ZEEBE_CLIENT_EVENLY-ALLOCATED-MAX-JOBS"
               value: "{{ .Values.mpesa.zeebe_client_evenly_allocated_max_jobs }}"
+            - name: "ZEEBE_CLIENT_JOB-TIMEOUT"
+              value: "{{ .Values.mpesa.zeebe_client_job_timeout }}"
             - name: "MPESA_LOCAL_HOST"
               value: "{{ .Values.mpesa.callback_host }}"
             - name: "MPESA_API_TIMEOUT"
