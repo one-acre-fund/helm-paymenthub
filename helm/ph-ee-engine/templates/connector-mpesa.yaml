@@ -7,7 +7,9 @@ metadata:
   labels:
     app: ph-ee-connector-mpesa
 spec:
+  {{- if not .Values.mpesa.autoscaling.enabled }}
   replicas: {{ .Values.mpesa.replicas }}
+  {{- end }}
   selector:
     matchLabels:
       app: ph-ee-connector-mpesa

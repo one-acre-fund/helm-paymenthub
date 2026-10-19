@@ -1,0 +1,35 @@
+{{- /*
+KEDA scales each outbound payment connector on the Zeebe broker's job backlog for its own
+job type. The backlog comes from the recording rules in zeebe-monitoring.yaml, served by the
+Prometheus named in .Values.autoscaling. CPU cannot drive this: the connectors spend their
+time waiting on the mobile-money provider and sit near idle under load. Off by default; when
+a connector's autoscaling is on, its Deployment stops rendering `replicas` and KEDA owns the
+count between minReplicas and maxReplicas.
+*/ -}}
+{{- range $name, $v := dict "ph-ee-connector-mpesa" .Values.mpesa "ph-ee-connector-airtel" .Values.airtel_connector "ph-ee-connector-ams-mtn-rw" .Values.mtn_rwanda_connector }}
+{{- if and $v.enabled $v.autoscaling.enabled }}
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: {{ $name }}
+  labels:
+    app: {{ $name }}
+spec:
+  scaleTargetRef:
+    name: {{ $name }}
+  minReplicaCount: {{ $v.autoscaling.minReplicas }}
+  maxReplicaCount: {{ $v.autoscaling.maxReplicas }}
+  pollingInterval: {{ $v.autoscaling.pollingInterval }}
+  cooldownPeriod: {{ $v.autoscaling.cooldownPeriod }}
+  triggers:
+    - type: prometheus
+      metadata:
+        serverAddress: {{ $.Values.autoscaling.prometheusServer | quote }}
+        # Jobs of this connector's type created in the window that no pod has picked up yet.
+        query: sum(ph:zeebe_jobs_waiting:2m{type={{ $v.autoscaling.jobType | quote }}})
+        # Desired pods = waiting jobs / this value, between the replica bounds.
+        threshold: {{ $v.autoscaling.waitingJobsPerPod | quote }}
+        activationThreshold: "1"
+{{- end }}
+{{- end }}
