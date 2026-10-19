@@ -8,6 +8,11 @@ metadata:
     app: ph-ee-connector-channel
 spec:
   replicas: {{ .Values.channel.replicas }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
       app: ph-ee-connector-channel
@@ -20,6 +25,7 @@ spec:
 {{ toYaml .Values.channel.deployment.annotations | indent 8 }}
 {{- end }}
     spec:
+      terminationGracePeriodSeconds: {{ .Values.channel.terminationGracePeriodSeconds }}
       containers:
         - name: ph-ee-connector-channel
           image: "{{ .Values.channel.image }}:{{ .Values.channel.imageTag }}"
@@ -214,6 +220,20 @@ spec:
     - hosts:
         - "{{ .Values.wildcardhostname }}"
       secretName: "{{ .Values.tls }}"
+---
+{{- if ge (int .Values.channel.replicas) 2 }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: ph-ee-connector-channel
+  labels:
+    app: ph-ee-connector-channel
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: ph-ee-connector-channel
+{{- end }}
 {{- end }}
 ---
 apiVersion: {{ .Values.service.apiversion }}

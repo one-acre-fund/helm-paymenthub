@@ -65,6 +65,8 @@ mtn_rwanda_connector:
         memory: 128Mi
         cpu: 100m
   replicas: 3
+  # Longer than the 60s provider timeout so a call in flight can finish on shutdown.
+  terminationGracePeriodSeconds: 90
   env: []
 camunda-platform:
   global:
@@ -342,6 +344,8 @@ kibana:
 channel:
   enabled: true
   replicas: 1
+  # Longer than the 60s provider timeout so a call in flight can finish on shutdown.
+  terminationGracePeriodSeconds: 90
   image: "oaftech.azurecr.io/phee-ns/ph-ee-connector-channel"
   imageTag: "v1.4.2"
   imagePullPolicy: IfNotPresent
@@ -570,6 +574,8 @@ identity:
 mpesa:
   enabled: true
   replicas: 1
+  # Longer than the 60s provider timeout so a call in flight can finish on shutdown.
+  terminationGracePeriodSeconds: 90
   image: "oaftech.azurecr.io/phee-ns/ph-ee-connector-mpesa"
   imageTag: "v1.4.1"
   imagePullPolicy: IfNotPresent
@@ -1429,6 +1435,8 @@ fineract_connector:
 airtel_connector:
   enabled: true
   replicas: 1
+  # Longer than the 60s provider timeout so a call in flight can finish on shutdown.
+  terminationGracePeriodSeconds: 90
   image: "oaftech.azurecr.io/oneacrefund/airtel-connector"
   imageTag: "0.0.1"
   imagePullPolicy: "IfNotPresent"
@@ -1524,6 +1532,8 @@ odoo_connector:
 tnm_connector:
   enabled: true
   replicas: 1
+  # Longer than the 60s provider timeout so a call in flight can finish on shutdown.
+  terminationGracePeriodSeconds: 90
   image: "oaftech.azurecr.io/oneacrefund/tnm-connector"
   imageTag: "1.0.0.2024.03.14.1 "
   imagePullPolicy: "IfNotPresent"
@@ -1570,6 +1580,8 @@ tnm_connector:
 nbs_connector:
   enabled: true
   replicas: 1
+  # Longer than the 60s provider timeout so a call in flight can finish on shutdown.
+  terminationGracePeriodSeconds: 90
   image: "oaftech.azurecr.io/oneacrefund/ph-ee-connector-nbs"
   imageTag: "1.0.0"
   imagePullPolicy: "IfNotPresent"
@@ -1618,6 +1630,8 @@ nbs_connector:
 bancobu_connector:
   enabled: true
   replicas: 1
+  # Longer than the 60s provider timeout so a call in flight can finish on shutdown.
+  terminationGracePeriodSeconds: 90
   image: "oaftech.azurecr.io/oneacrefund/ph-ee-connector-bancobu"
   imageTag: "1.0.0"
   imagePullPolicy: "IfNotPresent"
