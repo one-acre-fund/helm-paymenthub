@@ -25,6 +25,8 @@ spec:
           image: "{{ .Values.mpesa.image }}:{{ .Values.mpesa.imageTag }}"
           ports:
             - containerPort: 5000
+            - name: management
+              containerPort: 8080
           imagePullPolicy: "{{ .Values.mpesa.imagePullPolicy }}"
           livenessProbe:
             httpGet:
