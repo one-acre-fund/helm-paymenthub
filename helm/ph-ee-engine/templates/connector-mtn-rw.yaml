@@ -8,6 +8,11 @@ metadata:
     app: ph-ee-connector-ams-mtn-rw
 spec:
   replicas: {{ .Values.mtn_rwanda_connector.replicas }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
       app: ph-ee-connector-ams-mtn-rw
@@ -20,6 +25,7 @@ spec:
 {{ toYaml .Values.mtn_rwanda_connector.deployment.annotations | indent 8 }}
 {{- end }}
     spec:
+      terminationGracePeriodSeconds: {{ .Values.mtn_rwanda_connector.terminationGracePeriodSeconds }}
       containers:
         - name: ph-ee-connector-ams-mtn-rw
           image: "{{ .Values.mtn_rwanda_connector.image }}:{{ .Values.mtn_rwanda_connector.imageTag }}"
@@ -224,4 +230,18 @@ spec:
     app: ph-ee-connector-ams-mtn-rw
   sessionAffinity: None
   type: ClusterIP
+---
+{{- if ge (int .Values.mtn_rwanda_connector.replicas) 2 }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: ph-ee-connector-ams-mtn-rw
+  labels:
+    app: ph-ee-connector-ams-mtn-rw
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: ph-ee-connector-ams-mtn-rw
+{{- end }}
 {{- end}}
