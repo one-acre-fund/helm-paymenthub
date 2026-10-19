@@ -178,6 +178,17 @@ camunda-platform:
         value: hu.dpc.rt.kafkastreamer.exporter.KafkaExporter
       - name: ZEEBE_BROKER_EXPORTERS_KAFKA_JARPATH
         value: /exporters/ph-ee-kafka-exporter.jar
+      # Read by env-configured exporter builds (openMF/ph-ee-exporter v1.13.3 and later).
+      # Six partitions lets the importers scale to six replicas. The topic is created by the
+      # exporter on first start; an existing topic keeps its partition count until altered.
+      - name: ZEEBE_KAFKAEXPORT_URL
+        value: "kafka:9092"
+      - name: ZEEBE_KAFKAEXPORT_TOPIC
+        value: "zeebe-export"
+      - name: ZEEBE_KAFKAEXPORT_TOPIC_PARTITIONS
+        value: "6"
+      - name: ZEEBE_KAFKAEXPORT_TOPIC_REPLICATION_FACTOR
+        value: "1"
       - name: ZEEBE_BROKER_BACKPRESSURE_VEGAS_INITIALLIMIT
         value: "1000"
       - name: ZEEBE_BROKER_BACKPRESSURE_VEGAS_ALPHA
@@ -925,6 +936,25 @@ zeebe_ops:
 importer_es:
   enabled: true
   replicas: 1
+  # Kafka consumer settings. One fixed consumer group per importer so replicas share the
+  # partitions of the topic instead of each reading everything.
+  kafka:
+    brokers: "kafka:9092"
+    topic: "zeebe-export"
+    consumerGroup: "ph-ee-importer-es"
+    concurrency: 3
+  # KEDA ScaledObject on consumer-group lag. Off by default; when on, Helm stops rendering
+  # `replicas` and KEDA owns the count between minReplicas and maxReplicas.
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 6
+    lagThreshold: 1000
+    pollingInterval: 30
+    cooldownPeriod: 300
+    # Broker address as seen from the KEDA namespace. Empty means kafka.<release namespace>.svc.cluster.local:9092.
+    bootstrapServers: ""
+  terminationGracePeriodSeconds: 60
   image: "oaftech.azurecr.io/phee-ns/ph-ee-importer-es"
   imageTag: "v1.4.0"
   ELASTIC_APM_APPLICATION_PACKAGES: "org.mifos.phee.kafkastreamer.importer"
@@ -1005,9 +1035,11 @@ kafka:
   clusterId: "Kex3emHGSJSKbQVLxW0v_w"
   # Image default is 1G heap; keep below limits.memory.
   heapOpts: "-Xmx512m -Xms512m"
+  # Default partitions for new topics; the importers can scale to this many replicas.
+  numPartitions: 6
   persistence:
     enabled: false
-    # One topic, 7-day default retention. PVCs grow but never shrink, so start small.
+    # One topic with six partitions, 7-day default retention. PVCs grow but never shrink, so start small.
     size: 2Gi
     storageClass: ""
   # apache/kafka runs as uid 1000 (appuser); fsGroup makes the data volume writable.
@@ -1026,6 +1058,25 @@ kafka:
 importer_rdbms:
   enabled: true
   replicas: 1
+  # Kafka consumer settings. One fixed consumer group per importer so replicas share the
+  # partitions of the topic instead of each reading everything.
+  kafka:
+    brokers: "kafka:9092"
+    topic: "zeebe-export"
+    consumerGroup: "ph-ee-importer-rdbms"
+    concurrency: 3
+  # KEDA ScaledObject on consumer-group lag. Off by default; when on, Helm stops rendering
+  # `replicas` and KEDA owns the count between minReplicas and maxReplicas.
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 6
+    lagThreshold: 1000
+    pollingInterval: 30
+    cooldownPeriod: 300
+    # Broker address as seen from the KEDA namespace. Empty means kafka.<release namespace>.svc.cluster.local:9092.
+    bootstrapServers: ""
+  terminationGracePeriodSeconds: 60
   image: "oaftech.azurecr.io/phee-ns/ph-ee-importer-rdbms"
   imageTag: "v1.3.1"
   ELASTIC_APM_APPLICATION_PACKAGES: "hu.dpc.phee.operator"

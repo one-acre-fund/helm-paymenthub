@@ -1,0 +1,47 @@
+{{- if .Values.operations.enabled }}
+{{- range $name, $v := dict "ph-ee-importer-rdbms" .Values.importer_rdbms "ph-ee-importer-es" .Values.importer_es }}
+{{- if and $v.enabled $v.autoscaling.enabled }}
+---
+# KEDA scales the Deployment on consumer-group lag. Replicas are capped at the topic's
+# partition count by allowIdleConsumers=false, so maxReplicas above that is harmless.
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: {{ $name }}
+  labels:
+    app: {{ $name }}
+spec:
+  scaleTargetRef:
+    name: {{ $name }}
+  minReplicaCount: {{ $v.autoscaling.minReplicas }}
+  maxReplicaCount: {{ $v.autoscaling.maxReplicas }}
+  pollingInterval: {{ $v.autoscaling.pollingInterval }}
+  cooldownPeriod: {{ $v.autoscaling.cooldownPeriod }}
+  triggers:
+    - type: kafka
+      metadata:
+        # KEDA resolves this from its own namespace, so the bare Service name the importers use
+        # does not work here; default to the namespace-qualified name of the in-cluster broker.
+        bootstrapServers: "{{ $v.autoscaling.bootstrapServers | default (printf "kafka.%s.svc.cluster.local:9092" $.Release.Namespace) }}"
+        consumerGroup: "{{ $v.kafka.consumerGroup }}"
+        topic: "{{ $v.kafka.topic }}"
+        lagThreshold: "{{ $v.autoscaling.lagThreshold }}"
+        activationLagThreshold: "0"
+        allowIdleConsumers: "false"
+        offsetResetPolicy: "latest"
+        scaleToZeroOnInvalidOffset: "false"
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ $name }}
+  labels:
+    app: {{ $name }}
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: {{ $name }}
+{{- end }}
+{{- end }}
+{{- end }}
