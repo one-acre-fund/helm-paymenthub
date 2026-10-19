@@ -603,7 +603,9 @@ mpesa:
   zeebe_init_transfer_wait_timer: 15
   zeebe_client_keep_alive: "30s"
   zeebe_client_request_timeout: "30s"
-  zeebe_client_evenly_allocated_max_jobs: 64
+  zeebe_client_evenly_allocated_max_jobs: 20
+  # Above the 60s api_timeout so a provider call in flight is never cut short.
+  zeebe_client_job_timeout: "90s"
   # Redis is used as the connector's distributed store (access tokens, correlation IDs,
   # paybill reconciliation/workflow state, error-code cache) so this data is shared and
   # survives across pod restarts/rollouts instead of living in a single pod's memory.
