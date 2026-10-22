@@ -1035,8 +1035,11 @@ kafka:
   clusterId: "Kex3emHGSJSKbQVLxW0v_w"
   # Image default is 1G heap; keep below limits.memory.
   heapOpts: "-Xmx512m -Xms512m"
-  # Default partitions for new topics; the importers can scale to this many replicas.
-  numPartitions: 6
+  # Default partitions for new topics. Keep 1 while the deployed exporter still keys records by
+  # record id: after a Kafka restart the old importers' metadata request recreates `zeebe-export`
+  # before the exporter does, and a multi-partition topic with that key breaks per-instance order.
+  # Raise to 6 (the importers' maxReplicas) together with the rebuilt exporter (FD-1931 step 3).
+  numPartitions: 1
   persistence:
     enabled: false
     # One topic with six partitions, 7-day default retention. PVCs grow but never shrink, so start small.
