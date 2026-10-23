@@ -1,0 +1,208 @@
+From fcca33af45f45fe05500f49c4c0ad42f09d0418f Mon Sep 17 00:00:00 2001
+From: Yared Dejene <yareddej@gmail.com>
+Date: Fri, 23 Oct 2026 10:48:55 +0200
+Subject: [PATCH 1/2] Key Kafka records by process instance and version
+ 1.13.3-oaf.1 (FD-1931)
+
+---
+ pom.xml                                       |  2 +-
+ .../exporter/KafkaExporterClient.java         | 24 ++++++++++++++++++-
+ 2 files changed, 24 insertions(+), 2 deletions(-)
+
+diff --git a/pom.xml b/pom.xml
+index 0b3c8e8..00e935f 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -5,7 +5,7 @@
+ 
+     <groupId>hu.dpc.phee</groupId>
+     <artifactId>exporter</artifactId>
+-    <version>2.0.0-SNAPSHOT</version>
++    <version>1.13.3-oaf.1</version>
+ 
+     <properties>
+         <java.version>17</java.version>
+diff --git a/src/main/java/hu/dpc/rt/kafkastreamer/exporter/KafkaExporterClient.java b/src/main/java/hu/dpc/rt/kafkastreamer/exporter/KafkaExporterClient.java
+index 2bfecb1..6b31d17 100644
+--- a/src/main/java/hu/dpc/rt/kafkastreamer/exporter/KafkaExporterClient.java
++++ b/src/main/java/hu/dpc/rt/kafkastreamer/exporter/KafkaExporterClient.java
+@@ -1,6 +1,8 @@
+ package hu.dpc.rt.kafkastreamer.exporter;
+ 
+ import io.camunda.zeebe.protocol.record.Record;
++import io.camunda.zeebe.protocol.record.RecordValue;
++import io.camunda.zeebe.protocol.record.value.MessageRecordValue;
+ import org.apache.kafka.clients.CommonClientConfigs;
+ import org.apache.kafka.clients.admin.AdminClient;
+ import org.apache.kafka.clients.admin.NewTopic;
+@@ -11,6 +13,7 @@ import org.apache.kafka.common.config.SaslConfigs;
+ import org.apache.kafka.common.serialization.StringSerializer;
+ import org.slf4j.Logger;
+ 
++import java.lang.reflect.Method;
+ import java.util.*;
+ import java.util.concurrent.atomic.AtomicLong;
+ 
+@@ -80,13 +83,32 @@ public class KafkaExporterClient {
+             logger.trace("sending record to kafka: {}", record.toJson());
+             sentToKafka.incrementAndGet();
+             metrics.recordBulkSize(1);
+-            String key = Long.toString(record.getKey());
++            String key = extractKafkaKey(record);
+             producer.send(new ProducerRecord<>(configuration.kafkaTopic, key, record.toJson()));
+         } else {
+             logger.trace("skipping record: {}", record.toString());
+         }
+     }
+ 
++    // Key by process instance so every record of one instance lands on one partition and one
++    // importer replica sees them in order. Records without an instance (deployments, messages)
++    // keep the record key. Taken from openMF/ph-ee-exporter v8.4.0-1.3 (FD-1931).
++    private String extractKafkaKey(Record<?> record) {
++        String defaultKey = Long.toString(record.getKey());
++        if (record.getValue() instanceof MessageRecordValue) {
++            return defaultKey;
++        }
++        Long processInstanceKey = null;
++        RecordValue value = record.getValue();
++        try {
++            Method method = value.getClass().getMethod("getProcessInstanceKey");
++            processInstanceKey = (Long) method.invoke(value);
++        } catch (Exception e) {
++            logger.warn("Failed to get process instance key from record of type {}, proceeding with record key", value.getClass().getName());
++        }
++        return processInstanceKey != null && processInstanceKey > 0 ? Long.toString(processInstanceKey) : defaultKey;
++    }
++
+     /**
+      * @return true if all bulk records where flushed successfully
+      */
+-- 
+2.50.1 (Apple Git-155)
+
+
+From 46dde241427af0a48c364cb46d3c1159edb38a67 Mon Sep 17 00:00:00 2001
+From: Yared Dejene <yareddej@gmail.com>
+Date: Fri, 23 Oct 2026 11:00:29 +0200
+Subject: [PATCH 2/2] Unit check for the per-instance Kafka key
+
+---
+ pom.xml                                       | 17 +++++++
+ .../exporter/KafkaExporterClient.java         |  4 +-
+ .../exporter/KafkaExporterClientTest.java     | 50 +++++++++++++++++++
+ 3 files changed, 69 insertions(+), 2 deletions(-)
+ create mode 100644 src/test/java/hu/dpc/rt/kafkastreamer/exporter/KafkaExporterClientTest.java
+
+diff --git a/pom.xml b/pom.xml
+index 00e935f..ee46090 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -57,10 +57,27 @@
+             <version>${json.version}</version>
+             <scope>provided</scope>
+         </dependency>
++        <dependency>
++            <groupId>org.junit.jupiter</groupId>
++            <artifactId>junit-jupiter</artifactId>
++            <version>5.10.2</version>
++            <scope>test</scope>
++        </dependency>
++        <dependency>
++            <groupId>org.mockito</groupId>
++            <artifactId>mockito-core</artifactId>
++            <version>5.11.0</version>
++            <scope>test</scope>
++        </dependency>
+     </dependencies>
+ 
+     <build>
+         <plugins>
++            <plugin>
++                <groupId>org.apache.maven.plugins</groupId>
++                <artifactId>maven-surefire-plugin</artifactId>
++                <version>3.2.5</version>
++            </plugin>
+             <plugin>
+                 <groupId>org.apache.maven.plugins</groupId>
+                 <artifactId>maven-shade-plugin</artifactId>
+diff --git a/src/main/java/hu/dpc/rt/kafkastreamer/exporter/KafkaExporterClient.java b/src/main/java/hu/dpc/rt/kafkastreamer/exporter/KafkaExporterClient.java
+index 6b31d17..895272d 100644
+--- a/src/main/java/hu/dpc/rt/kafkastreamer/exporter/KafkaExporterClient.java
++++ b/src/main/java/hu/dpc/rt/kafkastreamer/exporter/KafkaExporterClient.java
+@@ -83,7 +83,7 @@ public class KafkaExporterClient {
+             logger.trace("sending record to kafka: {}", record.toJson());
+             sentToKafka.incrementAndGet();
+             metrics.recordBulkSize(1);
+-            String key = extractKafkaKey(record);
++            String key = extractKafkaKey(record, logger);
+             producer.send(new ProducerRecord<>(configuration.kafkaTopic, key, record.toJson()));
+         } else {
+             logger.trace("skipping record: {}", record.toString());
+@@ -93,7 +93,7 @@ public class KafkaExporterClient {
+     // Key by process instance so every record of one instance lands on one partition and one
+     // importer replica sees them in order. Records without an instance (deployments, messages)
+     // keep the record key. Taken from openMF/ph-ee-exporter v8.4.0-1.3 (FD-1931).
+-    private String extractKafkaKey(Record<?> record) {
++    static String extractKafkaKey(Record<?> record, Logger logger) {
+         String defaultKey = Long.toString(record.getKey());
+         if (record.getValue() instanceof MessageRecordValue) {
+             return defaultKey;
+diff --git a/src/test/java/hu/dpc/rt/kafkastreamer/exporter/KafkaExporterClientTest.java b/src/test/java/hu/dpc/rt/kafkastreamer/exporter/KafkaExporterClientTest.java
+new file mode 100644
+index 0000000..a8f17e9
+--- /dev/null
++++ b/src/test/java/hu/dpc/rt/kafkastreamer/exporter/KafkaExporterClientTest.java
+@@ -0,0 +1,50 @@
++package hu.dpc.rt.kafkastreamer.exporter;
++
++import io.camunda.zeebe.protocol.record.Record;
++import io.camunda.zeebe.protocol.record.RecordValue;
++import io.camunda.zeebe.protocol.record.value.MessageRecordValue;
++import io.camunda.zeebe.protocol.record.value.ProcessInstanceRecordValue;
++import io.camunda.zeebe.protocol.record.value.DeploymentRecordValue;
++import org.junit.jupiter.api.Test;
++import org.slf4j.Logger;
++
++import static org.junit.jupiter.api.Assertions.assertEquals;
++import static org.mockito.Mockito.mock;
++import static org.mockito.Mockito.when;
++
++// Records of one process instance must share a Kafka key so they stay on one partition.
++class KafkaExporterClientTest {
++
++    private final Logger logger = mock(Logger.class);
++
++    @Test
++    void keysByProcessInstanceWhenTheValueHasOne() {
++        ProcessInstanceRecordValue value = mock(ProcessInstanceRecordValue.class);
++        when(value.getProcessInstanceKey()).thenReturn(4503599629614132L);
++        assertEquals("4503599629614132", KafkaExporterClient.extractKafkaKey(record(value, 2251799813685249L), logger));
++    }
++
++    @Test
++    void fallsBackToTheRecordKeyWithoutAnInstance() {
++        ProcessInstanceRecordValue value = mock(ProcessInstanceRecordValue.class);
++        when(value.getProcessInstanceKey()).thenReturn(-1L);
++        assertEquals("77", KafkaExporterClient.extractKafkaKey(record(value, 77L), logger));
++
++        DeploymentRecordValue deployment = mock(DeploymentRecordValue.class);
++        assertEquals("78", KafkaExporterClient.extractKafkaKey(record(deployment, 78L), logger));
++    }
++
++    @Test
++    void messagesKeepTheRecordKey() {
++        MessageRecordValue value = mock(MessageRecordValue.class);
++        assertEquals("79", KafkaExporterClient.extractKafkaKey(record(value, 79L), logger));
++    }
++
++    @SuppressWarnings("unchecked")
++    private static Record<?> record(RecordValue value, long key) {
++        Record<RecordValue> record = mock(Record.class);
++        when(record.getKey()).thenReturn(key);
++        when(record.getValue()).thenReturn(value);
++        return record;
++    }
++}
+-- 
+2.50.1 (Apple Git-155)
+
