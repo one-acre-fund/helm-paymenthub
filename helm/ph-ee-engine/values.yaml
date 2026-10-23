@@ -295,6 +295,9 @@ elasticsearch:
   APM_SERVER_URLS: "https://api.qa.oneacrefund.org/apm"
   APM_SECRET_TOKEN: "changeme"
   minimumMasterNodes: 1
+  # Single node: replica shards never allocate, so the cluster stays yellow after any restart
+  # and the chart default (wait_for_status=green) keeps the pod unready forever.
+  clusterHealthCheckParams: "wait_for_status=yellow&timeout=1s"
   protocol: https
   esConfig:
     elasticsearch.yml: |
