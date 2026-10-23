@@ -1661,3 +1661,11 @@ bancobu_connector:
       business_short_code: "24322607"
       currency: "BIF"
       base_url: "http://ph-ee-connector-ams-fineract"
+
+# Prometheus Operator objects for the central kube-prometheus stack: the Zeebe PodMonitor and
+# the job recording rules the connector autoscaling reads. Off by default because creating
+# these objects needs RBAC the release does not hold in every cluster, and a missing permission
+# fails the whole upgrade. Turn on only where PodMonitors and PrometheusRules may be created.
+monitoring:
+  enabled: false
+  release_label: prometheus
