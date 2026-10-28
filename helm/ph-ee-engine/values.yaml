@@ -525,10 +525,11 @@ operations_app:
     port: 3306
     schema: "tenants"
   aws:
-    bucket: ""
     region: "eu-west-1"
     accessKey: ""
     secretKey: ""
+    buckets:
+      exports: ""
   limits:
     memory: "512M"
     cpu: "500m"
