@@ -90,14 +90,8 @@ spec:
               value: "{{ .Values.elasticsearch.ELASTIC_APM_SECRET_TOKEN }}"
             - name: ELASTIC_APM_APPLICATION_PACKAGES
               value: "{{ .Values.operations_app.ELASTIC_APM_APPLICATION_PACKAGES }}"
-            {{- if .Values.operations_app.aws.buckets.exports }}
-            {{- if not .Values.operations_app.aws.accessKey }}
-            {{- fail "operations_app.aws.accessKey is required when operations_app.aws.buckets.exports is set" }}
-            {{- end }}
             - name: "EXPORT_BUCKETNAME"
-              value: "{{ .Values.operations_app.aws.buckets.exports }}"
-            {{- end }}
-            {{- if .Values.operations_app.aws.accessKey }}
+              value: "{{ required "operations_app.aws.buckets.exports is required" .Values.operations_app.aws.buckets.exports }}"
             - name: "CLOUD_AWS_REGION_STATIC"
               value: "{{ .Values.operations_app.aws.region }}"
             - name: "AWS_ACCESS_KEY"
@@ -110,7 +104,6 @@ spec:
                 secretKeyRef:
                   name: "operations-app-secret"
                   key: "aws-secret-key"
-            {{- end }}
       initContainers:
         - name: wait-db
           image: jwilder/dockerize
@@ -146,10 +139,8 @@ metadata:
 type: Opaque
 data:
   database-password: {{ .Values.operations_app.datasource.password | b64enc }}
-  {{- if .Values.operations_app.aws.accessKey }}
-  aws-access-key: {{ .Values.operations_app.aws.accessKey | b64enc }}
-  aws-secret-key: {{ required "operations_app.aws.secretKey is required when operations_app.aws.accessKey is set" .Values.operations_app.aws.secretKey | b64enc }}
-  {{- end }}
+  aws-access-key: {{ required "operations_app.aws.accessKey is required" .Values.operations_app.aws.accessKey | b64enc }}
+  aws-secret-key: {{ required "operations_app.aws.secretKey is required" .Values.operations_app.aws.secretKey | b64enc }}
 ---
 {{- if .Values.operations_app.ingress.enabled }}
 apiVersion: {{ .Values.ingress.apiversion }}
