@@ -524,6 +524,12 @@ operations_app:
     host: "operationsmysql"
     port: 3306
     schema: "tenants"
+  aws:
+    region: "eu-west-1"
+    accessKey: ""
+    secretKey: ""
+    buckets:
+      exports: ""
   limits:
     memory: "512M"
     cpu: "500m"
