@@ -222,15 +222,15 @@ camunda-platform:
       co.elastic.logs/multiline.pattern: '^\d{4}-\d{2}-\d{2}\s(\d\d:){2}\d{2}.\d{3}\s'
       co.elastic.logs/multiline.negate: "true"
       co.elastic.logs/multiline.match: 'after'
-    # camunda-platform 8.2.x only renders extraInitContainers; a plain initContainers key is ignored.
-    # exporter-1.13.3-oaf.1.jar is openMF/ph-ee-exporter v1.13.3 (Zeebe 8.2) keyed by process
-    # instance (FD-1931); the source change is helm/exporter-1.13.3-oaf.1.patch. The release
-    # pipeline overrides this whole block in my-values.yaml, so the URL must be changed there too.
+    # Image built by one-acre-fund/ph-ee-exporter; its default command copies the JAR to /exporters/.
+    kafkaExporter:
+      image: ""
+      imageTag: ""
+    # camunda-platform 8.2.x only renders extraInitContainers (through tpl); a plain initContainers key is ignored.
     extraInitContainers:
       - name: init-ph-ee-kafka-exporter
-        image: alpine:3.20
-        command: ['/bin/sh', '-c']
-        args: ['wget -O /exporters/ph-ee-kafka-exporter.jar https://raw.githubusercontent.com/one-acre-fund/helm-paymenthub/develop/helm/exporter-1.13.3-oaf.1.jar; ls -al /exporters/']
+        image: '{{ required "kafkaExporter.image is required" .Values.kafkaExporter.image }}:{{ required "kafkaExporter.imageTag is required" .Values.kafkaExporter.imageTag }}'
+        imagePullPolicy: IfNotPresent
         resources:
           limits: {cpu: 100m, memory: 128Mi}
           requests: {cpu: 100m, memory: 128Mi}
