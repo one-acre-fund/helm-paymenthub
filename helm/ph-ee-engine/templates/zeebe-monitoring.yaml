@@ -1,0 +1,55 @@
+{{- if .Values.monitoring.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: ph-zeebe
+  labels:
+    release: {{ .Values.monitoring.release_label }}
+    app.kubernetes.io/name: zeebe
+spec:
+  namespaceSelector:
+    matchNames: [{{ .Release.Namespace }}]
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: zeebe
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: zeebe-broker
+  podMetricsEndpoints:
+    - port: http
+      path: /actuator/prometheus
+      interval: 30s
+      scrapeTimeout: 10s
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: zeebe_broker
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: ph-zeebe-jobs
+  labels:
+    release: {{ .Values.monitoring.release_label }}
+spec:
+  groups:
+    - name: zeebe-jobs
+      interval: 30s
+      rules:
+        # Jobs created in the window that no worker has picked up yet, per job type.
+        # Windowed so a broker restart (counters reset) does not skew it; retries can
+        # make activated exceed created, hence the clamp.
+        - record: ph:zeebe_jobs_waiting:2m
+          expr: >-
+            clamp_min(
+              sum by (type) (increase(zeebe_job_events_total{action="created"}[2m]))
+              - sum by (type) (increase(zeebe_job_events_total{action="activated"}[2m])),
+            0)
+        - record: ph:zeebe_jobs_in_flight
+          expr: >-
+            clamp_min(
+              sum by (type) (zeebe_job_events_total{action="activated"})
+              - sum by (type) (zeebe_job_events_total{action="completed"})
+              - sum by (type) (zeebe_job_events_total{action="failed"}),
+            0)
+        - record: ph:zeebe_job_wait_seconds:p95
+          expr: histogram_quantile(0.95, sum by (le) (rate(zeebe_job_activation_time_bucket[5m])))
+{{- end }}
