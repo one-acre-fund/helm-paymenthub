@@ -8,6 +8,11 @@ metadata:
     app: ph-ee-connector-nbs
 spec:
   replicas: {{ .Values.nbs_connector.replicas }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
       app: ph-ee-connector-nbs
@@ -20,6 +25,7 @@ spec:
 {{ toYaml .Values.nbs_connector.deployment.annotations | indent 8 }}
 {{- end }}
     spec:
+      terminationGracePeriodSeconds: {{ .Values.nbs_connector.terminationGracePeriodSeconds }}
       containers:
         - name: ph-ee-connector-nbs
           image: "{{ .Values.nbs_connector.image }}:{{ .Values.nbs_connector.imageTag }}"
@@ -140,4 +146,18 @@ spec:
     app: ph-ee-connector-nbs
   sessionAffinity: None
   type: ClusterIP
+---
+{{- if ge (int .Values.nbs_connector.replicas) 2 }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: ph-ee-connector-nbs
+  labels:
+    app: ph-ee-connector-nbs
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: ph-ee-connector-nbs
+{{- end }}
 {{- end}}

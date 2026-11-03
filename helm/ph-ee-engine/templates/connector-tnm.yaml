@@ -8,6 +8,11 @@ metadata:
     app: ph-ee-connector-tnm
 spec:
   replicas: {{ .Values.tnm_connector.replicas }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
       app: ph-ee-connector-tnm
@@ -20,6 +25,7 @@ spec:
 {{ toYaml .Values.tnm_connector.deployment.annotations | indent 8 }}
 {{- end }}
     spec:
+      terminationGracePeriodSeconds: {{ .Values.tnm_connector.terminationGracePeriodSeconds }}
       containers:
         - name: ph-ee-connector-tnm
           image: "{{ .Values.tnm_connector.image }}:{{ .Values.tnm_connector.imageTag }}"
@@ -136,4 +142,18 @@ spec:
     app: ph-ee-connector-tnm
   sessionAffinity: None
   type: ClusterIP
+---
+{{- if ge (int .Values.tnm_connector.replicas) 2 }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: ph-ee-connector-tnm
+  labels:
+    app: ph-ee-connector-tnm
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: ph-ee-connector-tnm
+{{- end }}
 {{- end}}

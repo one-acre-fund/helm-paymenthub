@@ -8,6 +8,11 @@ metadata:
     app: ph-ee-connector-mpesa
 spec:
   replicas: {{ .Values.mpesa.replicas }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
       app: ph-ee-connector-mpesa
@@ -20,6 +25,7 @@ spec:
 {{ toYaml .Values.mpesa.deployment.annotations | indent 8 }}
 {{- end }}
     spec:
+      terminationGracePeriodSeconds: {{ .Values.mpesa.terminationGracePeriodSeconds }}
       containers:
         - name: ph-ee-connector-mpesa
           image: "{{ .Values.mpesa.image }}:{{ .Values.mpesa.imageTag }}"
@@ -410,4 +416,18 @@ spec:
       secretName: "{{ .Values.tls }}"
 {{- end }}
 
+---
+{{- if ge (int .Values.mpesa.replicas) 2 }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: ph-ee-connector-mpesa
+  labels:
+    app: ph-ee-connector-mpesa
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: ph-ee-connector-mpesa
+{{- end }}
 {{- end }}
