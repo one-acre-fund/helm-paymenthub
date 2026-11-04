@@ -7,7 +7,9 @@ metadata:
   labels:
     app: ph-ee-connector-airtel
 spec:
+  {{- if not .Values.airtel_connector.autoscaling.enabled }}
   replicas: {{ .Values.airtel_connector.replicas }}
+  {{- end }}
   selector:
     matchLabels:
       app: ph-ee-connector-airtel
