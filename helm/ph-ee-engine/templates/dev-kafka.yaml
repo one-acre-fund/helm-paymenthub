@@ -112,6 +112,9 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /var/lib/kafka/data
+              # A formatted block volume carries lost+found at its root and Kafka refuses
+              # to start with a foreign directory in a log dir, so use a subdirectory.
+              subPath: kafka
       volumes:
         - name: data
           {{- if .Values.kafka.persistence.enabled }}
