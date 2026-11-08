@@ -530,6 +530,14 @@ operations_app:
     secretKey: ""
     buckets:
       exports: ""
+  # FD-1737: monthly retention of the partitioned variables table. Off until the table has been cut over
+  # (V56 and the runbook); the job skips tenants whose table is not partitioned. months is read on every run,
+  # so it can be changed without a release. dryRun logs what would be archived and dropped and changes nothing.
+  variablesRetention:
+    enabled: false
+    months: 12
+    aheadMonths: 3
+    dryRun: false
   limits:
     memory: "512M"
     cpu: "500m"
