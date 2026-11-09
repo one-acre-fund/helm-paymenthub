@@ -14,7 +14,7 @@ enable it. This file covers only the airtel-specific stubs below.
 | File | Endpoint | Mimics |
 |---|---|---|
 | `airtel-01-oauth-token.json` | `POST /auth/oauth2/token` | OAuth2 token endpoint (JSON body with `client_id`/`client_secret`/`grant_type`). Returns a fresh `access_token` on every call. |
-| `airtel-02-collection-request.json` | `POST /merchant/v1/payments/` | Collection request (default/catch-all). Returns `200` with `data.transaction.status: "TIP"` (transaction in progress) and a `success: true` status envelope, **and** fires a WireMock webhook ~3s later that `POST`s a `TS` (success) callback to the connector's `/collections/callback` — this is what simulates Airtel notifying the connector once the customer approves the payment on their phone. |
+| `airtel-02-collection-request.json` | `POST /merchant/v1/payments/` | Collection request (default/catch-all). Returns `200` with `data.transaction.status: "TIP"` (transaction in progress) and a `success: true` status envelope, **and** fires a WireMock webhook 5–10s later that `POST`s a `TS` (success) callback to the connector's `/collections/callback` — this is what simulates Airtel notifying the connector once the customer approves the payment on their phone. |
 | `airtel-02-collection-request-error-*.json` | `POST /merchant/v1/payments/` | Collection request **synchronous** failures — see "Simulating failures" below. Matched by `subscriber.msisdn`, higher priority than the default stub above. |
 | `airtel-02-collection-request-callback-*.json` | `POST /merchant/v1/payments/` | Collection request that is accepted synchronously but whose webhook delivers a **failing** (`TF`) callback — see "Simulating failures" below. Matched by `subscriber.msisdn`, higher priority than the default stub above. |
 | `airtel-02-collection-request-no-callback.json` | `POST /merchant/v1/payments/` | Collection request that is accepted synchronously but has **no callback webhook at all** — simulates a callback Airtel never delivers. See "Simulating failures" below. |
@@ -75,7 +75,7 @@ the connector surfaces the HTTP status as the error code and stores the raw body
 information.
 
 **Asynchronous callback failures** — the collection request is accepted normally (`200`,
-`TIP`), but the webhook that fires ~3s later delivers a failing callback
+`TIP`), but the webhook that fires 5–10s later delivers a failing callback
 (`status_code: "TF"` with a `message`, and no `airtel_money_id` — matching what Airtel sends
 when a transaction doesn't complete):
 
@@ -162,7 +162,7 @@ than by calling the connector directly. What happens once it starts:
    (`airtel-01-oauth-token.json`).
 2. It calls the collection request endpoint (`airtel-02-collection-request.json`), which
    responds `200` with `TIP`, and schedules the callback webhook.
-3. ~3s later, `paymenthub-wiremock` `POST`s the callback to the connector's own
+3. 5–10s later, `paymenthub-wiremock` `POST`s the callback to the connector's own
    `/collections/callback`, completing the transaction (`status_code: "TS"`).
 4. If the callback doesn't arrive in time, the workflow's boundary timer makes the connector
    poll `GET /standard/v1/payments/{transactionId}`

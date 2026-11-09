@@ -1408,6 +1408,7 @@ tupande_connector:
       enabled: true
   tupande:
     base_url: "https://us-central1-tupandeonline-qa.cloudfunctions.net"
+    confirmation_endpoint: "/api/v1/payments/payment-hub/confirmation"
     auth_header: ""
   deployment:
     annotations:

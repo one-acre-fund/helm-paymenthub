@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
   <hashTree>
-    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="paymenthub-collection mpesa/mtn/airtel scenario load test" enabled="true">
-      <stringProp name="TestPlan.comments">Drives the /channel/channel/collection flow across every phone-number scenario documented in config/wiremock/{mpesa,mtn,airtel}/README.md (success, synchronous provider errors, failing callbacks, and the never-delivered callback). One collection thread group per connector, each cycling its own *_scenarios.csv at a steady 50 requests/minute for 5 minutes (150 req/min of collections by default); plus an airtel paybill group sending validation + confirmation pairs that share one unique transactionId, at 50 transactions/minute. Set a group's *_THREADS property to 0 to skip it. Point HOST/PROTOCOL/PORT at whichever environment has paymenthub-wiremock enabled (default: the QA channel host).</stringProp>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="paymenthub collection and paybill load test" enabled="true">
+      <stringProp name="TestPlan.comments">Drives the collection and paybill APIs across the scenarios in the wiremock READMEs and the requests in the Payment Hub Bruno collection, and writes a manifest of every transaction for reconcile_with_ops.py. See README.md.</stringProp>
       <boolProp name="TestPlan.functional_mode">false</boolProp>
       <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
       <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
@@ -84,22 +84,142 @@
           </elementProp>
           <elementProp name="AIRTEL_PAYBILL_ACCOUNT_NUMBER" elementType="Argument">
             <stringProp name="Argument.name">AIRTEL_PAYBILL_ACCOUNT_NUMBER</stringProp>
-            <stringProp name="Argument.value">${__P(AIRTEL_PAYBILL_ACCOUNT_NUMBER,24039542)}</stringProp>
+            <stringProp name="Argument.value">${__P(AIRTEL_PAYBILL_ACCOUNT_NUMBER,26663870)}</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="AIRTEL_PAYBILL_MSISDN" elementType="Argument">
             <stringProp name="Argument.name">AIRTEL_PAYBILL_MSISDN</stringProp>
-            <stringProp name="Argument.value">${__P(AIRTEL_PAYBILL_MSISDN,07912345672)}</stringProp>
+            <stringProp name="Argument.value">${__P(AIRTEL_PAYBILL_MSISDN,265991234567)}</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="AIRTEL_PAYBILL_AMOUNT" elementType="Argument">
             <stringProp name="Argument.name">AIRTEL_PAYBILL_AMOUNT</stringProp>
-            <stringProp name="Argument.value">${__P(AIRTEL_PAYBILL_AMOUNT,200)}</stringProp>
+            <stringProp name="Argument.value">${__P(AIRTEL_PAYBILL_AMOUNT,20)}</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="AIRTEL_PAYBILL_CURRENCY" elementType="Argument">
             <stringProp name="Argument.name">AIRTEL_PAYBILL_CURRENCY</stringProp>
             <stringProp name="Argument.value">${__P(AIRTEL_PAYBILL_CURRENCY,MWK)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="PLAN_DIR" elementType="Argument">
+            <stringProp name="Argument.name">PLAN_DIR</stringProp>
+            <stringProp name="Argument.value">${__BeanShell(org.apache.jmeter.services.FileServer.getFileServer().getBaseDir())}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="MANIFEST_FILE" elementType="Argument">
+            <stringProp name="Argument.name">MANIFEST_FILE</stringProp>
+            <stringProp name="Argument.value">${__P(MANIFEST_FILE,transactions-manifest-${__time(yyyyMMdd-HHmmss,)}.csv)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="MPESA_PAYBILL_SHORTCODE" elementType="Argument">
+            <stringProp name="Argument.name">MPESA_PAYBILL_SHORTCODE</stringProp>
+            <stringProp name="Argument.value">${__P(MPESA_PAYBILL_SHORTCODE,840700)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="MPESA_PAYBILL_ACCOUNT_NUMBER" elementType="Argument">
+            <stringProp name="Argument.name">MPESA_PAYBILL_ACCOUNT_NUMBER</stringProp>
+            <stringProp name="Argument.value">${__P(MPESA_PAYBILL_ACCOUNT_NUMBER,6064956)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="MPESA_PAYBILL_MSISDN" elementType="Argument">
+            <stringProp name="Argument.name">MPESA_PAYBILL_MSISDN</stringProp>
+            <stringProp name="Argument.value">${__P(MPESA_PAYBILL_MSISDN,254786298076)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="MPESA_PAYBILL_AMOUNT" elementType="Argument">
+            <stringProp name="Argument.name">MPESA_PAYBILL_AMOUNT</stringProp>
+            <stringProp name="Argument.value">${__P(MPESA_PAYBILL_AMOUNT,1)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="TNM_PAYBILL_SHORTCODE" elementType="Argument">
+            <stringProp name="Argument.name">TNM_PAYBILL_SHORTCODE</stringProp>
+            <stringProp name="Argument.value">${__P(TNM_PAYBILL_SHORTCODE,24322607)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="TNM_PAYBILL_ACCOUNT_NUMBER" elementType="Argument">
+            <stringProp name="Argument.name">TNM_PAYBILL_ACCOUNT_NUMBER</stringProp>
+            <stringProp name="Argument.value">${__P(TNM_PAYBILL_ACCOUNT_NUMBER,24039542)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="TNM_PAYBILL_VALIDATE_MSISDN" elementType="Argument">
+            <stringProp name="Argument.name">TNM_PAYBILL_VALIDATE_MSISDN</stringProp>
+            <stringProp name="Argument.value">${__P(TNM_PAYBILL_VALIDATE_MSISDN,07912345672)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="TNM_PAYBILL_CONFIRM_MSISDN" elementType="Argument">
+            <stringProp name="Argument.name">TNM_PAYBILL_CONFIRM_MSISDN</stringProp>
+            <stringProp name="Argument.value">${__P(TNM_PAYBILL_CONFIRM_MSISDN,07912345672)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="TNM_PAYBILL_AMOUNT" elementType="Argument">
+            <stringProp name="Argument.name">TNM_PAYBILL_AMOUNT</stringProp>
+            <stringProp name="Argument.value">${__P(TNM_PAYBILL_AMOUNT,20)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="TNM_PAYBILL_CURRENCY" elementType="Argument">
+            <stringProp name="Argument.name">TNM_PAYBILL_CURRENCY</stringProp>
+            <stringProp name="Argument.value">${__P(TNM_PAYBILL_CURRENCY,MWK)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="NBS_PAYBILL_SHORTCODE" elementType="Argument">
+            <stringProp name="Argument.name">NBS_PAYBILL_SHORTCODE</stringProp>
+            <stringProp name="Argument.value">${__P(NBS_PAYBILL_SHORTCODE,24322607)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="NBS_PAYBILL_ACCOUNT_NUMBER" elementType="Argument">
+            <stringProp name="Argument.name">NBS_PAYBILL_ACCOUNT_NUMBER</stringProp>
+            <stringProp name="Argument.value">${__P(NBS_PAYBILL_ACCOUNT_NUMBER,24039542)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="NBS_PAYBILL_VALIDATE_MSISDN" elementType="Argument">
+            <stringProp name="Argument.name">NBS_PAYBILL_VALIDATE_MSISDN</stringProp>
+            <stringProp name="Argument.value">${__P(NBS_PAYBILL_VALIDATE_MSISDN,07912345672)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="NBS_PAYBILL_CONFIRM_MSISDN" elementType="Argument">
+            <stringProp name="Argument.name">NBS_PAYBILL_CONFIRM_MSISDN</stringProp>
+            <stringProp name="Argument.value">${__P(NBS_PAYBILL_CONFIRM_MSISDN,+250791504755)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="NBS_PAYBILL_AMOUNT" elementType="Argument">
+            <stringProp name="Argument.name">NBS_PAYBILL_AMOUNT</stringProp>
+            <stringProp name="Argument.value">${__P(NBS_PAYBILL_AMOUNT,22)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="NBS_PAYBILL_CURRENCY" elementType="Argument">
+            <stringProp name="Argument.name">NBS_PAYBILL_CURRENCY</stringProp>
+            <stringProp name="Argument.value">${__P(NBS_PAYBILL_CURRENCY,MWK)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="NBS_PAYBILL_CHANNEL_SOURCE" elementType="Argument">
+            <stringProp name="Argument.name">NBS_PAYBILL_CHANNEL_SOURCE</stringProp>
+            <stringProp name="Argument.value">${__P(NBS_PAYBILL_CHANNEL_SOURCE,MobileApp)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="NBS_PAYBILL_BANK_ACCOUNT_ID" elementType="Argument">
+            <stringProp name="Argument.name">NBS_PAYBILL_BANK_ACCOUNT_ID</stringProp>
+            <stringProp name="Argument.value">${__P(NBS_PAYBILL_BANK_ACCOUNT_ID,1000-2340-21)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="BANCOBU_PAYBILL_ACCOUNT_NUMBER" elementType="Argument">
+            <stringProp name="Argument.name">BANCOBU_PAYBILL_ACCOUNT_NUMBER</stringProp>
+            <stringProp name="Argument.value">${__P(BANCOBU_PAYBILL_ACCOUNT_NUMBER,10145882)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="BANCOBU_PAYBILL_MSISDN" elementType="Argument">
+            <stringProp name="Argument.name">BANCOBU_PAYBILL_MSISDN</stringProp>
+            <stringProp name="Argument.value">${__P(BANCOBU_PAYBILL_MSISDN,25779201720)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="BANCOBU_PAYBILL_AMOUNT" elementType="Argument">
+            <stringProp name="Argument.name">BANCOBU_PAYBILL_AMOUNT</stringProp>
+            <stringProp name="Argument.value">${__P(BANCOBU_PAYBILL_AMOUNT,22)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="BANCOBU_API_KEY" elementType="Argument">
+            <stringProp name="Argument.name">BANCOBU_API_KEY</stringProp>
+            <stringProp name="Argument.value">${__P(BANCOBU_API_KEY,)}</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
         </collectionProp>
@@ -125,7 +245,7 @@
         <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="mpesa scenarios" enabled="true">
           <stringProp name="filename">mpesa_scenarios.csv</stringProp>
           <stringProp name="fileEncoding">UTF-8</stringProp>
-          <stringProp name="variableNames">scenario,msisdn</stringProp>
+          <stringProp name="variableNames">scenario,msisdn,expected</stringProp>
           <boolProp name="ignoreFirstLine">true</boolProp>
           <stringProp name="delimiter">,</stringProp>
           <boolProp name="quotedData">false</boolProp>
@@ -205,7 +325,15 @@
           <stringProp name="HTTPSampler.connect_timeout"></stringProp>
           <stringProp name="HTTPSampler.response_timeout"></stringProp>
         </HTTPSamplerProxy>
-        <hashTree/>
+        <hashTree>
+          <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="record transaction" enabled="true">
+            <boolProp name="resetInterpreter">false</boolProp>
+            <stringProp name="parameters">mpesa_collection|${scenario}|${expected}|final|</stringProp>
+            <stringProp name="filename">${PLAN_DIR}/record_transaction.bsh</stringProp>
+            <stringProp name="script"></stringProp>
+          </BeanShellPostProcessor>
+          <hashTree/>
+        </hashTree>
 
       </hashTree>
       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="mtn collection - 50/min for 5min" enabled="true">
@@ -227,7 +355,7 @@
         <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="mtn scenarios" enabled="true">
           <stringProp name="filename">mtn_scenarios.csv</stringProp>
           <stringProp name="fileEncoding">UTF-8</stringProp>
-          <stringProp name="variableNames">scenario,msisdn</stringProp>
+          <stringProp name="variableNames">scenario,msisdn,expected</stringProp>
           <boolProp name="ignoreFirstLine">true</boolProp>
           <stringProp name="delimiter">,</stringProp>
           <boolProp name="quotedData">false</boolProp>
@@ -307,7 +435,15 @@
           <stringProp name="HTTPSampler.connect_timeout"></stringProp>
           <stringProp name="HTTPSampler.response_timeout"></stringProp>
         </HTTPSamplerProxy>
-        <hashTree/>
+        <hashTree>
+          <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="record transaction" enabled="true">
+            <boolProp name="resetInterpreter">false</boolProp>
+            <stringProp name="parameters">mtn_collection|${scenario}|${expected}|final|</stringProp>
+            <stringProp name="filename">${PLAN_DIR}/record_transaction.bsh</stringProp>
+            <stringProp name="script"></stringProp>
+          </BeanShellPostProcessor>
+          <hashTree/>
+        </hashTree>
 
       </hashTree>
       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="airtel collection - 50/min for 5min" enabled="true">
@@ -329,7 +465,7 @@
         <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="airtel scenarios" enabled="true">
           <stringProp name="filename">airtel_scenarios.csv</stringProp>
           <stringProp name="fileEncoding">UTF-8</stringProp>
-          <stringProp name="variableNames">scenario,msisdn</stringProp>
+          <stringProp name="variableNames">scenario,msisdn,expected</stringProp>
           <boolProp name="ignoreFirstLine">true</boolProp>
           <stringProp name="delimiter">,</stringProp>
           <boolProp name="quotedData">false</boolProp>
@@ -409,7 +545,15 @@
           <stringProp name="HTTPSampler.connect_timeout"></stringProp>
           <stringProp name="HTTPSampler.response_timeout"></stringProp>
         </HTTPSamplerProxy>
-        <hashTree/>
+        <hashTree>
+          <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="record transaction" enabled="true">
+            <boolProp name="resetInterpreter">false</boolProp>
+            <stringProp name="parameters">airtel_collection|${scenario}|${expected}|final|</stringProp>
+            <stringProp name="filename">${PLAN_DIR}/record_transaction.bsh</stringProp>
+            <stringProp name="script"></stringProp>
+          </BeanShellPostProcessor>
+          <hashTree/>
+        </hashTree>
 
       </hashTree>
 
@@ -437,7 +581,7 @@
                 <boolProp name="HTTPArgument.always_encode">false</boolProp>
                 <stringProp name="Argument.value">{
   "businessShortCode": "${AIRTEL_PAYBILL_SHORTCODE}",
-  "msisdn": "250986086783",
+  "msisdn": "${AIRTEL_PAYBILL_MSISDN}",
   "currency": "${AIRTEL_PAYBILL_CURRENCY}",
   "accountNumber": "${AIRTEL_PAYBILL_ACCOUNT_NUMBER}",
   "transactionId": "${transactionId}"
@@ -499,7 +643,11 @@
             </elementProp>
             <elementProp name="" elementType="Header">
               <stringProp name="Header.name">msisdn</stringProp>
-              <stringProp name="Header.value">${AIRTEL_PAYBILL_MSISDN}</stringProp>
+              <stringProp name="Header.value">07912345672</stringProp>
+            </elementProp>
+            <elementProp name="" elementType="Header">
+              <stringProp name="Header.name">platform-tenantid</stringProp>
+              <stringProp name="Header.value">oaf</stringProp>
             </elementProp>
             </collectionProp>
           </HeaderManager>
@@ -555,13 +703,998 @@
             </elementProp>
             <elementProp name="" elementType="Header">
               <stringProp name="Header.name">currency</stringProp>
-              <stringProp name="Header.value">RWF</stringProp>
+              <stringProp name="Header.value">${AIRTEL_PAYBILL_CURRENCY}</stringProp>
             </elementProp>
             </collectionProp>
           </HeaderManager>
           <hashTree/>
+          <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="record transaction" enabled="true">
+            <boolProp name="resetInterpreter">false</boolProp>
+            <stringProp name="parameters">airtel_paybill|success|SUCCESS|final|${transactionId}</stringProp>
+            <stringProp name="filename">${PLAN_DIR}/record_transaction.bsh</stringProp>
+            <stringProp name="script"></stringProp>
+          </BeanShellPostProcessor>
+          <hashTree/>
         </hashTree>
 
+      </hashTree>
+
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="collection variants - 50/min for 5min" enabled="true">
+        <stringProp name="ThreadGroup.comments">The other AMS, tenant and provider combinations from the Bruno Collection APIs folder, one per row of collection_variants.csv. The throughput is shared across all rows.</stringProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">true</boolProp>
+          <stringProp name="LoopController.loops">-1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">${__P(COLLECTION_VARIANTS_THREADS,5)}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">5</stringProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.duration">${__P(DURATION_SECONDS,300)}</stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+      </ThreadGroup>
+      <hashTree>
+      <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="collection variants" enabled="true">
+        <stringProp name="filename">${__P(COLLECTION_VARIANTS_FILE,collection_variants.csv)}</stringProp>
+        <stringProp name="fileEncoding">UTF-8</stringProp>
+        <stringProp name="variableNames">scenario,tenant,msisdn,identifier_key,identifier_value,amount,currency,expected</stringProp>
+        <boolProp name="ignoreFirstLine">true</boolProp>
+        <stringProp name="delimiter">,</stringProp>
+        <boolProp name="quotedData">false</boolProp>
+        <boolProp name="recycle">true</boolProp>
+        <boolProp name="stopThread">false</boolProp>
+        <stringProp name="shareMode">shareMode.all</stringProp>
+      </CSVDataSet>
+      <hashTree/>
+      <ConstantThroughputTimer guiclass="TestBeanGUI" testclass="ConstantThroughputTimer" testname="50 requests per minute" enabled="true">
+        <stringProp name="throughput">${__P(COLLECTION_VARIANTS_THROUGHPUT_PER_MIN,50)}</stringProp>
+        <intProp name="calcMode">2</intProp>
+      </ConstantThroughputTimer>
+      <hashTree/>
+      <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="collection headers" enabled="true">
+        <collectionProp name="HeaderManager.headers">
+        <elementProp name="" elementType="Header">
+          <stringProp name="Header.name">content-type</stringProp>
+          <stringProp name="Header.value">application/json</stringProp>
+        </elementProp>
+        <elementProp name="" elementType="Header">
+          <stringProp name="Header.name">platform-tenantid</stringProp>
+          <stringProp name="Header.value">${tenant}</stringProp>
+        </elementProp>
+        <elementProp name="" elementType="Header">
+          <stringProp name="Header.name">x-correlationid</stringProp>
+          <stringProp name="Header.value">${__UUID()}</stringProp>
+        </elementProp>
+        </collectionProp>
+      </HeaderManager>
+      <hashTree/>
+      <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="collection variants - POST /channel/channel/collection - ${scenario}" enabled="true">
+        <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+        <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+          <collectionProp name="Arguments.arguments">
+            <elementProp name="" elementType="HTTPArgument">
+              <boolProp name="HTTPArgument.always_encode">false</boolProp>
+              <stringProp name="Argument.value">{
+        "payer": [
+          {
+            "key": "MSISDN",
+            "value": "${msisdn}"
+          },
+          {
+            "key": "${identifier_key}",
+            "value": "${identifier_value}"
+          }
+        ],
+        "amount": {
+          "amount": "${amount}",
+          "currency": "${currency}"
+        },
+        "transactionType": {
+          "scenario": "MPESA",
+          "subScenario": "BUYGOODS",
+          "initiator": "PAYEE",
+          "initiatorType": "BUSINESS"
+        }
+      }</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+          </collectionProp>
+        </elementProp>
+        <stringProp name="HTTPSampler.domain">${HOST}</stringProp>
+        <stringProp name="HTTPSampler.port">${PORT}</stringProp>
+        <stringProp name="HTTPSampler.protocol">${PROTOCOL}</stringProp>
+        <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
+        <stringProp name="HTTPSampler.path">/channel/channel/collection</stringProp>
+        <stringProp name="HTTPSampler.method">POST</stringProp>
+        <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+        <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+        <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+        <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+        <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+        <stringProp name="HTTPSampler.response_timeout"></stringProp>
+      </HTTPSamplerProxy>
+      <hashTree>
+      <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="record transaction" enabled="true">
+        <boolProp name="resetInterpreter">false</boolProp>
+        <stringProp name="parameters">collection_variants|${scenario}|${expected}|final|</stringProp>
+        <stringProp name="filename">${PLAN_DIR}/record_transaction.bsh</stringProp>
+        <stringProp name="script"></stringProp>
+      </BeanShellPostProcessor>
+      <hashTree/>
+      </hashTree>
+      </hashTree>
+
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="mpesa paybill - 50 txn/min for 5min" enabled="true">
+        <stringProp name="ThreadGroup.comments">One iteration is one Safaricom C2B paybill transaction: validation then confirmation, sharing one TransID. The confirmation is skipped if validation rejects the transaction.</stringProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">true</boolProp>
+          <stringProp name="LoopController.loops">-1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">${__P(MPESA_PAYBILL_THREADS,5)}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">5</stringProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.duration">${__P(DURATION_SECONDS,300)}</stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+      </ThreadGroup>
+      <hashTree>
+      <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="mpesa paybill - POST /mpesa/validation" enabled="true">
+        <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+        <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+          <collectionProp name="Arguments.arguments">
+            <elementProp name="" elementType="HTTPArgument">
+              <boolProp name="HTTPArgument.always_encode">false</boolProp>
+              <stringProp name="Argument.value">{
+        "TransactionType": "Pay Bill",
+        "TransID": "${mpesaTransId}",
+        "TransTime": "${__time(yyyyMMddHHmmss,)}",
+        "TransAmount": "${MPESA_PAYBILL_AMOUNT}",
+        "BusinessShortCode": "${MPESA_PAYBILL_SHORTCODE}",
+        "BillRefNumber": "${MPESA_PAYBILL_ACCOUNT_NUMBER}",
+        "InvoiceNumber": "",
+        "OrgAccountBalance": "",
+        "ThirdPartyTransID": "",
+        "MSISDN": "${MPESA_PAYBILL_MSISDN}",
+        "FirstName": "John"
+      }</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+          </collectionProp>
+        </elementProp>
+        <stringProp name="HTTPSampler.domain">${HOST}</stringProp>
+        <stringProp name="HTTPSampler.port">${PORT}</stringProp>
+        <stringProp name="HTTPSampler.protocol">${PROTOCOL}</stringProp>
+        <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
+        <stringProp name="HTTPSampler.path">/mpesa/validation</stringProp>
+        <stringProp name="HTTPSampler.method">POST</stringProp>
+        <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+        <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+        <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+        <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+        <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+        <stringProp name="HTTPSampler.response_timeout"></stringProp>
+      </HTTPSamplerProxy>
+      <hashTree>
+      <UserParameters guiclass="UserParametersGui" testclass="UserParameters" testname="new mpesaTransId" enabled="true">
+        <stringProp name="TestPlan.comments">One TransID per paybill transaction, unique across threads.</stringProp>
+        <collectionProp name="UserParameters.names">
+          <stringProp name="mpesaTransId">mpesaTransId</stringProp>
+        </collectionProp>
+        <collectionProp name="UserParameters.thread_values">
+          <collectionProp name="thread_1">
+            <stringProp name="value">PBM${__time(,)}${__intSum(${__threadNum},100,)}${__Random(10000,99999,)}</stringProp>
+          </collectionProp>
+        </collectionProp>
+        <boolProp name="UserParameters.per_iteration">false</boolProp>
+      </UserParameters>
+      <hashTree/>
+      <ConstantThroughputTimer guiclass="TestBeanGUI" testclass="ConstantThroughputTimer" testname="50 transactions per minute" enabled="true">
+        <stringProp name="throughput">${__P(MPESA_PAYBILL_THROUGHPUT_PER_MIN,50)}</stringProp>
+        <intProp name="calcMode">2</intProp>
+      </ConstantThroughputTimer>
+      <hashTree/>
+      <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="validation headers" enabled="true">
+        <collectionProp name="HeaderManager.headers">
+        <elementProp name="" elementType="Header">
+          <stringProp name="Header.name">accept</stringProp>
+          <stringProp name="Header.value">application/json</stringProp>
+        </elementProp>
+        <elementProp name="" elementType="Header">
+          <stringProp name="Header.name">content-type</stringProp>
+          <stringProp name="Header.value">application/json</stringProp>
+        </elementProp>
+        </collectionProp>
+      </HeaderManager>
+      <hashTree/>
+      <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="extract mpesaResultCode" enabled="true">
+        <stringProp name="JSONPostProcessor.referenceNames">mpesaResultCode</stringProp>
+        <stringProp name="JSONPostProcessor.jsonPathExprs">$.ResultCode</stringProp>
+        <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+        <stringProp name="JSONPostProcessor.defaultValues"></stringProp>
+      </JSONPostProcessor>
+      <hashTree/>
+      <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="was validation accepted" enabled="true">
+        <boolProp name="resetInterpreter">false</boolProp>
+        <stringProp name="parameters"></stringProp>
+        <stringProp name="filename"></stringProp>
+        <stringProp name="script">vars.put("validationOk", String.valueOf(prev.isSuccessful() &amp;&amp; "0".equals(vars.get("mpesaResultCode"))));</stringProp>
+      </BeanShellPostProcessor>
+      <hashTree/>
+      <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="record rejected validation" enabled="true">
+        <boolProp name="resetInterpreter">false</boolProp>
+        <stringProp name="parameters">mpesa_paybill|success|SUCCESS|validation|${mpesaTransId}</stringProp>
+        <stringProp name="filename">${PLAN_DIR}/record_transaction.bsh</stringProp>
+        <stringProp name="script"></stringProp>
+      </BeanShellPostProcessor>
+      <hashTree/>
+      </hashTree>
+      <IfController guiclass="IfControllerPanel" testclass="IfController" testname="only if validation succeeded" enabled="true">
+        <stringProp name="IfController.condition">${__jexl3("${validationOk}" == "true",)}</stringProp>
+        <boolProp name="IfController.evaluateAll">false</boolProp>
+        <boolProp name="IfController.useExpression">true</boolProp>
+      </IfController>
+      <hashTree>
+      <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="mpesa paybill - POST /mpesa/confirmation" enabled="true">
+        <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+        <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+          <collectionProp name="Arguments.arguments">
+            <elementProp name="" elementType="HTTPArgument">
+              <boolProp name="HTTPArgument.always_encode">false</boolProp>
+              <stringProp name="Argument.value">{
+        "TransactionType": "Pay Bill",
+        "TransID": "${mpesaTransId}",
+        "TransTime": "${__time(yyyyMMddHHmmss,)}",
+        "TransAmount": "${MPESA_PAYBILL_AMOUNT}",
+        "BusinessShortCode": "${MPESA_PAYBILL_SHORTCODE}",
+        "BillRefNumber": "${MPESA_PAYBILL_ACCOUNT_NUMBER}",
+        "InvoiceNumber": "",
+        "OrgAccountBalance": "49197",
+        "ThirdPartyTransID": "",
+        "MSISDN": "${MPESA_PAYBILL_MSISDN}",
+        "FirstName": "John"
+      }</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+          </collectionProp>
+        </elementProp>
+        <stringProp name="HTTPSampler.domain">${HOST}</stringProp>
+        <stringProp name="HTTPSampler.port">${PORT}</stringProp>
+        <stringProp name="HTTPSampler.protocol">${PROTOCOL}</stringProp>
+        <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
+        <stringProp name="HTTPSampler.path">/mpesa/confirmation</stringProp>
+        <stringProp name="HTTPSampler.method">POST</stringProp>
+        <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+        <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+        <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+        <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+        <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+        <stringProp name="HTTPSampler.response_timeout"></stringProp>
+      </HTTPSamplerProxy>
+      <hashTree>
+      <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="confirmation headers" enabled="true">
+        <collectionProp name="HeaderManager.headers">
+        <elementProp name="" elementType="Header">
+          <stringProp name="Header.name">accept</stringProp>
+          <stringProp name="Header.value">application/json</stringProp>
+        </elementProp>
+        <elementProp name="" elementType="Header">
+          <stringProp name="Header.name">content-type</stringProp>
+          <stringProp name="Header.value">application/json</stringProp>
+        </elementProp>
+        </collectionProp>
+      </HeaderManager>
+      <hashTree/>
+      <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="record transaction" enabled="true">
+        <boolProp name="resetInterpreter">false</boolProp>
+        <stringProp name="parameters">mpesa_paybill|success|SUCCESS|final|${mpesaTransId}</stringProp>
+        <stringProp name="filename">${PLAN_DIR}/record_transaction.bsh</stringProp>
+        <stringProp name="script"></stringProp>
+      </BeanShellPostProcessor>
+      <hashTree/>
+      </hashTree>
+      </hashTree>
+      </hashTree>
+
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="tnm paybill - 50 txn/min for 5min" enabled="true">
+        <stringProp name="ThreadGroup.comments">One iteration is one TNM paybill transaction: validation, the payment carrying the reference validation returned, then a status check. The payment is skipped if validation returns no reference.</stringProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">true</boolProp>
+          <stringProp name="LoopController.loops">-1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">${__P(TNM_PAYBILL_THREADS,5)}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">5</stringProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.duration">${__P(DURATION_SECONDS,300)}</stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+      </ThreadGroup>
+      <hashTree>
+      <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="tnm paybill - GET /tnm/paybill/validate" enabled="true">
+        <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+        <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+          <collectionProp name="Arguments.arguments"/>
+        </elementProp>
+        <stringProp name="HTTPSampler.domain">${HOST}</stringProp>
+        <stringProp name="HTTPSampler.port">${PORT}</stringProp>
+        <stringProp name="HTTPSampler.protocol">${PROTOCOL}</stringProp>
+        <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
+        <stringProp name="HTTPSampler.path">/tnm/paybill/validate/${TNM_PAYBILL_ACCOUNT_NUMBER}</stringProp>
+        <stringProp name="HTTPSampler.method">GET</stringProp>
+        <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+        <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+        <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+        <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+        <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+        <stringProp name="HTTPSampler.response_timeout"></stringProp>
+      </HTTPSamplerProxy>
+      <hashTree>
+      <UserParameters guiclass="UserParametersGui" testclass="UserParameters" testname="new tnmTransId" enabled="true">
+        <stringProp name="TestPlan.comments">One trans_id per TNM transaction, unique across threads.</stringProp>
+        <collectionProp name="UserParameters.names">
+          <stringProp name="tnmTransId">tnmTransId</stringProp>
+        </collectionProp>
+        <collectionProp name="UserParameters.thread_values">
+          <collectionProp name="thread_1">
+            <stringProp name="value">PBT${__time(,)}${__intSum(${__threadNum},100,)}${__Random(10000,99999,)}</stringProp>
+          </collectionProp>
+        </collectionProp>
+        <boolProp name="UserParameters.per_iteration">false</boolProp>
+      </UserParameters>
+      <hashTree/>
+      <ConstantThroughputTimer guiclass="TestBeanGUI" testclass="ConstantThroughputTimer" testname="50 transactions per minute" enabled="true">
+        <stringProp name="throughput">${__P(TNM_PAYBILL_THROUGHPUT_PER_MIN,50)}</stringProp>
+        <intProp name="calcMode">2</intProp>
+      </ConstantThroughputTimer>
+      <hashTree/>
+      <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="validation headers" enabled="true">
+        <collectionProp name="HeaderManager.headers">
+        <elementProp name="" elementType="Header">
+          <stringProp name="Header.name">accept</stringProp>
+          <stringProp name="Header.value">application/json</stringProp>
+        </elementProp>
+        <elementProp name="" elementType="Header">
+          <stringProp name="Header.name">businessshortcode</stringProp>
+          <stringProp name="Header.value">${TNM_PAYBILL_SHORTCODE}</stringProp>
+        </elementProp>
+        <elementProp name="" elementType="Header">
+          <stringProp name="Header.name">currency</stringProp>
+          <stringProp name="Header.value">${TNM_PAYBILL_CURRENCY}</stringProp>
+        </elementProp>
+        <elementProp name="" elementType="Header">
+          <stringProp name="Header.name">msisdn</stringProp>
+          <stringProp name="Header.value">${TNM_PAYBILL_VALIDATE_MSISDN}</stringProp>
+        </elementProp>
+        </collectionProp>
+      </HeaderManager>
+      <hashTree/>
+      <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="extract tnmReference" enabled="true">
+        <stringProp name="JSONPostProcessor.referenceNames">tnmReference</stringProp>
+        <stringProp name="JSONPostProcessor.jsonPathExprs">$.oafTransactionReference</stringProp>
+        <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+        <stringProp name="JSONPostProcessor.defaultValues"></stringProp>
+      </JSONPostProcessor>
+      <hashTree/>
+      <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="was validation accepted" enabled="true">
+        <boolProp name="resetInterpreter">false</boolProp>
+        <stringProp name="parameters"></stringProp>
+        <stringProp name="filename"></stringProp>
+        <stringProp name="script">String reference = vars.get("tnmReference"); vars.put("validationOk", String.valueOf(prev.isSuccessful() &amp;&amp; reference != null &amp;&amp; reference.length() &gt; 0));</stringProp>
+      </BeanShellPostProcessor>
+      <hashTree/>
+      <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="record rejected validation" enabled="true">
+        <boolProp name="resetInterpreter">false</boolProp>
+        <stringProp name="parameters">tnm_paybill|success|SUCCESS|validation|${tnmTransId}</stringProp>
+        <stringProp name="filename">${PLAN_DIR}/record_transaction.bsh</stringProp>
+        <stringProp name="script"></stringProp>
+      </BeanShellPostProcessor>
+      <hashTree/>
+      </hashTree>
+      <IfController guiclass="IfControllerPanel" testclass="IfController" testname="only if validation succeeded" enabled="true">
+        <stringProp name="IfController.condition">${__jexl3("${validationOk}" == "true",)}</stringProp>
+        <boolProp name="IfController.evaluateAll">false</boolProp>
+        <boolProp name="IfController.useExpression">true</boolProp>
+      </IfController>
+      <hashTree>
+      <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="tnm paybill - POST /tnm/paybill/pay" enabled="true">
+        <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+        <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+          <collectionProp name="Arguments.arguments">
+            <elementProp name="" elementType="HTTPArgument">
+              <boolProp name="HTTPArgument.always_encode">false</boolProp>
+              <stringProp name="Argument.value">{
+        "msisdn": "${TNM_PAYBILL_CONFIRM_MSISDN}",
+        "amount": "${TNM_PAYBILL_AMOUNT}",
+        "trans_id": "${tnmTransId}",
+        "account_number": "${TNM_PAYBILL_ACCOUNT_NUMBER}",
+        "oafTransactionReference": "${tnmReference}"
+      }</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+          </collectionProp>
+        </elementProp>
+        <stringProp name="HTTPSampler.domain">${HOST}</stringProp>
+        <stringProp name="HTTPSampler.port">${PORT}</stringProp>
+        <stringProp name="HTTPSampler.protocol">${PROTOCOL}</stringProp>
+        <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
+        <stringProp name="HTTPSampler.path">/tnm/paybill/pay</stringProp>
+        <stringProp name="HTTPSampler.method">POST</stringProp>
+        <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+        <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+        <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+        <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+        <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+        <stringProp name="HTTPSampler.response_timeout"></stringProp>
+      </HTTPSamplerProxy>
+      <hashTree>
+      <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="payment headers" enabled="true">
+        <collectionProp name="HeaderManager.headers">
+        <elementProp name="" elementType="Header">
+          <stringProp name="Header.name">accept</stringProp>
+          <stringProp name="Header.value">application/json</stringProp>
+        </elementProp>
+        <elementProp name="" elementType="Header">
+          <stringProp name="Header.name">content-type</stringProp>
+          <stringProp name="Header.value">application/json</stringProp>
+        </elementProp>
+        <elementProp name="" elementType="Header">
+          <stringProp name="Header.name">businessshortcode</stringProp>
+          <stringProp name="Header.value">${TNM_PAYBILL_SHORTCODE}</stringProp>
+        </elementProp>
+        <elementProp name="" elementType="Header">
+          <stringProp name="Header.name">currency</stringProp>
+          <stringProp name="Header.value">${TNM_PAYBILL_CURRENCY}</stringProp>
+        </elementProp>
+        </collectionProp>
+      </HeaderManager>
+      <hashTree/>
+      <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="record transaction" enabled="true">
+        <boolProp name="resetInterpreter">false</boolProp>
+        <stringProp name="parameters">tnm_paybill|success|SUCCESS|final|${tnmTransId},${tnmReference}</stringProp>
+        <stringProp name="filename">${PLAN_DIR}/record_transaction.bsh</stringProp>
+        <stringProp name="script"></stringProp>
+      </BeanShellPostProcessor>
+      <hashTree/>
+      </hashTree>
+      <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="tnm paybill - GET /tnm/paybill/confirm" enabled="true">
+        <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+        <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+          <collectionProp name="Arguments.arguments"/>
+        </elementProp>
+        <stringProp name="HTTPSampler.domain">${HOST}</stringProp>
+        <stringProp name="HTTPSampler.port">${PORT}</stringProp>
+        <stringProp name="HTTPSampler.protocol">${PROTOCOL}</stringProp>
+        <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
+        <stringProp name="HTTPSampler.path">/tnm/paybill/confirm/${tnmTransId}</stringProp>
+        <stringProp name="HTTPSampler.method">GET</stringProp>
+        <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+        <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+        <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+        <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+        <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+        <stringProp name="HTTPSampler.response_timeout"></stringProp>
+      </HTTPSamplerProxy>
+      <hashTree>
+      <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="status headers" enabled="true">
+        <collectionProp name="HeaderManager.headers">
+        <elementProp name="" elementType="Header">
+          <stringProp name="Header.name">accept</stringProp>
+          <stringProp name="Header.value">application/json</stringProp>
+        </elementProp>
+        </collectionProp>
+      </HeaderManager>
+      <hashTree/>
+      <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="any status is fine" enabled="true">
+        <stringProp name="TestPlan.comments">The transaction is usually still in flight here. This call adds realistic load; the operations app cross-check decides the outcome.</stringProp>
+        <collectionProp name="Asserion.test_strings"/>
+        <stringProp name="Assertion.custom_message"></stringProp>
+        <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+        <boolProp name="Assertion.assume_success">true</boolProp>
+        <intProp name="Assertion.test_type">16</intProp>
+      </ResponseAssertion>
+      <hashTree/>
+      </hashTree>
+      </hashTree>
+      </hashTree>
+
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="nbs paybill - 50 txn/min for 5min" enabled="true">
+        <stringProp name="ThreadGroup.comments">One iteration is one NBS paybill transaction: validation, the payment carrying the reference validation returned, then a status check. The payment is skipped if validation returns no reference.</stringProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">true</boolProp>
+          <stringProp name="LoopController.loops">-1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">${__P(NBS_PAYBILL_THREADS,5)}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">5</stringProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.duration">${__P(DURATION_SECONDS,300)}</stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+      </ThreadGroup>
+      <hashTree>
+      <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="nbs paybill - GET /nbs/paybill/validate" enabled="true">
+        <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+        <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+          <collectionProp name="Arguments.arguments"/>
+        </elementProp>
+        <stringProp name="HTTPSampler.domain">${HOST}</stringProp>
+        <stringProp name="HTTPSampler.port">${PORT}</stringProp>
+        <stringProp name="HTTPSampler.protocol">${PROTOCOL}</stringProp>
+        <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
+        <stringProp name="HTTPSampler.path">/nbs/paybill/validate/${NBS_PAYBILL_ACCOUNT_NUMBER}</stringProp>
+        <stringProp name="HTTPSampler.method">GET</stringProp>
+        <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+        <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+        <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+        <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+        <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+        <stringProp name="HTTPSampler.response_timeout"></stringProp>
+      </HTTPSamplerProxy>
+      <hashTree>
+      <UserParameters guiclass="UserParametersGui" testclass="UserParameters" testname="new nbsTransId" enabled="true">
+        <stringProp name="TestPlan.comments">One trans_id per NBS transaction, unique across threads.</stringProp>
+        <collectionProp name="UserParameters.names">
+          <stringProp name="nbsTransId">nbsTransId</stringProp>
+        </collectionProp>
+        <collectionProp name="UserParameters.thread_values">
+          <collectionProp name="thread_1">
+            <stringProp name="value">PBN${__time(,)}${__intSum(${__threadNum},100,)}${__Random(10000,99999,)}</stringProp>
+          </collectionProp>
+        </collectionProp>
+        <boolProp name="UserParameters.per_iteration">false</boolProp>
+      </UserParameters>
+      <hashTree/>
+      <ConstantThroughputTimer guiclass="TestBeanGUI" testclass="ConstantThroughputTimer" testname="50 transactions per minute" enabled="true">
+        <stringProp name="throughput">${__P(NBS_PAYBILL_THROUGHPUT_PER_MIN,50)}</stringProp>
+        <intProp name="calcMode">2</intProp>
+      </ConstantThroughputTimer>
+      <hashTree/>
+      <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="validation headers" enabled="true">
+        <collectionProp name="HeaderManager.headers">
+        <elementProp name="" elementType="Header">
+          <stringProp name="Header.name">accept</stringProp>
+          <stringProp name="Header.value">application/json</stringProp>
+        </elementProp>
+        <elementProp name="" elementType="Header">
+          <stringProp name="Header.name">businessshortcode</stringProp>
+          <stringProp name="Header.value">${NBS_PAYBILL_SHORTCODE}</stringProp>
+        </elementProp>
+        <elementProp name="" elementType="Header">
+          <stringProp name="Header.name">currency</stringProp>
+          <stringProp name="Header.value">${NBS_PAYBILL_CURRENCY}</stringProp>
+        </elementProp>
+        <elementProp name="" elementType="Header">
+          <stringProp name="Header.name">msisdn</stringProp>
+          <stringProp name="Header.value">${NBS_PAYBILL_VALIDATE_MSISDN}</stringProp>
+        </elementProp>
+        <elementProp name="" elementType="Header">
+          <stringProp name="Header.name">channelsource</stringProp>
+          <stringProp name="Header.value">${NBS_PAYBILL_CHANNEL_SOURCE}</stringProp>
+        </elementProp>
+        <elementProp name="" elementType="Header">
+          <stringProp name="Header.name">bankaccountid</stringProp>
+          <stringProp name="Header.value">${NBS_PAYBILL_BANK_ACCOUNT_ID}</stringProp>
+        </elementProp>
+        </collectionProp>
+      </HeaderManager>
+      <hashTree/>
+      <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="extract nbsReference" enabled="true">
+        <stringProp name="JSONPostProcessor.referenceNames">nbsReference</stringProp>
+        <stringProp name="JSONPostProcessor.jsonPathExprs">$.oafTransactionReference</stringProp>
+        <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+        <stringProp name="JSONPostProcessor.defaultValues"></stringProp>
+      </JSONPostProcessor>
+      <hashTree/>
+      <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="was validation accepted" enabled="true">
+        <boolProp name="resetInterpreter">false</boolProp>
+        <stringProp name="parameters"></stringProp>
+        <stringProp name="filename"></stringProp>
+        <stringProp name="script">String reference = vars.get("nbsReference"); vars.put("validationOk", String.valueOf(prev.isSuccessful() &amp;&amp; reference != null &amp;&amp; reference.length() &gt; 0));</stringProp>
+      </BeanShellPostProcessor>
+      <hashTree/>
+      <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="record rejected validation" enabled="true">
+        <boolProp name="resetInterpreter">false</boolProp>
+        <stringProp name="parameters">nbs_paybill|success|SUCCESS|validation|${nbsTransId}</stringProp>
+        <stringProp name="filename">${PLAN_DIR}/record_transaction.bsh</stringProp>
+        <stringProp name="script"></stringProp>
+      </BeanShellPostProcessor>
+      <hashTree/>
+      </hashTree>
+      <IfController guiclass="IfControllerPanel" testclass="IfController" testname="only if validation succeeded" enabled="true">
+        <stringProp name="IfController.condition">${__jexl3("${validationOk}" == "true",)}</stringProp>
+        <boolProp name="IfController.evaluateAll">false</boolProp>
+        <boolProp name="IfController.useExpression">true</boolProp>
+      </IfController>
+      <hashTree>
+      <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="nbs paybill - POST /nbs/paybill/confirm" enabled="true">
+        <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+        <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+          <collectionProp name="Arguments.arguments">
+            <elementProp name="" elementType="HTTPArgument">
+              <boolProp name="HTTPArgument.always_encode">false</boolProp>
+              <stringProp name="Argument.value">{
+        "msisdn": "${NBS_PAYBILL_CONFIRM_MSISDN}",
+        "amount": "${NBS_PAYBILL_AMOUNT}",
+        "trans_id": "${nbsTransId}",
+        "account_number": "${NBS_PAYBILL_ACCOUNT_NUMBER}",
+        "oafTransactionReference": "${nbsReference}"
+      }</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+          </collectionProp>
+        </elementProp>
+        <stringProp name="HTTPSampler.domain">${HOST}</stringProp>
+        <stringProp name="HTTPSampler.port">${PORT}</stringProp>
+        <stringProp name="HTTPSampler.protocol">${PROTOCOL}</stringProp>
+        <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
+        <stringProp name="HTTPSampler.path">/nbs/paybill/confirm</stringProp>
+        <stringProp name="HTTPSampler.method">POST</stringProp>
+        <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+        <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+        <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+        <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+        <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+        <stringProp name="HTTPSampler.response_timeout"></stringProp>
+      </HTTPSamplerProxy>
+      <hashTree>
+      <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="payment headers" enabled="true">
+        <collectionProp name="HeaderManager.headers">
+        <elementProp name="" elementType="Header">
+          <stringProp name="Header.name">accept</stringProp>
+          <stringProp name="Header.value">application/json</stringProp>
+        </elementProp>
+        <elementProp name="" elementType="Header">
+          <stringProp name="Header.name">content-type</stringProp>
+          <stringProp name="Header.value">application/json</stringProp>
+        </elementProp>
+        <elementProp name="" elementType="Header">
+          <stringProp name="Header.name">businessshortcode</stringProp>
+          <stringProp name="Header.value">${NBS_PAYBILL_SHORTCODE}</stringProp>
+        </elementProp>
+        <elementProp name="" elementType="Header">
+          <stringProp name="Header.name">currency</stringProp>
+          <stringProp name="Header.value">${NBS_PAYBILL_CURRENCY}</stringProp>
+        </elementProp>
+        <elementProp name="" elementType="Header">
+          <stringProp name="Header.name">channelsource</stringProp>
+          <stringProp name="Header.value">${NBS_PAYBILL_CHANNEL_SOURCE}</stringProp>
+        </elementProp>
+        </collectionProp>
+      </HeaderManager>
+      <hashTree/>
+      <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="record transaction" enabled="true">
+        <boolProp name="resetInterpreter">false</boolProp>
+        <stringProp name="parameters">nbs_paybill|success|SUCCESS|final|${nbsTransId},${nbsReference}</stringProp>
+        <stringProp name="filename">${PLAN_DIR}/record_transaction.bsh</stringProp>
+        <stringProp name="script"></stringProp>
+      </BeanShellPostProcessor>
+      <hashTree/>
+      </hashTree>
+      <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="nbs paybill - GET /nbs/paybill/status" enabled="true">
+        <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+        <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+          <collectionProp name="Arguments.arguments"/>
+        </elementProp>
+        <stringProp name="HTTPSampler.domain">${HOST}</stringProp>
+        <stringProp name="HTTPSampler.port">${PORT}</stringProp>
+        <stringProp name="HTTPSampler.protocol">${PROTOCOL}</stringProp>
+        <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
+        <stringProp name="HTTPSampler.path">/nbs/paybill/status/${nbsTransId}</stringProp>
+        <stringProp name="HTTPSampler.method">GET</stringProp>
+        <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+        <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+        <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+        <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+        <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+        <stringProp name="HTTPSampler.response_timeout"></stringProp>
+      </HTTPSamplerProxy>
+      <hashTree>
+      <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="status headers" enabled="true">
+        <collectionProp name="HeaderManager.headers">
+        <elementProp name="" elementType="Header">
+          <stringProp name="Header.name">accept</stringProp>
+          <stringProp name="Header.value">application/json</stringProp>
+        </elementProp>
+        </collectionProp>
+      </HeaderManager>
+      <hashTree/>
+      <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="any status is fine" enabled="true">
+        <stringProp name="TestPlan.comments">The transaction is usually still in flight here. This call adds realistic load; the operations app cross-check decides the outcome.</stringProp>
+        <collectionProp name="Asserion.test_strings"/>
+        <stringProp name="Assertion.custom_message"></stringProp>
+        <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+        <boolProp name="Assertion.assume_success">true</boolProp>
+        <intProp name="Assertion.test_type">16</intProp>
+      </ResponseAssertion>
+      <hashTree/>
+      </hashTree>
+      </hashTree>
+      </hashTree>
+
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="bancobu paybill - 50 txn/min for 5min" enabled="true">
+        <stringProp name="ThreadGroup.comments">One iteration is one Bancobu paybill transaction: validation, then the confirmation carrying the customerRefNumber validation returned and a new bankreference. The confirmation is skipped if validation returns no customerRefNumber.</stringProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">true</boolProp>
+          <stringProp name="LoopController.loops">-1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">${__P(BANCOBU_PAYBILL_THREADS,5)}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">5</stringProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.duration">${__P(DURATION_SECONDS,300)}</stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+      </ThreadGroup>
+      <hashTree>
+      <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="bancobu paybill - POST /bancobu/paybill/validate" enabled="true">
+        <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+        <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+          <collectionProp name="Arguments.arguments">
+            <elementProp name="" elementType="HTTPArgument">
+              <boolProp name="HTTPArgument.always_encode">false</boolProp>
+              <stringProp name="Argument.value">{
+        "account": "${BANCOBU_PAYBILL_ACCOUNT_NUMBER}"
+      }</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+          </collectionProp>
+        </elementProp>
+        <stringProp name="HTTPSampler.domain">${HOST}</stringProp>
+        <stringProp name="HTTPSampler.port">${PORT}</stringProp>
+        <stringProp name="HTTPSampler.protocol">${PROTOCOL}</stringProp>
+        <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
+        <stringProp name="HTTPSampler.path">/bancobu/paybill/validate</stringProp>
+        <stringProp name="HTTPSampler.method">POST</stringProp>
+        <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+        <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+        <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+        <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+        <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+        <stringProp name="HTTPSampler.response_timeout"></stringProp>
+      </HTTPSamplerProxy>
+      <hashTree>
+      <UserParameters guiclass="UserParametersGui" testclass="UserParameters" testname="new bancobuBankReference" enabled="true">
+        <stringProp name="TestPlan.comments">One bankreference per Bancobu transaction, unique across threads.</stringProp>
+        <collectionProp name="UserParameters.names">
+          <stringProp name="bancobuBankReference">bancobuBankReference</stringProp>
+        </collectionProp>
+        <collectionProp name="UserParameters.thread_values">
+          <collectionProp name="thread_1">
+            <stringProp name="value">PBB${__time(,)}${__intSum(${__threadNum},100,)}${__Random(10000,99999,)}</stringProp>
+          </collectionProp>
+        </collectionProp>
+        <boolProp name="UserParameters.per_iteration">false</boolProp>
+      </UserParameters>
+      <hashTree/>
+      <ConstantThroughputTimer guiclass="TestBeanGUI" testclass="ConstantThroughputTimer" testname="50 transactions per minute" enabled="true">
+        <stringProp name="throughput">${__P(BANCOBU_PAYBILL_THROUGHPUT_PER_MIN,50)}</stringProp>
+        <intProp name="calcMode">2</intProp>
+      </ConstantThroughputTimer>
+      <hashTree/>
+      <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="validation headers" enabled="true">
+        <collectionProp name="HeaderManager.headers">
+        <elementProp name="" elementType="Header">
+          <stringProp name="Header.name">accept</stringProp>
+          <stringProp name="Header.value">application/json</stringProp>
+        </elementProp>
+        <elementProp name="" elementType="Header">
+          <stringProp name="Header.name">content-type</stringProp>
+          <stringProp name="Header.value">application/json</stringProp>
+        </elementProp>
+        <elementProp name="" elementType="Header">
+          <stringProp name="Header.name">apiKey</stringProp>
+          <stringProp name="Header.value">${BANCOBU_API_KEY}</stringProp>
+        </elementProp>
+        </collectionProp>
+      </HeaderManager>
+      <hashTree/>
+      <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="extract bancobuCustomerRef" enabled="true">
+        <stringProp name="JSONPostProcessor.referenceNames">bancobuCustomerRef</stringProp>
+        <stringProp name="JSONPostProcessor.jsonPathExprs">$.customerRefNumber</stringProp>
+        <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+        <stringProp name="JSONPostProcessor.defaultValues"></stringProp>
+      </JSONPostProcessor>
+      <hashTree/>
+      <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="was validation accepted" enabled="true">
+        <boolProp name="resetInterpreter">false</boolProp>
+        <stringProp name="parameters"></stringProp>
+        <stringProp name="filename"></stringProp>
+        <stringProp name="script">String reference = vars.get("bancobuCustomerRef"); vars.put("validationOk", String.valueOf(prev.isSuccessful() &amp;&amp; reference != null &amp;&amp; reference.length() &gt; 0));</stringProp>
+      </BeanShellPostProcessor>
+      <hashTree/>
+      <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="record rejected validation" enabled="true">
+        <boolProp name="resetInterpreter">false</boolProp>
+        <stringProp name="parameters">bancobu_paybill|success|SUCCESS|validation|${bancobuBankReference}</stringProp>
+        <stringProp name="filename">${PLAN_DIR}/record_transaction.bsh</stringProp>
+        <stringProp name="script"></stringProp>
+      </BeanShellPostProcessor>
+      <hashTree/>
+      </hashTree>
+      <IfController guiclass="IfControllerPanel" testclass="IfController" testname="only if validation succeeded" enabled="true">
+        <stringProp name="IfController.condition">${__jexl3("${validationOk}" == "true",)}</stringProp>
+        <boolProp name="IfController.evaluateAll">false</boolProp>
+        <boolProp name="IfController.useExpression">true</boolProp>
+      </IfController>
+      <hashTree>
+      <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="bancobu paybill - POST /bancobu/paybill/confirm" enabled="true">
+        <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+        <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+          <collectionProp name="Arguments.arguments">
+            <elementProp name="" elementType="HTTPArgument">
+              <boolProp name="HTTPArgument.always_encode">false</boolProp>
+              <stringProp name="Argument.value">{
+        "accountNumber": "${BANCOBU_PAYBILL_ACCOUNT_NUMBER}",
+        "billAmount": "${BANCOBU_PAYBILL_AMOUNT}",
+        "bankreference": "${bancobuBankReference}",
+        "customerRefNumber": "${bancobuCustomerRef}",
+        "paymentMode": "cash",
+        "transactionDate": "${__time(yyyy-MM-dd'T'HH:mm:ss.SSSXXX,)}",
+        "phoneNumber": "${BANCOBU_PAYBILL_MSISDN}",
+        "debitaccount": "${BANCOBU_PAYBILL_ACCOUNT_NUMBER}",
+        "debitcustname": "LOAD TEST"
+      }</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+          </collectionProp>
+        </elementProp>
+        <stringProp name="HTTPSampler.domain">${HOST}</stringProp>
+        <stringProp name="HTTPSampler.port">${PORT}</stringProp>
+        <stringProp name="HTTPSampler.protocol">${PROTOCOL}</stringProp>
+        <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
+        <stringProp name="HTTPSampler.path">/bancobu/paybill/confirm</stringProp>
+        <stringProp name="HTTPSampler.method">POST</stringProp>
+        <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+        <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+        <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+        <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+        <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+        <stringProp name="HTTPSampler.response_timeout"></stringProp>
+      </HTTPSamplerProxy>
+      <hashTree>
+      <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="confirmation headers" enabled="true">
+        <collectionProp name="HeaderManager.headers">
+        <elementProp name="" elementType="Header">
+          <stringProp name="Header.name">accept</stringProp>
+          <stringProp name="Header.value">application/json</stringProp>
+        </elementProp>
+        <elementProp name="" elementType="Header">
+          <stringProp name="Header.name">content-type</stringProp>
+          <stringProp name="Header.value">application/json</stringProp>
+        </elementProp>
+        <elementProp name="" elementType="Header">
+          <stringProp name="Header.name">apiKey</stringProp>
+          <stringProp name="Header.value">${BANCOBU_API_KEY}</stringProp>
+        </elementProp>
+        </collectionProp>
+      </HeaderManager>
+      <hashTree/>
+      <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="record transaction" enabled="true">
+        <boolProp name="resetInterpreter">false</boolProp>
+        <stringProp name="parameters">bancobu_paybill|success|SUCCESS|final|${bancobuBankReference},${bancobuCustomerRef}</stringProp>
+        <stringProp name="filename">${PLAN_DIR}/record_transaction.bsh</stringProp>
+        <stringProp name="script"></stringProp>
+      </BeanShellPostProcessor>
+      <hashTree/>
+      </hashTree>
+      </hashTree>
+      </hashTree>
+
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="squad webhook (NG) - off by default" enabled="true">
+        <stringProp name="ThreadGroup.comments">Sends signed Squad webhooks to the channel connector. Off by default: it needs SQUAD_SECRET_KEY in the environment and a Nigerian test customer.</stringProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">true</boolProp>
+          <stringProp name="LoopController.loops">-1</stringProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">${__P(SQUAD_THREADS,0)}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">5</stringProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.duration">${__P(DURATION_SECONDS,300)}</stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+      </ThreadGroup>
+      <hashTree>
+      <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="squad - POST /channel/squad/transactions" enabled="true">
+        <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+        <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+          <collectionProp name="Arguments.arguments">
+            <elementProp name="" elementType="HTTPArgument">
+              <boolProp name="HTTPArgument.always_encode">false</boolProp>
+              <stringProp name="Argument.value">${squadBody}</stringProp>
+              <stringProp name="Argument.metadata">=</stringProp>
+            </elementProp>
+          </collectionProp>
+        </elementProp>
+        <stringProp name="HTTPSampler.domain">${HOST}</stringProp>
+        <stringProp name="HTTPSampler.port">${PORT}</stringProp>
+        <stringProp name="HTTPSampler.protocol">${PROTOCOL}</stringProp>
+        <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
+        <stringProp name="HTTPSampler.path">/channel/squad/transactions</stringProp>
+        <stringProp name="HTTPSampler.method">POST</stringProp>
+        <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+        <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+        <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+        <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+        <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+        <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+        <stringProp name="HTTPSampler.response_timeout"></stringProp>
+      </HTTPSamplerProxy>
+      <hashTree>
+      <BeanShellPreProcessor guiclass="TestBeanGUI" testclass="BeanShellPreProcessor" testname="build and sign webhook" enabled="true">
+        <boolProp name="resetInterpreter">false</boolProp>
+        <stringProp name="parameters"></stringProp>
+        <stringProp name="filename"></stringProp>
+        <stringProp name="script">import javax.crypto.Mac;
+      import javax.crypto.spec.SecretKeySpec;
+
+      // Read from the environment so that the secret never appears on a command line.
+      String secret = System.getenv("SQUAD_SECRET_KEY");
+      if (secret == null || secret.length() == 0) {
+          throw new IllegalStateException("Set SQUAD_SECRET_KEY to run the squad thread group");
+      }
+      String reference = "PBS" + System.currentTimeMillis() + ctx.getThreadNum() + (10000 + new java.util.Random().nextInt(90000));
+      String amount = props.getProperty("SQUAD_AMOUNT", "999");
+      String body = "{\"transaction_reference\":\"" + reference + "\","
+          + "\"virtual_account_number\":\"" + props.getProperty("SQUAD_VIRTUAL_ACCOUNT", "0917116240") + "\","
+          + "\"principal_amount\":\"" + amount + "\","
+          + "\"settled_amount\":\"" + amount + "\","
+          + "\"fee_charged\":\"0.00\","
+          + "\"transaction_date\":\"" + java.time.Instant.now() + "\","
+          + "\"customer_identifier\":\"" + props.getProperty("SQUAD_CUSTOMER_IDENTIFIER", "RTEST5UMKKK3R") + "\","
+          + "\"transaction_indicator\":\"C\","
+          + "\"remarks\":\"load test\","
+          + "\"currency\":\"NGN\","
+          + "\"channel\":\"virtual-account\","
+          + "\"sender_name\":\"LOAD TEST\","
+          + "\"meta\":{\"freeze_transaction_ref\":null,\"reason_for_frozen_transaction\":null}}";
+      Mac mac = Mac.getInstance("HmacSHA512");
+      mac.init(new SecretKeySpec(secret.getBytes("UTF-8"), "HmacSHA512"));
+      // Same format as PosPaymentUtils.isValidSignature in the channel connector.
+      String signature = String.format("%040x", new Object[] {new java.math.BigInteger(1, mac.doFinal(body.getBytes("UTF-8")))});
+      vars.put("squadReference", reference);
+      vars.put("squadBody", body);
+      vars.put("squadSignature", signature);
+      </stringProp>
+      </BeanShellPreProcessor>
+      <hashTree/>
+      <ConstantThroughputTimer guiclass="TestBeanGUI" testclass="ConstantThroughputTimer" testname="50 requests per minute" enabled="true">
+        <stringProp name="throughput">${__P(SQUAD_THROUGHPUT_PER_MIN,50)}</stringProp>
+        <intProp name="calcMode">2</intProp>
+      </ConstantThroughputTimer>
+      <hashTree/>
+      <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="squad headers" enabled="true">
+        <collectionProp name="HeaderManager.headers">
+        <elementProp name="" elementType="Header">
+          <stringProp name="Header.name">content-type</stringProp>
+          <stringProp name="Header.value">application/json</stringProp>
+        </elementProp>
+        <elementProp name="" elementType="Header">
+          <stringProp name="Header.name">x-squad-signature</stringProp>
+          <stringProp name="Header.value">${squadSignature}</stringProp>
+        </elementProp>
+        </collectionProp>
+      </HeaderManager>
+      <hashTree/>
+      <BeanShellPostProcessor guiclass="TestBeanGUI" testclass="BeanShellPostProcessor" testname="record transaction" enabled="true">
+        <boolProp name="resetInterpreter">false</boolProp>
+        <stringProp name="parameters">squad|webhook|SUCCESS|final|${squadReference}</stringProp>
+        <stringProp name="filename">${PLAN_DIR}/record_transaction.bsh</stringProp>
+        <stringProp name="script"></stringProp>
+      </BeanShellPostProcessor>
+      <hashTree/>
+      </hashTree>
       </hashTree>
 
       <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report" enabled="true">

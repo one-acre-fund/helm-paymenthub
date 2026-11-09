@@ -33,10 +33,7 @@
           "Content-Type": "application/json"
         },
         "body": "{ \"Body\": { \"stkCallback\": { \"MerchantRequestID\": \"29115-34620561-1\", \"CheckoutRequestID\": \"ws_CO_{{jsonPath originalRequest.body '$.Timestamp'}}\", \"ResultCode\": 0, \"ResultDesc\": \"The service request is processed successfully.\", \"CallbackMetadata\": { \"Item\": [ { \"Name\": \"Amount\", \"Value\": {{jsonPath originalRequest.body '$.Amount'}} }, { \"Name\": \"MpesaReceiptNumber\", \"Value\": \"{{randomValue length=10 type='ALPHANUMERIC' uppercase=true}}\" }, { \"Name\": \"TransactionDate\", \"Value\": {{jsonPath originalRequest.body '$.Timestamp'}} }, { \"Name\": \"PhoneNumber\", \"Value\": {{jsonPath originalRequest.body '$.PhoneNumber'}} } ] } } } }",
-        "delay": {
-          "type": "fixed",
-          "milliseconds": 3000
-        }
+        "delay": { "type": "uniform", "lower": 5000, "upper": 10000 }
       }
     }
   ]

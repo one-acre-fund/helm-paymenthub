@@ -1,0 +1,8 @@
+# Load-test run outputs (see README.md)
+jmeter-*.log
+results-*.jtl
+report-*/
+transactions-manifest-*.csv
+needs-attention-*.csv
+reconcile-*.out
+temp/

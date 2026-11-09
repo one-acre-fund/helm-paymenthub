@@ -44,10 +44,7 @@
           "Content-Type": "application/json"
         },
         "body": "",
-        "delay": {
-          "type": "fixed",
-          "milliseconds": 3000
-        }
+        "delay": { "type": "uniform", "lower": 5000, "upper": 10000 }
       }
     }
   ]
