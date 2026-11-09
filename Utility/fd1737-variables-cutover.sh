@@ -1,43 +1,42 @@
 #!/usr/bin/env bash
 # FD-1737: swap one tenant's variables table for the partitioned variables_new created by the operations-app
-# migration V56. Rehearsed on minikube 2026-11-07 (helm-paymenthub .claude/plans/2026-11-04-fd1737-*.html,
-# appendix C). Everything is printed before it runs; without --execute nothing is changed.
+# migration V56. Rehearsed on minikube (helm-paymenthub .claude/plans/2026-11-04-fd1737-*.html, appendix C).
+# Everything is printed before it runs; without --execute nothing is changed. Needs only MySQL access: the
+# importer keeps running throughout, nothing in Kubernetes is touched.
 #
 # Steps, per tenant:
 #   1. preflight    variables_new exists, is empty and partitioned; a partition covers the retention cutoff
-#   2. copy         rows of the last RETENTION_MONTHS months into variables_new, by ID range, importer running
-#   3. pause        importer-rdbms scaled to 0 (KEDA paused when a ScaledObject owns it)
-#   4. tail         rows written since step 2, seconds
-#   5. swap         AUTO_INCREMENT = MAX(ID)+1 of the old table (mandatory), RENAME both tables, verify counts
-#   6. resume       importer back to its previous replicas
+#   2. copy         rows of the last N months into variables_new, by ID range, importer writing meanwhile
+#   3. tail         rows written during step 2, seconds
+#   4. swap         AUTO_INCREMENT of variables_new = MAX(ID) + GAP, then the atomic RENAME. RENAME waits for open
+#                   importer transactions on the old table, and every later write goes to the new table.
+#   5. stragglers   rows that reached the old table between steps 3 and 4 are copied over; the GAP keeps their
+#                   IDs clear of the ones the importer hands out after the swap. Row counts are checked.
 # Afterwards: archive variables_old with the "archive-old" command, then DROP TABLE variables_old by hand.
 #
 # Usage:
 #   MYSQL="mysql --defaults-extra-file=qa.cnf -h 127.0.0.1 -P 33306" \
-#   KUBECTL="kubectl --context acc-qa/eks-qa-01 -n paymenthub" \
 #   Utility/fd1737-variables-cutover.sh cutover kenya [--months 12] [--chunk 1000000] [--execute]
 #   Utility/fd1737-variables-cutover.sh archive-old kenya --out ./archive [--chunk 5000000] [--execute]
 #
-# A dormant tenant (oaf) needs no pause: run with --no-importer. Progress is kept in ./fd1737-<tenant>.state,
-# so an interrupted copy resumes where it stopped.
+# Progress is kept in ./fd1737-<tenant>.state, so an interrupted copy resumes where it stopped.
 set -euo pipefail
 
 MYSQL="${MYSQL:?set MYSQL to the mysql client command, e.g. mysql --defaults-extra-file=qa.cnf -h 127.0.0.1 -P 33306}"
-KUBECTL="${KUBECTL:-kubectl -n paymenthub}"
-IMPORTER="${IMPORTER:-ph-ee-importer-rdbms}"
-COLS='`ID`, `WORKFLOW_INSTANCE_KEY`, `WORKFLOW_KEY`, `ZEEBE_GENERATION`, `TIMESTAMP`, `NAME`, `VALUE`'
+# IDs left free above the old table's maximum for rows written between the tail copy and the RENAME
+GAP="${GAP:-1000000}"
+COLS='`ID`, `WORKFLOW_INSTANCE_KEY`, `WORKFLOW_KEY`, `ZEEBE_GENERATION`, `TIMESTAMP`, `NAME`, `VALUE`, `created_date`, `last_modified_date`, `created_by`, `last_modified_by`'
 
 cmd="${1:-}"; tenant="${2:-}"
-[ -n "$cmd" ] && [ -n "$tenant" ] || { sed -n '2,24p' "$0"; exit 1; }
+[ -n "$cmd" ] && [ -n "$tenant" ] || { sed -n '2,23p' "$0"; exit 1; }
 shift 2
-months=12; chunk=1000000; execute=0; no_importer=0; out=./archive
+months=12; chunk=1000000; execute=0; out=./archive
 while [ $# -gt 0 ]; do
   case "$1" in
     --months) months="$2"; shift 2 ;;
     --chunk) chunk="$2"; shift 2 ;;
     --out) out="$2"; shift 2 ;;
     --execute) execute=1; shift ;;
-    --no-importer) no_importer=1; shift ;;
     *) echo "unknown option $1"; exit 1 ;;
   esac
 done
@@ -46,7 +45,6 @@ state="./fd1737-${tenant}.state"
 log() { printf '%s %s\n' "$(date -u +%H:%M:%S)" "$*"; }
 q() { $MYSQL -D "$tenant" -N -B -e "$1"; }                 # read, always runs
 x() { log "SQL: $1"; if [ $execute = 1 ]; then $MYSQL -D "$tenant" -N -B -e "$1"; else log "   (dry run)"; fi; }
-k() { log "kubectl: $*"; if [ $execute = 1 ]; then $KUBECTL "$@"; else log "   (dry run)"; fi; }
 
 # first ID whose TIMESTAMP is >= $1, by binary search on the primary key (ID follows time, never a full scan)
 first_id_at() {
@@ -78,44 +76,6 @@ copy_range() {  # copy_range FROM_EXCLUSIVE TO_INCLUSIVE
   done
 }
 
-# KEDA owns the replica count when its HPA exists (readable without keda.sh rights); scaling the deployment
-# by hand would be undone within seconds, so pause the ScaledObject instead.
-keda_managed() { $KUBECTL get hpa "keda-hpa-$IMPORTER" >/dev/null 2>&1 || $KUBECTL get scaledobject "$IMPORTER" >/dev/null 2>&1; }
-
-importer_pause() {
-  [ $no_importer = 1 ] && { log "importer not touched (--no-importer)"; return; }
-  if keda_managed; then
-    k annotate scaledobject "$IMPORTER" autoscaling.keda.sh/paused-replicas=0 --overwrite 2>/dev/null || {
-      # No keda.sh rights: carry on only if someone with them has already paused it.
-      if [ $execute = 1 ] && [ "$($KUBECTL get deploy "$IMPORTER" -o jsonpath='{.spec.replicas}')" != 0 ]; then
-        log "cannot pause the KEDA ScaledObject $IMPORTER (needs keda.sh rights). Nothing swapped; rerun resumes from $state."
-        log "Ask someone with KEDA rights to run: kubectl annotate scaledobject $IMPORTER autoscaling.keda.sh/paused-replicas=0 --overwrite"
-        exit 1
-      fi
-      log "importer already at 0 replicas, paused by someone with KEDA rights"; }
-  else
-    if [ $execute = 1 ]; then $KUBECTL get deploy "$IMPORTER" -o jsonpath='{.spec.replicas}' > "${state}.replicas"; fi
-    k scale deploy "$IMPORTER" --replicas=0
-  fi
-  k wait --for=delete pod -l app="$IMPORTER" --timeout=180s
-  if [ $execute = 1 ]; then
-    sleep 30
-    replicas=$($KUBECTL get deploy "$IMPORTER" -o jsonpath='{.spec.replicas}')
-    [ "$replicas" = 0 ] || { log "importer came back to $replicas replicas, something else scales it. Nothing swapped."; importer_resume; exit 1; }
-    log "importer paused and stayed at 0"
-  fi
-}
-
-importer_resume() {
-  [ $no_importer = 1 ] && return
-  if keda_managed; then
-    k annotate scaledobject "$IMPORTER" autoscaling.keda.sh/paused-replicas- 2>/dev/null ||
-      log "importer still paused. To resume it, ask someone with KEDA rights to run: kubectl annotate scaledobject $IMPORTER autoscaling.keda.sh/paused-replicas-"
-  else
-    k scale deploy "$IMPORTER" --replicas="$(cat "${state}.replicas" 2>/dev/null || echo 1)"
-  fi
-}
-
 cutover() {
   log "tenant $tenant, retention $months months, chunk $chunk, execute=$execute"
   # 1. preflight
@@ -123,6 +83,8 @@ cutover() {
   [ -n "$parts" ] || { log "variables_new is missing or not partitioned: run the operations app with V56 first"; exit 1; }
   old_parts=$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.PARTITIONS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'variables' AND PARTITION_NAME IS NOT NULL")
   [ "$old_parts" = 0 ] || { log "variables is already partitioned: cutover done before"; exit 1; }
+  cols() { q "SELECT GROUP_CONCAT(COLUMN_NAME ORDER BY COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = '$1'"; }
+  [ "$(cols variables)" = "$(cols variables_new)" ] || { log "columns differ (the operations app maps every column of variables): variables $(cols variables) / variables_new $(cols variables_new). Deploy the operations app with V57 first"; exit 1; }
   cutoff=$(q "SELECT CAST(UNIX_TIMESTAMP(DATE_FORMAT(DATE_SUB(UTC_DATE(), INTERVAL $months MONTH), '%Y-%m-01')) * 1000 AS UNSIGNED)")
   cutoff_month=$(q "SELECT DATE_FORMAT(FROM_UNIXTIME($cutoff / 1000), 'p%Y_%m')")
   echo "$parts" | grep -q "$cutoff_month" || { log "no partition $cutoff_month in variables_new for the cutoff; shorten --months or add partitions"; exit 1; }
@@ -137,22 +99,21 @@ cutover() {
   fi
   # 2. copy while the importer runs
   copy_range "$start" "$max_id"
-  # 3. pause
-  importer_pause
-  # 4. tail
+  # 3. tail
   tail_max=$(q "SELECT MAX(ID) FROM variables"); log "tail: IDs $max_id..$tail_max"
   copy_range "$max_id" "$tail_max"
-  # 5. swap
-  x "ALTER TABLE variables_new AUTO_INCREMENT = $((tail_max + 1))"
+  # 4. swap; lock_wait_timeout bounds the wait for open importer transactions
+  x "ALTER TABLE variables_new AUTO_INCREMENT = $((tail_max + GAP))"
+  x "SET SESSION lock_wait_timeout = 60; RENAME TABLE variables TO variables_old, variables_new TO variables"
+  # 5. stragglers
+  x "INSERT INTO variables ($COLS) SELECT $COLS FROM variables_old WHERE ID > $tail_max; SELECT CONCAT(ROW_COUNT(), ' straggler rows copied')"
   if [ $execute = 1 ]; then
-    expect=$(q "SELECT COUNT(*) FROM variables WHERE ID > $start"); got=$(q "SELECT COUNT(*) FROM variables_new")
-    [ "$expect" = "$got" ] || { log "row count mismatch: variables (ID > $start) $expect, variables_new $got; importer stays paused, investigate"; exit 1; }
-    log "row counts match: $got"
+    expect=$(q "SELECT COUNT(*) FROM variables_old WHERE ID > $start")
+    got=$(q "SELECT COUNT(*) FROM variables WHERE ID < $((tail_max + GAP))")
+    [ "$expect" = "$got" ] || { log "ROW COUNT MISMATCH after the swap: variables_old (ID > $start) $expect, variables (ID < $((tail_max + GAP))) $got. Rerun the straggler INSERT above for the missing IDs."; exit 1; }
+    log "row counts match: $got rows from the old table, new rows start at ID $((tail_max + GAP))"
+    rm -f "$state"
   fi
-  x "RENAME TABLE variables TO variables_old, variables_new TO variables"
-  # 6. resume
-  importer_resume
-  [ $execute = 1 ] && rm -f "$state"
   log "done. Next: archive-old, then DROP TABLE variables_old; enable operations_app.variablesRetention once every tenant is cut over"
 }
 
@@ -167,7 +128,7 @@ archive_old() {
     f="$out/variables_old-${tenant}-$(printf '%012d' $((lo + 1)))-$(printf '%012d' $hi).csv.gz"
     if [ $execute = 1 ]; then
       t0=$(date +%s)
-      { echo "ID,WORKFLOW_INSTANCE_KEY,WORKFLOW_KEY,ZEEBE_GENERATION,TIMESTAMP,NAME,VALUE"
+      { echo "ID,WORKFLOW_INSTANCE_KEY,WORKFLOW_KEY,ZEEBE_GENERATION,TIMESTAMP,NAME,VALUE,created_date,last_modified_date,created_by,last_modified_by"
         $MYSQL -D "$tenant" -N -B --raw --quick -e "SELECT $COLS FROM variables_old WHERE ID > $lo AND ID <= $hi" \
           | python3 -c 'import sys,csv; w=csv.writer(sys.stdout, lineterminator="\n"); [w.writerow(l.rstrip("\n").split("\t")) for l in sys.stdin]'
       } | gzip -1 > "$f"
