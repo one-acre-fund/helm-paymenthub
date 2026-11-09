@@ -1081,6 +1081,21 @@ importer_rdbms:
     topic: "zeebe-export"
     consumerGroup: "ph-ee-importer-rdbms"
     concurrency: 3
+  # Variable names the importer never writes to the variables table (FD-1737): timers, feature
+  # flags, retry counters and HTTP codes that carry no payment information. Names the importer maps
+  # into transfers, transaction_requests or batches columns must stay off this list. An empty list
+  # stores every variable. Needs importer image 1.3.0-mifos-1.3.1 or newer; older images ignore it.
+  skipVariables:
+    - timer
+    - confirmRequestWaitPeriod
+    - airtelConfirmationTimer
+    - tnmPayRequestWaitPeriod
+    - isNotificationsSuccessEnabled
+    - isNotificationsFailureEnabled
+    - isValidationReferencePresent
+    - isCallbackReceived
+    - mpesaTransactionStatusRetryCount
+    - getTransactionStatusHttpCode
   # KEDA ScaledObject on consumer-group lag. Off by default; when on, Helm stops rendering
   # `replicas` and KEDA owns the count between minReplicas and maxReplicas.
   autoscaling:
