@@ -94,6 +94,14 @@ spec:
               value: "{{ required "operations_app.aws.buckets.exports is required" .Values.operations_app.aws.buckets.exports }}"
             - name: "CLOUD_AWS_REGION_STATIC"
               value: "{{ .Values.operations_app.aws.region }}"
+            - name: "VARIABLES_RETENTION_ENABLED"
+              value: "{{ .Values.operations_app.variablesRetention.enabled }}"
+            - name: "VARIABLES_RETENTION_MONTHS"
+              value: "{{ .Values.operations_app.variablesRetention.months }}"
+            - name: "VARIABLES_RETENTION_AHEADMONTHS"
+              value: "{{ .Values.operations_app.variablesRetention.aheadMonths }}"
+            - name: "VARIABLES_RETENTION_DRYRUN"
+              value: "{{ .Values.operations_app.variablesRetention.dryRun }}"
             - name: "AWS_ACCESS_KEY"
               valueFrom:
                 secretKeyRef:
