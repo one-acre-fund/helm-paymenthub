@@ -20,6 +20,7 @@ spec:
 {{ toYaml .Values.roster_connector.deployment.annotations | indent 8 }}
 {{- end }}
     spec:
+      terminationGracePeriodSeconds: {{ .Values.roster_connector.terminationGracePeriodSeconds | default .Values.gracefulShutdown.terminationGracePeriodSeconds }}
       containers:
         - name: ph-ee-connector-ams-roster
           image: "{{ .Values.roster_connector.image }}:{{ .Values.roster_connector.imageTag }}"
@@ -50,6 +51,7 @@ spec:
             timeoutSeconds: 1
             periodSeconds: 60
           env:
+            {{- include "ph-ee-engine.shutdown.env" . | nindent 12 }}
             - name: "SPRING_PROFILES_ACTIVE"
               value: "{{ .Values.roster_connector.SPRING_PROFILES_ACTIVE }}"
             - name: "ZEEBE_BROKER_CONTACTPOINT"
@@ -71,6 +73,10 @@ spec:
             - name: "{{ cat "PESACORE_COUNTRIES_" $key "__CURRENCY" | nospace }}"
               value: "{{ $value.currency }}"
             {{- end }}
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sh", "-c", "sleep {{ .Values.gracefulShutdown.preStopSeconds }}"]
           resources:
             limits:
               memory: "{{ .Values.roster_connector.limits.memory }}"

@@ -20,6 +20,7 @@ spec:
 {{ toYaml .Values.tupande_connector.deployment.annotations | indent 8 }}
 {{- end }}
     spec:
+      terminationGracePeriodSeconds: {{ .Values.tupande_connector.terminationGracePeriodSeconds | default .Values.gracefulShutdown.terminationGracePeriodSeconds }}
       containers:
         - name: ph-ee-connector-ams-tupande
           image: "{{ .Values.tupande_connector.image }}:{{ .Values.tupande_connector.imageTag }}"
@@ -54,6 +55,7 @@ spec:
             - "-jar"
             - "/app/ph-ee-connector-ams-tupande.jar"
           env:
+            {{- include "ph-ee-engine.shutdown.env" . | nindent 12 }}
             - name: "SPRING_PROFILES_ACTIVE"
               value: "{{ .Values.tupande_connector.SPRING_PROFILES_ACTIVE }}"
             - name: "ZEEBE_BROKER_CONTACTPOINT"
@@ -83,6 +85,10 @@ spec:
               value: "{{ .Values.elasticsearch.ELASTIC_APM_SECRET_TOKEN }}"
             - name: ELASTIC_APM_APPLICATION_PACKAGES
               value: "{{ .Values.tupande_connector.ELASTIC_APM_APPLICATION_PACKAGES }}"
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sh", "-c", "sleep {{ .Values.gracefulShutdown.preStopSeconds }}"]
           resources:
             limits:
               memory: "{{ .Values.tupande_connector.limits.memory }}"

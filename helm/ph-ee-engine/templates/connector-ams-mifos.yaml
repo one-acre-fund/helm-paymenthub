@@ -20,12 +20,17 @@ spec:
 {{ toYaml .Values.ph_ee_connector_ams_mifos.deployment.annotations | indent 8 }}
 {{- end }}
     spec:
+      terminationGracePeriodSeconds: {{ .Values.ph_ee_connector_ams_mifos.terminationGracePeriodSeconds | default .Values.gracefulShutdown.terminationGracePeriodSeconds }}
       containers:
         - name: ph-ee-connector-ams-mifos
           image: "{{ .Values.ph_ee_connector_ams_mifos.image }}:{{ .Values.ph_ee_connector_ams_mifos.imageTag }}"
           imagePullPolicy: "{{ .Values.ph_ee_connector_ams_mifos.imagePullPolicy }}"
           ports:
             - containerPort: 5000
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sh", "-c", "sleep {{ .Values.gracefulShutdown.preStopSeconds }}"]
           resources:
             limits:
               memory: "{{ .Values.ph_ee_connector_ams_mifos.limits.memory }}"
@@ -34,6 +39,7 @@ spec:
               memory: "{{ .Values.ph_ee_connector_ams_mifos.requests.memory }}"
               cpu: "{{ .Values.ph_ee_connector_ams_mifos.requests.cpu }}"
           env:
+            {{- include "ph-ee-engine.shutdown.env" . | nindent 12 }}
             - name: "SPRING_PROFILES_ACTIVE"
               value: "{{ .Values.ph_ee_connector_ams_mifos.SPRING_PROFILES_ACTIVE }}"
           volumeMounts:

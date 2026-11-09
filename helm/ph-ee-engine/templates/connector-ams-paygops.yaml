@@ -20,6 +20,7 @@ spec:
 {{ toYaml .Values.paygops_connector.deployment.annotations | indent 8 }}
 {{- end }}
     spec:
+      terminationGracePeriodSeconds: {{ .Values.paygops_connector.terminationGracePeriodSeconds | default .Values.gracefulShutdown.terminationGracePeriodSeconds }}
       containers:
         - name: ph-ee-connector-ams-paygops
           image: "{{ .Values.paygops_connector.image }}:{{ .Values.paygops_connector.imageTag }}"
@@ -52,6 +53,7 @@ spec:
             timeoutSeconds: 1
             periodSeconds: 60
           env:
+            {{- include "ph-ee-engine.shutdown.env" . | nindent 12 }}
             - name: "SPRING_PROFILES_ACTIVE"
               value: "{{ .Values.paygops_connector.SPRING_PROFILES_ACTIVE }}"
             - name: "ZEEBE_BROKER_CONTACTPOINT"
@@ -67,6 +69,10 @@ spec:
               value: "{{ .Values.paygops_connector.paygops.base_url }}"
             - name: "LOGGING_LEVEL_ROOT"
               value: "{{ .Values.paygops_connector.LOGGING_LEVEL_ROOT }}"
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sh", "-c", "sleep {{ .Values.gracefulShutdown.preStopSeconds }}"]
           resources:
             limits:
               memory: "{{ .Values.paygops_connector.limits.memory }}"

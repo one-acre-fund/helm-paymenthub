@@ -64,6 +64,8 @@ spec:
             value: "{{ .Values.importer_es.kafka.consumerGroup }}"
           - name: "KAFKA_CONCURRENCY"
             value: "{{ .Values.importer_es.kafka.concurrency }}"
+          - name: "KAFKA_SHUTDOWN_TIMEOUT_MS"
+            value: "{{ .Values.importer_es.kafka.shutdownTimeoutMs }}"
           - name: "reporting.fields.amount"
             value: "{{ .Values.importer_es.reporting.fields.amount }}"
           - name: "reporting.fields.accountId"
