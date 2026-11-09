@@ -85,10 +85,14 @@ keda_managed() { $KUBECTL get hpa "keda-hpa-$IMPORTER" >/dev/null 2>&1 || $KUBEC
 importer_pause() {
   [ $no_importer = 1 ] && { log "importer not touched (--no-importer)"; return; }
   if keda_managed; then
-    k annotate scaledobject "$IMPORTER" autoscaling.keda.sh/paused-replicas=0 --overwrite || {
-      log "cannot pause the KEDA ScaledObject $IMPORTER (needs keda.sh rights). Nothing swapped; the copy resumes from $state."
-      log "Ask someone with KEDA rights to run: kubectl annotate scaledobject $IMPORTER autoscaling.keda.sh/paused-replicas=0 --overwrite"
-      exit 1; }
+    k annotate scaledobject "$IMPORTER" autoscaling.keda.sh/paused-replicas=0 --overwrite 2>/dev/null || {
+      # No keda.sh rights: carry on only if someone with them has already paused it.
+      if [ $execute = 1 ] && [ "$($KUBECTL get deploy "$IMPORTER" -o jsonpath='{.spec.replicas}')" != 0 ]; then
+        log "cannot pause the KEDA ScaledObject $IMPORTER (needs keda.sh rights). Nothing swapped; rerun resumes from $state."
+        log "Ask someone with KEDA rights to run: kubectl annotate scaledobject $IMPORTER autoscaling.keda.sh/paused-replicas=0 --overwrite"
+        exit 1
+      fi
+      log "importer already at 0 replicas, paused by someone with KEDA rights"; }
   else
     if [ $execute = 1 ]; then $KUBECTL get deploy "$IMPORTER" -o jsonpath='{.spec.replicas}' > "${state}.replicas"; fi
     k scale deploy "$IMPORTER" --replicas=0
@@ -105,7 +109,8 @@ importer_pause() {
 importer_resume() {
   [ $no_importer = 1 ] && return
   if keda_managed; then
-    k annotate scaledobject "$IMPORTER" autoscaling.keda.sh/paused-replicas-
+    k annotate scaledobject "$IMPORTER" autoscaling.keda.sh/paused-replicas- 2>/dev/null ||
+      log "importer still paused. To resume it, ask someone with KEDA rights to run: kubectl annotate scaledobject $IMPORTER autoscaling.keda.sh/paused-replicas-"
   else
     k scale deploy "$IMPORTER" --replicas="$(cat "${state}.replicas" 2>/dev/null || echo 1)"
   fi
