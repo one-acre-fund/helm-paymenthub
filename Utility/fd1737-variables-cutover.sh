@@ -78,20 +78,33 @@ copy_range() {  # copy_range FROM_EXCLUSIVE TO_INCLUSIVE
   done
 }
 
+# KEDA owns the replica count when its HPA exists (readable without keda.sh rights); scaling the deployment
+# by hand would be undone within seconds, so pause the ScaledObject instead.
+keda_managed() { $KUBECTL get hpa "keda-hpa-$IMPORTER" >/dev/null 2>&1 || $KUBECTL get scaledobject "$IMPORTER" >/dev/null 2>&1; }
+
 importer_pause() {
   [ $no_importer = 1 ] && { log "importer not touched (--no-importer)"; return; }
-  if $KUBECTL get scaledobject "$IMPORTER" >/dev/null 2>&1; then
-    k annotate scaledobject "$IMPORTER" autoscaling.keda.sh/paused-replicas=0 --overwrite
+  if keda_managed; then
+    k annotate scaledobject "$IMPORTER" autoscaling.keda.sh/paused-replicas=0 --overwrite || {
+      log "cannot pause the KEDA ScaledObject $IMPORTER (needs keda.sh rights). Nothing swapped; the copy resumes from $state."
+      log "Ask someone with KEDA rights to run: kubectl annotate scaledobject $IMPORTER autoscaling.keda.sh/paused-replicas=0 --overwrite"
+      exit 1; }
   else
-    replicas=$($KUBECTL get deploy "$IMPORTER" -o jsonpath='{.spec.replicas}'); echo "$replicas" > "${state}.replicas"
+    if [ $execute = 1 ]; then $KUBECTL get deploy "$IMPORTER" -o jsonpath='{.spec.replicas}' > "${state}.replicas"; fi
     k scale deploy "$IMPORTER" --replicas=0
   fi
   k wait --for=delete pod -l app="$IMPORTER" --timeout=180s
+  if [ $execute = 1 ]; then
+    sleep 30
+    replicas=$($KUBECTL get deploy "$IMPORTER" -o jsonpath='{.spec.replicas}')
+    [ "$replicas" = 0 ] || { log "importer came back to $replicas replicas, something else scales it. Nothing swapped."; importer_resume; exit 1; }
+    log "importer paused and stayed at 0"
+  fi
 }
 
 importer_resume() {
   [ $no_importer = 1 ] && return
-  if $KUBECTL get scaledobject "$IMPORTER" >/dev/null 2>&1; then
+  if keda_managed; then
     k annotate scaledobject "$IMPORTER" autoscaling.keda.sh/paused-replicas-
   else
     k scale deploy "$IMPORTER" --replicas="$(cat "${state}.replicas" 2>/dev/null || echo 1)"
