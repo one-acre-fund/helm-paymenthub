@@ -83,16 +83,19 @@ cutover() {
   [ -n "$parts" ] || { log "variables_new is missing or not partitioned: run the operations app with V56 first"; exit 1; }
   old_parts=$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.PARTITIONS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'variables' AND PARTITION_NAME IS NOT NULL")
   [ "$old_parts" = 0 ] || { log "variables is already partitioned: cutover done before"; exit 1; }
-  cols() { q "SELECT GROUP_CONCAT(COLUMN_NAME ORDER BY COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = '$1'"; }
+  # transaction_requests_id is left out on purpose by V56: no entity maps it and it is NULL in every QA tenant
+  cols() { q "SELECT GROUP_CONCAT(COLUMN_NAME ORDER BY COLUMN_NAME) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = '$1' AND COLUMN_NAME <> 'transaction_requests_id'"; }
   [ "$(cols variables)" = "$(cols variables_new)" ] || { log "columns differ (the operations app maps every column of variables): variables $(cols variables) / variables_new $(cols variables_new). Deploy the operations app with V57 first"; exit 1; }
   cutoff=$(q "SELECT CAST(UNIX_TIMESTAMP(DATE_FORMAT(DATE_SUB(UTC_DATE(), INTERVAL $months MONTH), '%Y-%m-01')) * 1000 AS UNSIGNED)")
   cutoff_month=$(q "SELECT DATE_FORMAT(FROM_UNIXTIME($cutoff / 1000), 'p%Y_%m')")
   echo "$parts" | grep -q "$cutoff_month" || { log "no partition $cutoff_month in variables_new for the cutoff; shorten --months or add partitions"; exit 1; }
   log "partitions: $parts"
   log "retention cutoff $(q "SELECT FROM_UNIXTIME($cutoff / 1000, '%Y-%m-%d %H:%i:%s')") UTC ($cutoff), oldest kept partition $cutoff_month"
-  max_id=$(q "SELECT MAX(ID) FROM variables"); log "variables: MAX(ID) $max_id, AUTO_INCREMENT will be $((max_id + 1)) or higher"
+  max_id=$(q "SELECT COALESCE(MAX(ID), 0) FROM variables"); log "variables: MAX(ID) $max_id, AUTO_INCREMENT will be $((max_id + 1)) or higher"
   if [ -f "$state" ]; then
     start=$(cat "$state"); log "resuming after ID $start from $state"
+  elif [ "$max_id" = 0 ]; then
+    start=0; log "variables is empty, nothing to copy"
   else
     start=$(( $(first_id_at "$cutoff") - 1 )); log "first ID to copy: $((start + 1)) ($(( max_id - start )) IDs to walk)"
     new_rows=$(q "SELECT COUNT(*) FROM variables_new"); [ "$new_rows" = 0 ] || { log "variables_new holds $new_rows rows but no state file: clear it or restore $state"; exit 1; }
@@ -100,7 +103,7 @@ cutover() {
   # 2. copy while the importer runs
   copy_range "$start" "$max_id"
   # 3. tail
-  tail_max=$(q "SELECT MAX(ID) FROM variables"); log "tail: IDs $max_id..$tail_max"
+  tail_max=$(q "SELECT COALESCE(MAX(ID), 0) FROM variables"); log "tail: IDs $max_id..$tail_max"
   copy_range "$max_id" "$tail_max"
   # 4. swap; lock_wait_timeout bounds the wait for open importer transactions
   x "ALTER TABLE variables_new AUTO_INCREMENT = $((tail_max + GAP))"
