@@ -1,0 +1,75 @@
+// Appends one line per transaction to the run manifest that reconcile_with_ops.py reads.
+//
+// Attached as a BeanShell PostProcessor to the sampler that finishes a transaction. It is
+// BeanShell rather than Groovy because JMeter 5.5's Groovy can't run on the Java 25 that
+// Homebrew's jmeter uses. Parameters are "|"-separated so that values may be blank:
+//
+//   flow|scenario|expected|stage|joinIds
+//
+//   expected  SUCCESS, FAILURE or ANY: the end state the operations app should show.
+//   stage     "final" records every time. "validation" records only when validation rejected
+//             the transaction, because the confirmation is then skipped.
+//   joinIds   Comma-separated IDs that identify the transaction in the operations app.
+//
+// X-CorrelationID (when the request sent one) and any transactionId in the response body are
+// added to the join IDs automatically.
+
+import java.util.LinkedHashSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.apache.jmeter.util.JMeterUtils;
+
+String[] parts = Parameters.split("\\|", -1);
+String stage = parts[3];
+
+if (!("validation".equals(stage) && "true".equals(vars.get("validationOk")))) {
+    LinkedHashSet ids = new LinkedHashSet();
+    String[] joinIds = parts[4].split(",");
+    for (int i = 0; i < joinIds.length; i++) {
+        String id = joinIds[i].trim();
+        if (id.length() > 0 && id.indexOf("${") < 0) {
+            ids.add(id);
+        }
+    }
+
+    Matcher correlation = Pattern.compile("(?im)^x-correlationid:\\s*(\\S+)\\s*$")
+        .matcher(prev.getRequestHeaders());
+    if (correlation.find()) {
+        ids.add(correlation.group(1));
+    }
+
+    Matcher responseId = Pattern.compile("\"transactionId\"\\s*:\\s*\"([^\"]+)\"")
+        .matcher(prev.getResponseDataAsString());
+    if (responseId.find()) {
+        ids.add(responseId.group(1));
+    }
+
+    String code = prev.getResponseCode();
+    boolean accepted = !"validation".equals(stage) && code.matches("2\\d\\d");
+    StringBuilder joined = new StringBuilder();
+    for (java.util.Iterator it = ids.iterator(); it.hasNext();) {
+        joined.append(it.next());
+        if (it.hasNext()) {
+            joined.append("|");
+        }
+    }
+    String line = prev.getTimeStamp() + "," + parts[0] + "," + parts[1] + "," + parts[2] + ","
+        + code + "," + accepted + "," + joined;
+
+    // One writer per manifest, shared by every thread through the JMeter properties.
+    String path = vars.get("MANIFEST_FILE");
+    java.util.Properties shared = JMeterUtils.getJMeterProperties();
+    synchronized (shared) {
+        java.io.PrintWriter writer = shared.get("manifestWriter:" + path);
+        if (writer == null) {
+            java.io.File file = new java.io.File(path);
+            boolean isNew = !file.exists() || file.length() == 0;
+            writer = new java.io.PrintWriter(new java.io.FileWriter(file, true), true);
+            if (isNew) {
+                writer.println("timestamp_ms,flow,scenario,expected,http_code,request_accepted,join_ids");
+            }
+            shared.put("manifestWriter:" + path, writer);
+        }
+        writer.println(line);
+    }
+}

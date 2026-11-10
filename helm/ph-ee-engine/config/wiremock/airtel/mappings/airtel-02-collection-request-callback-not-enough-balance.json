@@ -69,10 +69,7 @@
           "Content-Type": "application/json"
         },
         "body": "{\"transaction\": {\"id\": \"{{jsonPath originalRequest.body '$.transaction.id'}}\", \"message\": \"Transaction Failed. Not enough balance\", \"status_code\": \"TF\"}, \"hash\": \"mock-hash-not-a-real-hmac\"}",
-        "delay": {
-          "type": "fixed",
-          "milliseconds": 3000
-        }
+        "delay": { "type": "uniform", "lower": 5000, "upper": 10000 }
       }
     }
   ]

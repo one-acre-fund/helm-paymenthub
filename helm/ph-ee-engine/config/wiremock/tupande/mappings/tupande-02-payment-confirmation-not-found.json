@@ -1,0 +1,23 @@
+{
+  "name": "tupande-payment-confirmation-not-found",
+  "priority": 1,
+  "request": {
+    "method": "POST",
+    "urlPath": "/api/v1/payments/payment-hub/confirmation",
+    "headers": {
+      "Authorization": { "matches": "Bearer.*" }
+    },
+    "bodyPatterns": [
+      { "matchesJsonPath": "$.data.remoteTransactionId" },
+      { "matchesJsonPath": "$.data[?(@.account =~ /^0000.*/)]" }
+    ]
+  },
+  "response": {
+    "status": 404,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": {
+      "message": "Transaction not found for id or remoteTransactionId ({{jsonPath request.body '$.data.remoteTransactionId'}})"
+    },
+    "transformers": ["response-template"]
+  }
+}

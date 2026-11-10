@@ -14,7 +14,7 @@ enable it. This file covers only the mtn-specific stubs below.
 | File | Endpoint | Mimics |
 |---|---|---|
 | `mtn-01-oauth-token.json` | `POST /collection/token/` | OAuth2 token endpoint (Basic auth + `Ocp-Apim-Subscription-Key`). Returns a fresh `access_token` on every call. |
-| `mtn-02-request-to-pay.json` | `POST /collection/v1_0/requesttopay` | Request-to-pay (default/catch-all). Returns `202 Accepted` with an empty body, **and** fires a WireMock webhook ~3s later that `POST`s a `SUCCESSFUL` callback to whatever `X-Callback-Url` was in the request — this is what simulates MTN notifying the connector once the customer approves the payment on their phone. |
+| `mtn-02-request-to-pay.json` | `POST /collection/v1_0/requesttopay` | Request-to-pay (default/catch-all). Returns `202 Accepted` with an empty body, **and** fires a WireMock webhook 5–10s later that `POST`s a `SUCCESSFUL` callback to whatever `X-Callback-Url` was in the request — this is what simulates MTN notifying the connector once the customer approves the payment on their phone. |
 | `mtn-02-request-to-pay-error-*.json` | `POST /collection/v1_0/requesttopay` | Request-to-pay **synchronous** failures — see "Simulating failures" below. Matched by `payer.partyId`, higher priority than the default stub above. |
 | `mtn-02-request-to-pay-callback-*.json` | `POST /collection/v1_0/requesttopay` | Request-to-pay that succeeds synchronously but whose webhook delivers a **failing** callback — see "Simulating failures" below. Matched by `payer.partyId`, higher priority than the default stub above. |
 | `mtn-02-request-to-pay-no-callback.json` | `POST /collection/v1_0/requesttopay` | Request-to-pay that succeeds synchronously but has **no callback webhook at all** — simulates a callback MTN never delivers. See "Simulating failures" below. |
@@ -54,7 +54,7 @@ fires, matching real MTN behaviour:
 | `250780000003` | 500 | `INTERNAL_PROCESSING_ERROR` | Internal error while processing the request. |
 
 **Asynchronous callback failures** — the request-to-pay succeeds normally (`202 Accepted`),
-but the webhook that fires ~3s later delivers a failing callback (`status: "FAILED"` with a
+but the webhook that fires 5–10s later delivers a failing callback (`status: "FAILED"` with a
 `reason`, and no `financialTransactionId` — matching what MTN sends when a transaction
 doesn't complete):
 
@@ -141,7 +141,7 @@ than by calling the connector directly. What happens once it starts:
    (`mtn-01-oauth-token.json`).
 2. It calls request-to-pay (`mtn-02-request-to-pay.json`) with a freshly generated
    `X-Reference-Id`, which responds `202 Accepted` and schedules the callback webhook.
-3. ~3s later, `paymenthub-wiremock` `POST`s the callback to the connector's own
+3. 5–10s later, `paymenthub-wiremock` `POST`s the callback to the connector's own
    `/buygoods/callback` (`MTNRW_CALLBACK`), completing the transaction
    (`status: "SUCCESSFUL"`).
 4. If the callback doesn't arrive in time, the workflow's boundary timer makes the

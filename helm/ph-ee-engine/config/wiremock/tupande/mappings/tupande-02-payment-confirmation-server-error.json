@@ -1,0 +1,22 @@
+{
+  "name": "tupande-payment-confirmation-server-error",
+  "priority": 1,
+  "request": {
+    "method": "POST",
+    "urlPath": "/api/v1/payments/payment-hub/confirmation",
+    "headers": {
+      "Authorization": { "matches": "Bearer.*" }
+    },
+    "bodyPatterns": [
+      { "matchesJsonPath": "$.data.remoteTransactionId" },
+      { "matchesJsonPath": "$.data[?(@.account =~ /^9999.*/)]" }
+    ]
+  },
+  "response": {
+    "status": 500,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": {
+      "message": "Internal server error"
+    }
+  }
+}

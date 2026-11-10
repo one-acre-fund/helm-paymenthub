@@ -34,10 +34,7 @@
           "Content-Type": "application/json"
         },
         "body": "{ \"Body\": { \"stkCallback\": { \"MerchantRequestID\": \"29115-34620561-1\", \"CheckoutRequestID\": \"ws_CO_{{jsonPath originalRequest.body '$.Timestamp'}}_CANCELLED\", \"ResultCode\": 1032, \"ResultDesc\": \"Request cancelled by user.\" } } }",
-        "delay": {
-          "type": "fixed",
-          "milliseconds": 3000
-        }
+        "delay": { "type": "uniform", "lower": 5000, "upper": 10000 }
       }
     }
   ]

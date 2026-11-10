@@ -42,10 +42,7 @@
           "Content-Type": "application/json"
         },
         "body": "{\"externalId\": \"{{jsonPath originalRequest.body '$.externalId'}}\", \"amount\": \"{{jsonPath originalRequest.body '$.amount'}}\", \"currency\": \"{{jsonPath originalRequest.body '$.currency'}}\", \"payer\": {\"partyIdType\": \"{{jsonPath originalRequest.body '$.payer.partyIdType'}}\", \"partyId\": \"{{jsonPath originalRequest.body '$.payer.partyId'}}\"}, \"payerMessage\": \"{{jsonPath originalRequest.body '$.payerMessage'}}\", \"payeeNote\": \"{{jsonPath originalRequest.body '$.payeeNote'}}\", \"status\": \"FAILED\", \"reason\": \"APPROVAL_REJECTED\"}",
-        "delay": {
-          "type": "fixed",
-          "milliseconds": 3000
-        }
+        "delay": { "type": "uniform", "lower": 5000, "upper": 10000 }
       }
     }
   ]

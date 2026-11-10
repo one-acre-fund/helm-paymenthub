@@ -41,7 +41,7 @@
         "url": "http://ph-ee-connector-airtel/collections/callback",
         "headers": { "Content-Type": "application/json" },
         "body": "{\"transaction\": {\"id\": \"{{jsonPath originalRequest.body '$.transaction.id'}}\", \"message\": \"Paid {{jsonPath originalRequest.body '$.transaction.currency'}} {{jsonPath originalRequest.body '$.transaction.amount'}} to One Acre Fund.\", \"status_code\": \"TS\", \"airtel_money_id\": \"MP{{jsonPath originalRequest.body '$.transaction.id'}}\"}, \"hash\": \"mock-hash-not-a-real-hmac\"}",
-        "delay": { "type": "fixed", "milliseconds": 3000 }
+        "delay": { "type": "uniform", "lower": 5000, "upper": 10000 }
       }
     }
   ]

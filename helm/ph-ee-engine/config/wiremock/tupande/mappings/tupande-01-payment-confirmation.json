@@ -1,0 +1,24 @@
+{
+  "name": "tupande-payment-confirmation",
+  "priority": 5,
+  "request": {
+    "method": "POST",
+    "urlPath": "/api/v1/payments/payment-hub/confirmation",
+    "headers": {
+      "Authorization": { "matches": "Bearer.*" }
+    },
+    "bodyPatterns": [
+      { "matchesJsonPath": "$.data.remoteTransactionId" },
+      { "matchesJsonPath": "$.data.account" }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": {
+      "message": "Payment confirmed",
+      "remoteTransactionId": "{{jsonPath request.body '$.data.remoteTransactionId'}}"
+    },
+    "transformers": ["response-template"]
+  }
+}

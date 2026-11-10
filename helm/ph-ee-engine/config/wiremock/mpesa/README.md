@@ -14,7 +14,7 @@ enable it. This file covers only the mpesa-specific stubs below.
 | File | Endpoint | Mimics |
 |---|---|---|
 | `mpesa-01-oauth-token.json` | `GET /oauth/v1/generate` | OAuth2 client-credentials token endpoint. Returns a fresh `access_token` on every call. |
-| `mpesa-02-stk-push-initiate.json` | `POST /mpesa/stkpush/v1/processrequest` | STK push initiate (default/catch-all). Returns `ResponseCode: "0"` with a `CheckoutRequestID` derived from the request's `Timestamp`, **and** fires a WireMock webhook ~3s later that `POST`s a successful STK callback (with a randomly generated `MpesaReceiptNumber`) to whatever `CallBackURL` was in the request — this is what simulates Safaricom notifying the connector once the customer completes payment on their phone. |
+| `mpesa-02-stk-push-initiate.json` | `POST /mpesa/stkpush/v1/processrequest` | STK push initiate (default/catch-all). Returns `ResponseCode: "0"` with a `CheckoutRequestID` derived from the request's `Timestamp`, **and** fires a WireMock webhook 5–10s later that `POST`s a successful STK callback (with a randomly generated `MpesaReceiptNumber`) to whatever `CallBackURL` was in the request — this is what simulates Safaricom notifying the connector once the customer completes payment on their phone. |
 | `mpesa-02-stk-push-initiate-error-*.json` | `POST /mpesa/stkpush/v1/processrequest` | STK push initiate **synchronous** failures — see "Simulating failures" below. Matched by `PhoneNumber`, higher priority than the default stub above. |
 | `mpesa-02-stk-push-initiate-callback-*.json` | `POST /mpesa/stkpush/v1/processrequest` | STK push initiate that succeeds synchronously but whose webhook delivers a **failing** callback — see "Simulating failures" below. Matched by `PhoneNumber`, higher priority than the default stub above. |
 | `mpesa-02-stk-push-initiate-no-callback.json` | `POST /mpesa/stkpush/v1/processrequest` | STK push initiate that succeeds synchronously but has **no webhook at all** — simulates a callback Safaricom never delivers. See "Simulating failures" below. |
@@ -47,7 +47,7 @@ webhook fires, matching real Safaricom behaviour:
 | `254700000003` | 400 | `400.002.05` | Bad Request - Invalid PhoneNumber |
 
 **Asynchronous callback failures** — the initiate call succeeds normally
-(`ResponseCode: "0"`, `CheckoutRequestID` issued), but the webhook that fires ~3s later
+(`ResponseCode: "0"`, `CheckoutRequestID` issued), but the webhook that fires 5–10s later
 delivers a failing callback (non-zero `ResultCode`, no `CallbackMetadata` — matching what
 Safaricom sends when a transaction doesn't complete):
 
@@ -68,7 +68,7 @@ this to exercise the connector's own timeout/reconciliation path (polling
 | `254700000201` | Initiate succeeds, no webhook ever fires. A status query for this transaction always reports "still processing" (see below) — it never resolves on its own. |
 
 **Callback / status query with an invalid body** — the initiate call succeeds normally,
-but the callback webhook fired ~3s later, and any status query for that transaction,
+but the callback webhook fired 5–10s later, and any status query for that transaction,
 both return `200 OK` with `Content-Type: application/json` and a body that isn't a usable
 Daraja result. Use this to exercise the connector's handling of a "successful" HTTP
 status it can't actually interpret:
@@ -153,7 +153,7 @@ What happens:
    (`mpesa-01-oauth-token.json`).
 2. It calls the STK push initiate endpoint (`mpesa-02-stk-push-initiate.json`), which
    responds immediately with a `CheckoutRequestID`, and schedules the callback webhook.
-3. ~3s later, `paymenthub-wiremock` `POST`s the STK callback to the connector's own
+3. 5–10s later, `paymenthub-wiremock` `POST`s the STK callback to the connector's own
    `/buygoods/callback`, completing the transaction (`ResultCode: 0`, with a randomly
    generated `MpesaReceiptNumber` in the callback metadata).
 4. A status check against `/buygoods/transactionstatus` (or the connector's own retry

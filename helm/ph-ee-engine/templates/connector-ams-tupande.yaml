@@ -67,6 +67,8 @@ spec:
                   key: "auth-token"
             - name: "TUPANDE_BASE-URL"
               value: "{{ .Values.tupande_connector.tupande.base_url }}"
+            - name: "TUPANDE_ENDPOINT_CONFIRMATION"
+              value: "{{ .Values.tupande_connector.tupande.confirmation_endpoint }}"
             - name: "LOGGING_LEVEL_ROOT"
               value: "{{ .Values.tupande_connector.LOGGING_LEVEL_ROOT }}"
             - name: JVM_INITIAL_RAM_PERCENT
