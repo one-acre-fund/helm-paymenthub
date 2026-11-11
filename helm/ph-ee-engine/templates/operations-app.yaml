@@ -102,6 +102,8 @@ spec:
               value: "{{ .Values.operations_app.variablesRetention.aheadMonths }}"
             - name: "VARIABLES_RETENTION_DRYRUN"
               value: "{{ .Values.operations_app.variablesRetention.dryRun }}"
+            - name: "VARIABLES_RETENTION_CRON"
+              value: "{{ .Values.operations_app.variablesRetention.cron }}"
             - name: "AWS_ACCESS_KEY"
               valueFrom:
                 secretKeyRef:
