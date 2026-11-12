@@ -20,6 +20,7 @@ spec:
 {{ toYaml .Values.mpesa.deployment.annotations | indent 8 }}
 {{- end }}
     spec:
+      terminationGracePeriodSeconds: {{ .Values.mpesa.terminationGracePeriodSeconds | default .Values.gracefulShutdown.terminationGracePeriodSeconds }}
       containers:
         - name: ph-ee-connector-mpesa
           image: "{{ .Values.mpesa.image }}:{{ .Values.mpesa.imageTag }}"
@@ -38,12 +39,17 @@ spec:
               port: 8080
             initialDelaySeconds: 20
             periodSeconds: 30
+            timeoutSeconds: 5
           startupProbe:
             httpGet:
               path: /actuator/health/readiness
               port: 8080
             failureThreshold: 30
             periodSeconds: 60
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sh", "-c", "sleep {{ .Values.gracefulShutdown.preStopSeconds }}"]
           resources:
             limits:
               memory: "{{ .Values.mpesa.limits.memory }}"
@@ -59,6 +65,7 @@ spec:
             - -jar
             - /app/app.jar
           env:
+            {{- include "ph-ee-engine.shutdown.env" . | nindent 12 }}
             - name: "SPRING_PROFILES_ACTIVE"
               value: "{{ .Values.mpesa.SPRING_PROFILES_ACTIVE }}"
             - name: "ZEEBE_BROKER_CONTACTPOINT"

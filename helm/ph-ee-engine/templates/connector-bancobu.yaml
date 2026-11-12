@@ -20,6 +20,7 @@ spec:
 {{ toYaml .Values.bancobu_connector.deployment.annotations | indent 8 }}
 {{- end }}
     spec:
+      terminationGracePeriodSeconds: {{ .Values.bancobu_connector.terminationGracePeriodSeconds | default .Values.gracefulShutdown.terminationGracePeriodSeconds }}
       containers:
         - name: ph-ee-connector-bancobu
           image: "{{ .Values.bancobu_connector.image }}:{{ .Values.bancobu_connector.imageTag }}"
@@ -44,6 +45,10 @@ spec:
               port: 8085
             failureThreshold: 30
             periodSeconds: 5
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sh", "-c", "sleep {{ .Values.gracefulShutdown.preStopSeconds }}"]
           resources:
             limits:
               memory: "{{ .Values.bancobu_connector.limits.memory }}"
@@ -61,6 +66,7 @@ spec:
             - "-jar"
             - "/app/ph-ee-connector-bancobu.jar"
           env:
+            {{- include "ph-ee-engine.shutdown.env" . | nindent 12 }}
             - name: "ZEEBE_BROKER_CONTACTPOINT"
               value: "{{ .Values.bancobu_connector.zeebe_broker_contactpoint }}"
             - name: "SKIP_ENABLED"

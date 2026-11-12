@@ -1,4 +1,15 @@
 zeebe_broker_contactpoint: "ph-zeebe-gateway:26500"
+# Graceful shutdown defaults for the connector pods (FD-1939). A connector overrides the grace
+# period with <connector>.terminationGracePeriodSeconds. The preStop pause keeps the pod serving
+# while endpoint removal propagates; the Spring, Camel and Zeebe values bound the drain inside the JVM.
+# camelShutdownTimeout (seconds) caps how long Camel waits for in-flight exchanges, including requests
+# on the Camel HTTP port; Camel's own default is 300 s, longer than the grace period.
+gracefulShutdown:
+  preStopSeconds: 5
+  terminationGracePeriodSeconds: 120
+  phaseTimeout: "20s"
+  zeebeDrainTimeout: "60s"
+  camelShutdownTimeout: 20
 mtn_rwanda_connector:
   enabled: true
   image: "oaftech.azurecr.io/oneacrefund/mtn-connector"
@@ -350,6 +361,8 @@ kibana:
       secretName: elastic-certificate-pem
       path: /usr/share/kibana/config/certs
 channel:
+  # Channel workers only send callbacks and notifications, so a shorter drain is enough.
+  terminationGracePeriodSeconds: 90
   enabled: true
   replicas: 1
   image: "oaftech.azurecr.io/phee-ns/ph-ee-connector-channel"
@@ -969,6 +982,8 @@ importer_es:
     topic: "zeebe-export"
     consumerGroup: "ph-ee-importer-es"
     concurrency: 3
+    # How long the consumer threads may flush and commit the current bulk before the JVM exits.
+    shutdownTimeoutMs: 30000
   # KEDA ScaledObject on consumer-group lag. Off by default; when on, Helm stops rendering
   # `replicas` and KEDA owns the count between minReplicas and maxReplicas.
   autoscaling:
@@ -1091,6 +1106,12 @@ importer_rdbms:
     topic: "zeebe-export"
     consumerGroup: "ph-ee-importer-rdbms"
     concurrency: 3
+    # Records per poll. Offsets are committed per record (FD-1939), so this bounds how long a
+    # consumer keeps working after SIGTERM, not how much is read again.
+    maxPollRecords: 100
+    # How long the consumer threads may finish and commit their current work before the JVM exits.
+    # Must stay below terminationGracePeriodSeconds.
+    shutdownTimeoutMs: 45000
   # Variable names the importer never writes to the variables table (FD-1737): timers, feature
   # flags, retry counters and HTTP codes that carry no payment information. Names the importer maps
   # into transfers, transaction_requests or batches columns must stay off this list. An empty list

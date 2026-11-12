@@ -20,6 +20,7 @@ spec:
 {{ toYaml .Values.mtn_rwanda_connector.deployment.annotations | indent 8 }}
 {{- end }}
     spec:
+      terminationGracePeriodSeconds: {{ .Values.mtn_rwanda_connector.terminationGracePeriodSeconds | default .Values.gracefulShutdown.terminationGracePeriodSeconds }}
       containers:
         - name: ph-ee-connector-ams-mtn-rw
           image: "{{ .Values.mtn_rwanda_connector.image }}:{{ .Values.mtn_rwanda_connector.imageTag }}"
@@ -44,6 +45,10 @@ spec:
               port: 8080
             failureThreshold: 30
             periodSeconds: 60
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sh", "-c", "sleep {{ .Values.gracefulShutdown.preStopSeconds }}"]
           resources:
             limits:
               memory: "{{ .Values.mtn_rwanda_connector.deployment.resources.limits.memory }}"
@@ -64,6 +69,7 @@ spec:
             - "-jar"
             - "/app/ph-ee-connector-mtn.jar"
           env:
+            {{- include "ph-ee-engine.shutdown.env" . | nindent 12 }}
             - name: "ZEEBE_BROKER_CONTACTPOINT"
               value: "{{ .Values.mtn_rwanda_connector.zeebe_broker_contactpoint }}"
             - name: "TENANTS"

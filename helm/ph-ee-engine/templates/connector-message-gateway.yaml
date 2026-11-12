@@ -20,12 +20,17 @@ spec:
 {{ toYaml .Values.messagegateway.deployment.annotations | indent 8 }}
 {{- end }}
     spec:
+      terminationGracePeriodSeconds: {{ .Values.messagegateway.terminationGracePeriodSeconds | default .Values.gracefulShutdown.terminationGracePeriodSeconds }}
       containers:
         - name: message-gateway
           image: "{{ .Values.messagegateway.image }}:{{ .Values.messagegateway.imageTag }}"  
           ports:
             - containerPort: 9191
           imagePullPolicy: "{{ .Values.messagegateway.imagePullPolicy }}"
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sh", "-c", "sleep {{ .Values.gracefulShutdown.preStopSeconds }}"]
           resources:
             limits:
               memory: "{{ .Values.messagegateway.limits.memory }}"
@@ -47,6 +52,7 @@ spec:
             periodSeconds: 30
 
           env:
+            {{- include "ph-ee-engine.shutdown.env" . | nindent 12 }}
             - name: "SPRING_DATASOURCE_URL"
               value: "{{ .Values.messagegateway.DATASOURCE_URL }}"
             - name: "MYSQL_USERNAME"

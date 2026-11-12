@@ -20,12 +20,17 @@ spec:
 {{ toYaml .Values.channel.deployment.annotations | indent 8 }}
 {{- end }}
     spec:
+      terminationGracePeriodSeconds: {{ .Values.channel.terminationGracePeriodSeconds | default .Values.gracefulShutdown.terminationGracePeriodSeconds }}
       containers:
         - name: ph-ee-connector-channel
           image: "{{ .Values.channel.image }}:{{ .Values.channel.imageTag }}"
           ports:
             - containerPort: {{ .Values.channel.container.port }}
           imagePullPolicy: "{{ .Values.channel.imagePullPolicy }}"
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sh", "-c", "sleep {{ .Values.gracefulShutdown.preStopSeconds }}"]
           resources:
             limits:
               memory: "{{ .Values.channel.limits.memory }}"
@@ -45,6 +50,7 @@ spec:
               port: {{ .Values.channel.container.port }}
             initialDelaySeconds: 20
             periodSeconds: 30
+            timeoutSeconds: 5
           startupProbe:
             httpGet:
               path: /actuator/health/readiness
@@ -59,6 +65,7 @@ spec:
             - -jar
             - /app/app.jar
           env:
+            {{- include "ph-ee-engine.shutdown.env" . | nindent 12 }}
             - name: "SPRING_PROFILES_ACTIVE"
               value: "{{ .Values.channel.SPRING_PROFILES_ACTIVE }}"
             - name: "ZEEBE_BROKER_CONTACTPOINT"

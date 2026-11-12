@@ -20,6 +20,7 @@ spec:
 {{ toYaml .Values.odoo_connector.deployment.annotations | indent 8 }}
 {{- end }}
     spec:
+      terminationGracePeriodSeconds: {{ .Values.odoo_connector.terminationGracePeriodSeconds | default .Values.gracefulShutdown.terminationGracePeriodSeconds }}
       containers:
         - name: ph-ee-connector-ams-odoo
           image: "{{ .Values.odoo_connector.image }}:{{ .Values.odoo_connector.imageTag }}"
@@ -54,6 +55,7 @@ spec:
             - "-jar"
             - "/app/ph-ee-connector-ams-odoo.jar"
           env:
+            {{- include "ph-ee-engine.shutdown.env" . | nindent 12 }}
             - name: "SPRING_PROFILES_ACTIVE"
               value: "{{ .Values.odoo_connector.SPRING_PROFILES_ACTIVE }}"
             - name: "ZEEBE_BROKER_CONTACTPOINT"
@@ -84,6 +86,10 @@ spec:
             - name: ELASTIC_APM_APPLICATION_PACKAGES
               value: "{{ .Values.odoo_connector.ELASTIC_APM_APPLICATION_PACKAGES }}"
 
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sh", "-c", "sleep {{ .Values.gracefulShutdown.preStopSeconds }}"]
           resources:
             limits:
               memory: "{{ .Values.odoo_connector.limits.memory }}"
