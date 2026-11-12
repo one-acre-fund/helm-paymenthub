@@ -20,12 +20,17 @@ spec:
 {{ toYaml .Values.connector_bulk.deployment.annotations | indent 8 }}
 {{- end }}
     spec:
+      terminationGracePeriodSeconds: {{ .Values.connector_bulk.terminationGracePeriodSeconds | default .Values.gracefulShutdown.terminationGracePeriodSeconds }}
       containers:
         - name: ph-ee-connector-bulk
           image: "{{ .Values.connector_bulk.image }}:{{ .Values.connector_bulk.imageTag }}"
           imagePullPolicy: "{{ .Values.connector_bulk.imagePullPolicy }}"
           ports:
             - containerPort: 5000
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sh", "-c", "sleep {{ .Values.gracefulShutdown.preStopSeconds }}"]
           resources:
             limits:
               memory: "{{ .Values.connector_bulk.limits.memory }}"
@@ -34,6 +39,7 @@ spec:
               memory: "{{ .Values.connector_bulk.requests.memory }}"
               cpu: "{{ .Values.connector_bulk.requests.cpu }}"
           env:
+            {{- include "ph-ee-engine.shutdown.env" . | nindent 12 }}
             - name: "SPRING_PROFILES_ACTIVE"
               value: "{{ .Values.connector_bulk.SPRING_PROFILES_ACTIVE }}"
             - name: "CAMEL_DISABLE-SSL"

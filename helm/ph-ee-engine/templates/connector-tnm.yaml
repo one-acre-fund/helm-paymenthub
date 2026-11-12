@@ -20,6 +20,7 @@ spec:
 {{ toYaml .Values.tnm_connector.deployment.annotations | indent 8 }}
 {{- end }}
     spec:
+      terminationGracePeriodSeconds: {{ .Values.tnm_connector.terminationGracePeriodSeconds | default .Values.gracefulShutdown.terminationGracePeriodSeconds }}
       containers:
         - name: ph-ee-connector-tnm
           image: "{{ .Values.tnm_connector.image }}:{{ .Values.tnm_connector.imageTag }}"
@@ -44,6 +45,10 @@ spec:
               port: 8085
             failureThreshold: 30
             periodSeconds: 5
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sh", "-c", "sleep {{ .Values.gracefulShutdown.preStopSeconds }}"]
           resources:
             limits:
               memory: "{{ .Values.tnm_connector.limits.memory }}"
@@ -64,6 +69,7 @@ spec:
             - "-jar"
             - "/app/ph-ee-connector-tnm.jar"
           env:
+            {{- include "ph-ee-engine.shutdown.env" . | nindent 12 }}
             - name: "ZEEBE_BROKER_CONTACTPOINT"
               value: "{{ .Values.tnm_connector.zeebe_broker_contactpoint }}"
             - name: "SKIP_ENABLED"

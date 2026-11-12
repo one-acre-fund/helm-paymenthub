@@ -20,10 +20,15 @@ spec:
 {{ toYaml .Values.notifications.deployment.annotations | indent 8 }}
 {{- end }}
     spec:
+      terminationGracePeriodSeconds: {{ .Values.notifications.terminationGracePeriodSeconds | default .Values.gracefulShutdown.terminationGracePeriodSeconds }}
       containers:
         - name: ph-ee-connector-notifications
           image: "{{ .Values.notifications.image }}:{{ .Values.notifications.imageTag }}"
           imagePullPolicy: "{{ .Values.notifications.imagePullPolicy }}"
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sh", "-c", "sleep {{ .Values.gracefulShutdown.preStopSeconds }}"]
           resources:
             limits:
               memory: "{{ .Values.notifications.limits.memory }}"
@@ -46,6 +51,7 @@ spec:
             initialDelaySeconds: 20
             periodSeconds: 30
           env:
+            {{- include "ph-ee-engine.shutdown.env" . | nindent 12 }}
             - name: "SPRING_PROFILES_ACTIVE"
               value: "{{ .Values.notifications.SPRING_PROFILES_ACTIVE }}"
             - name: "ZEEBE_BROKER_CONTACTPOINT"

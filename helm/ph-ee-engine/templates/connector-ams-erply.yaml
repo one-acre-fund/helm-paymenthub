@@ -20,6 +20,7 @@ spec:
 {{ toYaml .Values.erply_connector.deployment.annotations | indent 8 }}
 {{- end }}
     spec:
+      terminationGracePeriodSeconds: {{ .Values.erply_connector.terminationGracePeriodSeconds | default .Values.gracefulShutdown.terminationGracePeriodSeconds }}
       containers:
         - name: ph-ee-connector-ams-erply
           image: "{{ .Values.erply_connector.image }}:{{ .Values.erply_connector.imageTag }}"
@@ -50,6 +51,7 @@ spec:
             failureThreshold: 60
             periodSeconds: 5
           env:
+            {{- include "ph-ee-engine.shutdown.env" . | nindent 12 }}
             - name: "SPRING_PROFILES_ACTIVE"
               value: "{{ .Values.erply_connector.SPRING_PROFILES_ACTIVE }}"
             - name: "ZEEBE_BROKER_CONTACTPOINT"
@@ -65,6 +67,10 @@ spec:
               value: "{{ .Values.erply_connector.erply.base_url }}"
             - name: "LOGGING_LEVEL_ROOT"
               value: "{{ .Values.erply_connector.LOGGING_LEVEL_ROOT }}"
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sh", "-c", "sleep {{ .Values.gracefulShutdown.preStopSeconds }}"]
           resources:
             limits:
               memory: "{{ .Values.erply_connector.limits.memory }}"

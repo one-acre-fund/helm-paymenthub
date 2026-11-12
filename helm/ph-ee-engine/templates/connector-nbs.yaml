@@ -20,6 +20,7 @@ spec:
 {{ toYaml .Values.nbs_connector.deployment.annotations | indent 8 }}
 {{- end }}
     spec:
+      terminationGracePeriodSeconds: {{ .Values.nbs_connector.terminationGracePeriodSeconds | default .Values.gracefulShutdown.terminationGracePeriodSeconds }}
       containers:
         - name: ph-ee-connector-nbs
           image: "{{ .Values.nbs_connector.image }}:{{ .Values.nbs_connector.imageTag }}"
@@ -44,6 +45,10 @@ spec:
               port: 8085
             failureThreshold: 30
             periodSeconds: 5
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sh", "-c", "sleep {{ .Values.gracefulShutdown.preStopSeconds }}"]
           resources:
             limits:
               memory: "{{ .Values.nbs_connector.limits.memory }}"
@@ -64,6 +69,7 @@ spec:
             - "-jar"
             - "/app/ph-ee-connector-nbs.jar"
           env:
+            {{- include "ph-ee-engine.shutdown.env" . | nindent 12 }}
             - name: "ZEEBE_BROKER_CONTACTPOINT"
               value: "{{ .Values.nbs_connector.zeebe_broker_contactpoint }}"
             - name: "SKIP_ENABLED"

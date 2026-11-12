@@ -20,12 +20,17 @@ spec:
 {{ toYaml .Values.ph_ee_connector_slcb.deployment.annotations | indent 8 }}
 {{- end }}
     spec:
+      terminationGracePeriodSeconds: {{ .Values.ph_ee_connector_slcb.terminationGracePeriodSeconds | default .Values.gracefulShutdown.terminationGracePeriodSeconds }}
       containers:
         - name: ph-ee-connector-slcb-mm
           image: "{{ .Values.ph_ee_connector_slcb.image }}"
           imagePullPolicy: "{{ .Values.ph_ee_connector_slcb.imagePullPolicy }}"
           ports:
             - containerPort: 5000
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sh", "-c", "sleep {{ .Values.gracefulShutdown.preStopSeconds }}"]
           resources:
             limits:
               memory: "{{ .Values.ph_ee_connector_slcb.limits.memory }}"
@@ -34,6 +39,7 @@ spec:
               memory: "{{ .Values.ph_ee_connector_slcb.requests.memory }}"
               cpu: "{{ .Values.ph_ee_connector_slcb.requests.cpu }}"
           env:
+            {{- include "ph-ee-engine.shutdown.env" . | nindent 12 }}
             - name: "SPRING_PROFILES_ACTIVE"
               value: "{{ .Values.ph_ee_connector_slcb.SPRING_PROFILES_ACTIVE }}"
             - name: "ZEEBE_BROKER_CONTACTPOINT"

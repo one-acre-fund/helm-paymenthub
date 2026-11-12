@@ -22,12 +22,17 @@ spec:
     spec:
       imagePullSecrets:
       - name: regcred
+      terminationGracePeriodSeconds: {{ .Values.ph_ee_connector_mojaloop.terminationGracePeriodSeconds | default .Values.gracefulShutdown.terminationGracePeriodSeconds }}
       containers:
         - name: ph-ee-connector-mojaloop-java
           image: "{{ .Values.ph_ee_connector_mojaloop.image }}:{{ .Values.ph_ee_connector_mojaloop.imageTag }}"
           imagePullPolicy: "{{ .Values.ph_ee_connector_mojaloop.imagePullPolicy }}"
           ports:
             - containerPort: 5000
+          lifecycle:
+            preStop:
+              exec:
+                command: ["sh", "-c", "sleep {{ .Values.gracefulShutdown.preStopSeconds }}"]
           resources:
             limits:
               memory: "{{ .Values.ph_ee_connector_mojaloop.limits.memory }}"
@@ -36,6 +41,7 @@ spec:
               memory: "{{ .Values.ph_ee_connector_mojaloop.requests.memory }}"
               cpu: "{{ .Values.ph_ee_connector_mojaloop.requests.cpu }}"
           env:
+            {{- include "ph-ee-engine.shutdown.env" . | nindent 12 }}
             - name: "SPRING_PROFILES_ACTIVE"
               value: "{{ .Values.ph_ee_connector_mojaloop.SPRING_PROFILES_ACTIVE }}"
           volumeMounts:
