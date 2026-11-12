@@ -1,6 +1,8 @@
 {{/*
 Shutdown settings shared by every connector container (FD-1939).
-Spring Boot reads SERVER_SHUTDOWN and SPRING_LIFECYCLE_TIMEOUT-PER-SHUTDOWN-PHASE directly;
+Spring Boot reads SERVER_SHUTDOWN and SPRING_LIFECYCLE_TIMEOUT-PER-SHUTDOWN-PHASE directly; they cover
+the Spring web server port. CAMEL_SPRINGBOOT_SHUTDOWN-TIMEOUT covers the Camel HTTP port and every
+other Camel route: Camel finishes in-flight exchanges for up to that many seconds, then stops them.
 ZEEBE_WORKER_DRAIN-TIMEOUT is read by the ZeebeWorkerDrain component in each connector image
 and ignored by images that do not have it yet.
 */}}
@@ -11,4 +13,6 @@ and ignored by images that do not have it yet.
   value: "{{ .Values.gracefulShutdown.phaseTimeout }}"
 - name: ZEEBE_WORKER_DRAIN-TIMEOUT
   value: "{{ .Values.gracefulShutdown.zeebeDrainTimeout }}"
+- name: CAMEL_SPRINGBOOT_SHUTDOWN-TIMEOUT
+  value: "{{ .Values.gracefulShutdown.camelShutdownTimeout }}"
 {{- end }}

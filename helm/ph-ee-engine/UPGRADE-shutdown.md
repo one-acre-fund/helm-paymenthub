@@ -26,13 +26,17 @@ Chart (`values.yaml`, `templates/_helpers.tpl`, every `templates/connector-*.yam
 `templates/operations-importer-*.yaml`):
 
 - New `gracefulShutdown` block: `preStopSeconds` (5), `terminationGracePeriodSeconds` (120),
-  `phaseTimeout` ("20s"), `zeebeDrainTimeout` ("60s"). A connector overrides the grace period with
+  `phaseTimeout` ("20s"), `zeebeDrainTimeout` ("60s"), `camelShutdownTimeout` (20, seconds). A
+  connector overrides the grace period with
   `<connector>.terminationGracePeriodSeconds` (channel: 90, its workers only send callbacks).
 - Every connector container gets `terminationGracePeriodSeconds`, a `preStop` `sleep` so the pod keeps
-  serving while endpoint removal propagates, and three env entries from the
+  serving while endpoint removal propagates, and four env entries from the
   `ph-ee-engine.shutdown.env` helper: `SERVER_SHUTDOWN=graceful` and
-  `SPRING_LIFECYCLE_TIMEOUT-PER-SHUTDOWN-PHASE` (read by Spring Boot 2.3+, finish accepted HTTP requests)
-  and `ZEEBE_WORKER_DRAIN-TIMEOUT` (read by the drain component below; ignored by older images).
+  `SPRING_LIFECYCLE_TIMEOUT-PER-SHUTDOWN-PHASE` (read by Spring Boot 2.3+, finish accepted HTTP requests
+  on the Spring web server port), `ZEEBE_WORKER_DRAIN-TIMEOUT` (read by the drain component below;
+  ignored by older images) and `CAMEL_SPRINGBOOT_SHUTDOWN-TIMEOUT`. Most connectors serve HTTP on a
+  Camel port (5000 or `camel.server-port`) next to the Spring port; Camel's graceful shutdown finishes
+  in-flight exchanges on it, and its default wait of 300 s would outlast the grace period.
 - Channel and mpesa readiness probes get `timeoutSeconds: 5`; the channel readiness group includes a
   Zeebe topology call with a 5 s timeout and a 1 s probe flapped on a slow gateway.
 - Importers: `importer_rdbms.kafka.maxPollRecords` (100) and `importer_rdbms.kafka.shutdownTimeoutMs`
@@ -66,12 +70,20 @@ milliseconds each.
 
 ## Shutdown budget
 
-| Service | preStop | Drain | Web / Camel | Client close | Grace |
-|---|---|---|---|---|---|
-| payment connectors | 5 | 60 | 20 | up to 30 | 120 |
-| channel | 5 | 60 | 20 | up to 30 | 90 |
-| importer-rdbms | 0 | 45 (one 100-record batch is about 10 s) | 0 | about 5 | 60 |
-| importer-es | 0 | 30 (one 100-record bulk is a few seconds) | 0 | about 5 | 60 |
+| Service | preStop | Drain | Camel | Web | Client close | Grace |
+|---|---|---|---|---|---|---|
+| payment connectors | 5 | 60 (Zeebe jobs) | 20 | 20 | up to 30 | 120 |
+| channel | 5 | 60 (Zeebe jobs) | 20 | 20 | up to 30 | 90 |
+| importer-rdbms | 0 | 45 (one 100-record batch is about 10 s) | 0 | 0 | about 5 | 60 |
+| importer-es | 0 | 30 (one 100-record bulk is a few seconds) | 0 | 0 | about 5 | 60 |
+
+The connector phases run in this order, each bounded by its own setting: preStop, the Zeebe drain,
+Camel (routes and the Camel HTTP port, `camelShutdownTimeout`), the Spring web server
+(`phaseTimeout`), then the Zeebe client close (two 15 s waits in the 8.1 client). The column maxima add
+up to more than the grace period, but they are not independent: the drain already waits for the
+payment calls that Camel would otherwise wait for, and no new HTTP request arrives once the preStop
+pause has let endpoint removal propagate. The Zeebe drain, the step that prevents double charges,
+always ends by second 65. On minikube a connector under load exited after about 12 s.
 
 ## Rollout
 

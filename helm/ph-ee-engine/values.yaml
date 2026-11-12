@@ -1,12 +1,15 @@
 zeebe_broker_contactpoint: "ph-zeebe-gateway:26500"
 # Graceful shutdown defaults for the connector pods (FD-1939). A connector overrides the grace
 # period with <connector>.terminationGracePeriodSeconds. The preStop pause keeps the pod serving
-# while endpoint removal propagates; the Spring and Zeebe values bound the drain inside the JVM.
+# while endpoint removal propagates; the Spring, Camel and Zeebe values bound the drain inside the JVM.
+# camelShutdownTimeout (seconds) caps how long Camel waits for in-flight exchanges, including requests
+# on the Camel HTTP port; Camel's own default is 300 s, longer than the grace period.
 gracefulShutdown:
   preStopSeconds: 5
   terminationGracePeriodSeconds: 120
   phaseTimeout: "20s"
   zeebeDrainTimeout: "60s"
+  camelShutdownTimeout: 20
 mtn_rwanda_connector:
   enabled: true
   image: "oaftech.azurecr.io/oneacrefund/mtn-connector"
