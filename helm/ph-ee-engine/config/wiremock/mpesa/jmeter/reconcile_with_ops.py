@@ -31,6 +31,8 @@ DEFAULT_TOKEN_URL = (
 DEFAULT_TENANTS = "oaf,kenya,rwanda,burundi,malawi,usa,zambia,nigeria"
 # The app reads startFrom/startTo in this zone (`interface.timezone`, keycloak profile).
 DEFAULT_OPS_TIMEZONE = "Asia/Kolkata"
+# Cloudflare in front of QA rejects urllib's default "Python-urllib/x.y" (error 1010).
+USER_AGENT = "paymenthub-loadtest-reconcile/1.0"
 
 SUCCESS, FAILED, PENDING, MISSING = "success", "failed", "pending", "missing"
 
@@ -90,13 +92,16 @@ class OpsClient:
         if secret:
             fields["client_secret"] = secret
         request = urllib.request.Request(
-            self.token_url, data=urllib.parse.urlencode(fields).encode()
+            self.token_url,
+            data=urllib.parse.urlencode(fields).encode(),
+            headers={"User-Agent": USER_AGENT},
         )
         try:
             with urllib.request.urlopen(request, timeout=30) as response:
                 self.token = json.load(response)["access_token"]
         except urllib.error.HTTPError as error:
-            raise OpsError(f"Keycloak login failed: HTTP {error.code}") from error
+            detail = error.read(300).decode("utf-8", "replace").strip()
+            raise OpsError(f"Keycloak login failed: HTTP {error.code} {detail}") from error
         except (urllib.error.URLError, KeyError, ValueError) as error:
             raise OpsError(f"Keycloak login failed: {error}") from error
 
@@ -110,6 +115,7 @@ class OpsClient:
                 "Authorization": f"Bearer {self.token}",
                 "Platform-TenantId": tenant,
                 "Accept": "application/json",
+                "User-Agent": USER_AGENT,
             },
         )
         try:
