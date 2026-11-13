@@ -1290,12 +1290,21 @@ wiremock:
   image: "docker.io/wiremock/wiremock"
   imageTag: "3.13.2"
   imagePullPolicy: IfNotPresent
+  # The MTN/Airtel failure and no-callback stubs register per-transaction status stubs in
+  # WireMock's memory. If the pod restarts, those stubs are lost and status queries fall back
+  # to the SUCCESSFUL catch-all. By default WireMock keeps every request in its journal, so
+  # under a load test the heap fills up and the pod gets restarted. Capping the journal and
+  # giving the JVM a heap sized to the container keeps the pod running through a load test.
+  args:
+    - "--max-request-journal-entries=1000"
+    - "--async-response-enabled=true"
+  javaOpts: "-XX:MaxRAMPercentage=75.0"
   limits:
-    memory: "256M"
-    cpu: "250m"
+    memory: "768M"
+    cpu: "500m"
   requests:
-    memory: "128M"
-    cpu: "50m"
+    memory: "384M"
+    cpu: "100m"
   deployment:
     annotations: {}
 mock_oracle:

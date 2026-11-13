@@ -40,6 +40,16 @@ spec:
         - name: paymenthub-wiremock
           image: "{{ .Values.wiremock.image }}:{{ .Values.wiremock.imageTag }}"
           imagePullPolicy: "{{ .Values.wiremock.imagePullPolicy }}"
+{{- with .Values.wiremock.args }}
+          args:
+{{ toYaml . | indent 12 }}
+{{- end }}
+{{- with .Values.wiremock.javaOpts }}
+          env:
+            # Read by the image's docker-entrypoint.sh.
+            - name: JAVA_OPTS
+              value: {{ . | quote }}
+{{- end }}
           ports:
             - containerPort: 8080
           # WireMock's own health endpoint (see its Dockerfile HEALTHCHECK).
