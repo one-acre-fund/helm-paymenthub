@@ -16,3 +16,24 @@ and ignored by images that do not have it yet.
 - name: CAMEL_SPRINGBOOT_SHUTDOWN-TIMEOUT
   value: "{{ .Values.gracefulShutdown.camelShutdownTimeout }}"
 {{- end }}
+
+{{/*
+Extra environment variables for one connector container (FD-1935). Lets operators change any Spring
+property of the image without a chart change, for example the per-endpoint timeout, retry and
+circuit-breaker settings (MPESA_RESILIENCE_STKQUERY_READTIMEOUT, FINERACT_RESILIENCE_CONFIRMATION_RETRY_MAXATTEMPTS,
+...). Pass the connector's values block; its optional extraEnv is a list of env entries in the Kubernetes shape
+(name/value or name/valueFrom).
+*/}}
+{{- define "ph-ee-engine.extraEnv" -}}
+{{- with .extraEnv }}
+{{- range . }}
+- name: {{ .name | quote }}
+{{- if .valueFrom }}
+  valueFrom:
+{{ toYaml .valueFrom | indent 4 }}
+{{- else }}
+  value: {{ .value | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

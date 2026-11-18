@@ -1,0 +1,27 @@
+{
+  "name": "tupande-payment-confirmation-unavailable",
+  "priority": 0,
+  "request": {
+    "method": "POST",
+    "urlPath": "/api/v1/payments/payment-hub/confirmation",
+    "headers": {
+      "Authorization": {
+        "matches": "Bearer.*"
+      }
+    },
+    "bodyPatterns": [
+      {
+        "matchesJsonPath": "$.data[?(@.remoteTransactionId =~ /^down-.*/)]"
+      }
+    ]
+  },
+  "response": {
+    "status": 503,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "message": "Service Unavailable"
+    }
+  }
+}

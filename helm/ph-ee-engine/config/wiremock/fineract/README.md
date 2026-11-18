@@ -88,3 +88,18 @@ each file is one WireMock stub mapping and is picked up automatically via the Co
 glob in `../../templates/wiremock.yaml`. Keep the `fineract-` filename prefix so these
 never collide with another connector's mapping files in the shared ConfigMap (see
 `../README.md`).
+
+## Simulating a slow or unavailable Fineract (FD-1935)
+
+The connector's retry and circuit-breaker behaviour can be exercised by choosing the transaction id
+(`RemoteTransactionId`) sent on the confirmation. Higher priority than the default stub, matched on a prefix:
+
+| `RemoteTransactionId` starts with | Behaviour |
+|---|---|
+| `slow-` | `200` after a 70 s delay, longer than the connector's 60 s read timeout: the request was sent but gets no answer in time, so the settlement fails with `UNKNOWN_OUTCOME` and is not sent again |
+| `down-` | `503`: retried (502/503 are in the connector's `retry-status-codes`), then the settlement fails with `503`; enough of them in a row open the circuit |
+| `reset-` | the connection is reset while waiting for the answer: the request may have been processed, so the settlement fails with `UNKNOWN_OUTCOME` after a single attempt and is not sent again |
+
+Anything else goes through the stubs above. While the circuit is open the connector does not call
+WireMock at all, so the request journal (`GET /__admin/requests`) is an exact count of what reached
+Fineract; `DELETE /__admin/requests` resets it between scenarios.

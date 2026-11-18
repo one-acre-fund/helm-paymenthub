@@ -1,0 +1,21 @@
+{
+  "name": "tupande-payment-confirmation-reset",
+  "priority": 0,
+  "request": {
+    "method": "POST",
+    "urlPath": "/api/v1/payments/payment-hub/confirmation",
+    "headers": {
+      "Authorization": {
+        "matches": "Bearer.*"
+      }
+    },
+    "bodyPatterns": [
+      {
+        "matchesJsonPath": "$.data[?(@.remoteTransactionId =~ /^reset-.*/)]"
+      }
+    ]
+  },
+  "response": {
+    "fault": "CONNECTION_RESET_BY_PEER"
+  }
+}

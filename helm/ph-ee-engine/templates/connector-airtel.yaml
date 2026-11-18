@@ -70,6 +70,7 @@ spec:
             - "/app/ph-ee-connector-airtel.jar"
           env:
             {{- include "ph-ee-engine.shutdown.env" . | nindent 12 }}
+            {{- include "ph-ee-engine.extraEnv" .Values.airtel_connector | nindent 12 }}
             - name: "ZEEBE_BROKER_CONTACTPOINT"
               value: "{{ .Values.airtel_connector.zeebe_broker_contactpoint }}"
             - name: "SKIP_ENABLED"

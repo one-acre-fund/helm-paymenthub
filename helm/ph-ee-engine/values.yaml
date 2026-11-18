@@ -12,6 +12,10 @@ gracefulShutdown:
   camelShutdownTimeout: 20
 mtn_rwanda_connector:
   enabled: true
+  # Extra container env, e.g. to tune the resilience settings (FD-1935) without a chart change:
+  #   - name: "MTN_RESILIENCE_REQUESTTOPAY_READTIMEOUT"
+  #     value: "20s"
+  extraEnv: []
   image: "oaftech.azurecr.io/oneacrefund/mtn-connector"
   imageTag: "1.0.0"
   tenants: "oaf"
@@ -608,6 +612,10 @@ identity:
     enabled: false
 mpesa:
   enabled: true
+  # Extra container env, e.g. to tune the resilience settings (FD-1935) without a chart change:
+  #   - name: "MPESA_RESILIENCE_STKQUERY_READTIMEOUT"
+  #     value: "20s"
+  extraEnv: []
   replicas: 1
   image: "oaftech.azurecr.io/phee-ns/ph-ee-connector-mpesa"
   imageTag: "v1.4.1"
@@ -1418,6 +1426,10 @@ keycloak:
       value: /realm/kong-keycloak-realm.json
 tupande_connector:
   enabled: true
+  # Extra container env, e.g. to tune the resilience settings (FD-1935) without a chart change:
+  #   - name: "TUPANDE_RESILIENCE_CONFIRMATION_READTIMEOUT"
+  #     value: "20s"
+  extraEnv: []
   replicas: 1
   image: "oaftech.azurecr.io/oneacrefund/tupande-connector"
   imageTag: "0.0.1"
@@ -1471,6 +1483,10 @@ erply_connector:
       co.elastic.logs/enabled: "true"
 fineract_connector:
   enabled: true
+  # Extra container env, e.g. to tune the resilience settings (FD-1935) without a chart change:
+  #   - name: "FINERACT_RESILIENCE_CONFIRMATION_READTIMEOUT"
+  #     value: "20s"
+  extraEnv: []
   replicas: 1
   image: "oaftech.azurecr.io/oneacrefund/ph-ee-connector-ams-fineract"
   imageTag: "0.0.1.2023.06.08.1"
@@ -1500,6 +1516,10 @@ fineract_connector:
       co.elastic.logs/enabled: "true"
 airtel_connector:
   enabled: true
+  # Extra container env, e.g. to tune the resilience settings (FD-1935) without a chart change:
+  #   - name: "AIRTEL_RESILIENCE_COLLECTION_READTIMEOUT"
+  #     value: "20s"
+  extraEnv: []
   replicas: 1
   image: "oaftech.azurecr.io/oneacrefund/airtel-connector"
   imageTag: "0.0.1"
@@ -1565,6 +1585,10 @@ airtel_connector:
         identifier: "FINERACTACCOUNTID"
 odoo_connector:
   enabled: true
+  # Extra container env, e.g. to tune the resilience settings (FD-1935) without a chart change:
+  #   - name: "ODOO_RESILIENCE_CONFIRMATION_READTIMEOUT"
+  #     value: "20s"
+  extraEnv: []
   replicas: 1
   image: "oaftech.azurecr.io/oneacrefund/ph-ee-connector-ams-odoo"
   imageTag: "1.0.0"

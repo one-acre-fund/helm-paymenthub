@@ -1,0 +1,29 @@
+{
+  "name": "odoo-confirmation",
+  "priority": 5,
+  "request": {
+    "method": "POST",
+    "urlPath": "/rest/Odoo+confirmation+Api+Mock/2.1.0/confirmation",
+    "bodyPatterns": [
+      {
+        "matchesJsonPath": "$.saleId"
+      },
+      {
+        "matchesJsonPath": "$.walletId"
+      }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "message": "Confirmation received",
+      "saleId": "{{jsonPath request.body '$.saleId'}}"
+    },
+    "transformers": [
+      "response-template"
+    ]
+  }
+}
