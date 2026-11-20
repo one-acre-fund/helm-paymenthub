@@ -56,6 +56,7 @@ spec:
             - "/app/ph-ee-connector-ams-odoo.jar"
           env:
             {{- include "ph-ee-engine.shutdown.env" . | nindent 12 }}
+            {{- include "ph-ee-engine.extraEnv" .Values.odoo_connector | nindent 12 }}
             - name: "SPRING_PROFILES_ACTIVE"
               value: "{{ .Values.odoo_connector.SPRING_PROFILES_ACTIVE }}"
             - name: "ZEEBE_BROKER_CONTACTPOINT"

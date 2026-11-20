@@ -1,0 +1,22 @@
+{
+  "name": "odoo-confirmation-server-error",
+  "priority": 0,
+  "request": {
+    "method": "POST",
+    "urlPath": "/rest/Odoo+confirmation+Api+Mock/2.1.0/confirmation",
+    "bodyPatterns": [
+      {
+        "matchesJsonPath": "$[?(@.saleId =~ /^error-.*/)]"
+      }
+    ]
+  },
+  "response": {
+    "status": 500,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "message": "Internal server error"
+    }
+  }
+}

@@ -1,0 +1,68 @@
+# FD-1935: alert rules for the connector circuit breakers and retries.
+#
+# Draft for the owners of the monitoring namespace (developer RBAC cannot create PrometheusRules).
+# The metrics come from resilience4j-micrometer on each connector's /actuator/prometheus endpoint
+# (mpesa, airtel, mtn, ams-fineract, ams-tupande, ams-odoo). Circuit names are
+# <provider>-<endpoint>-<host>, for example mpesa-stk-push-api.safaricom.co.ke or
+# fineract-confirmation-loans.qa.oneacrefund.org, so one alert covers every connector.
+#
+# The same conditions are visible in the logs as structured events, for Kibana or elastalert:
+#   event=<provider>_circuit_state_changed circuit=<name> from=<state> to=OPEN
+#   event=<provider>_call_rejected circuit=<name>              (failed fast while open)
+#   event=<provider>_retry_exhausted call=<name> attempts=<n> reason=<reason>
+#   event=<provider>_call_skipped call=<name> reason=job_deadline
+# where <provider> is mpesa, airtel, mtn, fineract, tupande or odoo.
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: paymenthub-connector-resilience
+  labels:
+    release: prometheus
+spec:
+  groups:
+    - name: paymenthub-connector-resilience
+      rules:
+        - alert: PaymentHubCircuitOpen
+          # A circuit stays open for at least one wait-duration (30 s by default); a flapping circuit
+          # (open, half-open probe fails, open again) keeps this firing.
+          expr: max by (namespace, name) (resilience4j_circuitbreaker_state{state="open"}) == 1
+          for: 1m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Circuit {{ $labels.name }} is open"
+            description: >-
+              Calls to {{ $labels.name }} fail fast without reaching the endpoint. Payments on that
+              path end with CIRCUIT_OPEN (or stay pending for status checks) until probes succeed.
+        - alert: PaymentHubCircuitHalfOpenTooLong
+          expr: max by (namespace, name) (resilience4j_circuitbreaker_state{state="half_open"}) == 1
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Circuit {{ $labels.name }} has been half-open for 10 minutes"
+            description: >-
+              Probe calls are not completing; the endpoint may be accepting connections but not
+              answering within the read timeout.
+        - alert: PaymentHubRetriesExhausted
+          # Calls that failed after every retry. The threshold suits QA volumes; raise it for prod.
+          expr: sum by (namespace, name) (increase(resilience4j_retry_calls_total{kind="failed_with_retry"}[10m])) > 10
+          for: 0m
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ $value | humanize }} calls to {{ $labels.name }} failed after all retries in 10 minutes"
+            description: >-
+              The endpoint answered with retryable errors or did not answer at all. Check the
+              event=*_retry_exhausted log lines for the reasons (status code or exception class).
+        - alert: PaymentHubCallsRejectedByOpenCircuit
+          expr: sum by (namespace, name) (increase(resilience4j_circuitbreaker_not_permitted_calls_total[10m])) > 20
+          for: 0m
+          labels:
+            severity: critical
+          annotations:
+            summary: "{{ $value | humanize }} payments on {{ $labels.name }} were failed fast in 10 minutes"
+            description: >-
+              Many payments are hitting an open circuit. For settlement calls (fineract, tupande,
+              odoo) each one is a collection marked NOT_AUTOSAVED that needs manual settlement after
+              recovery.

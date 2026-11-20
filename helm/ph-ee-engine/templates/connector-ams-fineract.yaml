@@ -59,6 +59,7 @@ spec:
             - "/app/ph-ee-connector-ams-fineract.jar"
           env:
             {{- include "ph-ee-engine.shutdown.env" . | nindent 12 }}
+            {{- include "ph-ee-engine.extraEnv" .Values.fineract_connector | nindent 12 }}
             - name: "SPRING_PROFILES_ACTIVE"
               value: "{{ .Values.fineract_connector.SPRING_PROFILES_ACTIVE }}"
             - name: "ZEEBE_BROKER_CONTACTPOINT"

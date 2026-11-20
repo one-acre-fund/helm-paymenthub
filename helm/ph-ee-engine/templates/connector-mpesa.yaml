@@ -66,6 +66,7 @@ spec:
             - /app/app.jar
           env:
             {{- include "ph-ee-engine.shutdown.env" . | nindent 12 }}
+            {{- include "ph-ee-engine.extraEnv" .Values.mpesa | nindent 12 }}
             - name: "SPRING_PROFILES_ACTIVE"
               value: "{{ .Values.mpesa.SPRING_PROFILES_ACTIVE }}"
             - name: "ZEEBE_BROKER_CONTACTPOINT"

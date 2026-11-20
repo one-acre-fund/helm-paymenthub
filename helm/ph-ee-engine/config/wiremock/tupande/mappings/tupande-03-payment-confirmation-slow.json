@@ -1,0 +1,28 @@
+{
+  "name": "tupande-payment-confirmation-slow",
+  "priority": 0,
+  "request": {
+    "method": "POST",
+    "urlPath": "/api/v1/payments/payment-hub/confirmation",
+    "headers": {
+      "Authorization": {
+        "matches": "Bearer.*"
+      }
+    },
+    "bodyPatterns": [
+      {
+        "matchesJsonPath": "$.data[?(@.remoteTransactionId =~ /^slow-.*/)]"
+      }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "fixedDelayMilliseconds": 70000,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "message": "Payment confirmed"
+    }
+  }
+}

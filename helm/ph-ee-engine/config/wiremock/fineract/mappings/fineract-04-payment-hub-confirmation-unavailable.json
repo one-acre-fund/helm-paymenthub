@@ -1,0 +1,22 @@
+{
+  "name": "fineract-payment-hub-confirmation-unavailable",
+  "priority": 0,
+  "request": {
+    "method": "POST",
+    "urlPath": "/fineract-provider/api/v1/paymentHub/confirmation",
+    "bodyPatterns": [
+      {
+        "matchesJsonPath": "$[?(@.RemoteTransactionId =~ /^down-.*/)]"
+      }
+    ]
+  },
+  "response": {
+    "status": 503,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "message": "Service Unavailable"
+    }
+  }
+}
