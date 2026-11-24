@@ -989,6 +989,10 @@ importer_es:
     brokers: "kafka:9092"
     topic: "zeebe-export"
     consumerGroup: "ph-ee-importer-es"
+    # Consumer threads per pod, used while the replica count is fixed. With autoscaling on the
+    # chart renders 1 instead: every thread is a group member, the topic has six partitions and
+    # the assignor hands them to the first six members by pod name, so three threads per pod
+    # would leave every pod after the second without a partition.
     concurrency: 3
     # How long the consumer threads may flush and commit the current bulk before the JVM exits.
     shutdownTimeoutMs: 30000
@@ -1113,6 +1117,8 @@ importer_rdbms:
     brokers: "kafka:9092"
     topic: "zeebe-export"
     consumerGroup: "ph-ee-importer-rdbms"
+    # Consumer threads per pod, used while the replica count is fixed. With autoscaling on the
+    # chart renders 1 instead, so the six partitions spread over up to six pods (see importer_es).
     concurrency: 3
     # Records per poll. Offsets are committed per record (FD-1939), so this bounds how long a
     # consumer keeps working after SIGTERM, not how much is read again.

@@ -63,7 +63,7 @@ spec:
           - name: "KAFKA_CONSUMER_GROUP"
             value: "{{ .Values.importer_es.kafka.consumerGroup }}"
           - name: "KAFKA_CONCURRENCY"
-            value: "{{ .Values.importer_es.kafka.concurrency }}"
+            value: "{{ ternary 1 .Values.importer_es.kafka.concurrency .Values.importer_es.autoscaling.enabled }}"
           - name: "KAFKA_SHUTDOWN_TIMEOUT_MS"
             value: "{{ .Values.importer_es.kafka.shutdownTimeoutMs }}"
           - name: "reporting.fields.amount"
