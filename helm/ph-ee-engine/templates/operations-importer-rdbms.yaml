@@ -65,7 +65,7 @@ spec:
             - name: "KAFKA_CONSUMER_GROUP"
               value: "{{ .Values.importer_rdbms.kafka.consumerGroup }}"
             - name: "KAFKA_CONCURRENCY"
-              value: "{{ ternary 1 .Values.importer_rdbms.kafka.concurrency .Values.importer_rdbms.autoscaling.enabled }}"
+              value: "{{ if .Values.importer_rdbms.autoscaling.enabled }}1{{ else }}{{ .Values.importer_rdbms.kafka.concurrency }}{{ end }}"
             - name: "KAFKA_MAX_POLL_RECORDS"
               value: "{{ .Values.importer_rdbms.kafka.maxPollRecords }}"
             - name: "KAFKA_SHUTDOWN_TIMEOUT_MS"
