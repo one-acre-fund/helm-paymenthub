@@ -3,7 +3,9 @@
 {{- if and $v.enabled $v.autoscaling.enabled }}
 ---
 # KEDA scales the Deployment on consumer-group lag. Replicas are capped at the topic's
-# partition count by allowIdleConsumers=false, so maxReplicas above that is harmless.
+# partition count by allowIdleConsumers=false, so maxReplicas above that is harmless. KEDA
+# counts pods, not consumer threads, which is why the Deployments run one thread per pod
+# (KAFKA_CONCURRENCY=1) while this object exists.
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
