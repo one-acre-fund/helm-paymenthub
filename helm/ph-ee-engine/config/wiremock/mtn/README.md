@@ -96,6 +96,7 @@ outcome the callback delivered (or, for the "no callback" case, reports the tran
 | `250780000103` | `status: "FAILED"`, `reason: "EXPIRED"` |
 | `250780000104` | `status: "FAILED"`, `reason: "PAYER_LIMIT_REACHED"` |
 | `250780000201` | `status: "PENDING"` |
+| `250780000002`, `250780000003` | HTTP 404 `RESOURCE_NOT_FOUND`: the request-to-pay was refused, so MTN never created it. Without this the status query would hit the `SUCCESSFUL` catch-all and the connector would accept a payment that never happened. |
 | (anything else — default success) | `status: "SUCCESSFUL"`, with the derived `financialTransactionId` |
 
 Two things follow from that mechanism. These self-registered stubs live only in the

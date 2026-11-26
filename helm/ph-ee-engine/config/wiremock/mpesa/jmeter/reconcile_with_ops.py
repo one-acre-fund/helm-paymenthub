@@ -209,7 +209,7 @@ def load_ops_index(client, tenants, start, end, page_size):
 
 
 def classify(row, index):
-    """Returns (ops outcome, verdict, number of ops records matched)."""
+    """Returns (ops outcome, verdict, number of ops records matched, raw ops states)."""
     records = {}
     for value in row["ids"]:
         records.update(index.get(value, {}))
@@ -218,7 +218,9 @@ def classify(row, index):
         # Prefer the most final state: a transaction that also has a stale record still counts.
         outcomes = {outcome for outcome, _ in records.values()}
         outcome = next(o for o in (SUCCESS, FAILED, PENDING) if o in outcomes)
+        raw_states = "|".join(sorted({str(raw) for _, raw in records.values()}))
     else:
+        raw_states = ""
         outcome = MISSING
 
     if not row["accepted"]:
@@ -233,7 +235,7 @@ def classify(row, index):
     else:
         # A never-delivered callback may legitimately stay in progress until its timer fires.
         verdict = {SUCCESS: "mismatch", FAILED: "match", PENDING: "match"}[outcome]
-    return outcome, verdict, len(records)
+    return outcome, verdict, len(records), raw_states
 
 
 def evaluate(rows, index):
@@ -241,12 +243,12 @@ def evaluate(rows, index):
 
 
 def is_unresolved(results):
-    return any(verdict in ("missing", "pending") for _, _, verdict, _ in results)
+    return any(verdict in ("missing", "pending") for _, _, verdict, _, _ in results)
 
 
 def print_report(results, failures):
     groups = defaultdict(Counter)
-    for row, outcome, verdict, matched in results:
+    for row, outcome, verdict, matched, _ in results:
         counter = groups[(row["flow"], row["scenario"], row["expected"])]
         counter["sent"] += 1
         # The API refused these, so being absent from ops is correct rather than missing.
@@ -297,10 +299,10 @@ def write_details(path, results):
     fields = ["timestamp_ms", "flow", "scenario", "expected", "http_code", "join_ids"]
     with open(path, "w", newline="", encoding="utf-8") as handle:
         writer = csv.writer(handle)
-        writer.writerow(fields + ["ops_outcome", "verdict", "ops_records"])
-        for row, outcome, verdict, matched in results:
+        writer.writerow(fields + ["ops_outcome", "ops_state", "verdict", "ops_records"])
+        for row, outcome, verdict, matched, raw_states in results:
             if verdict in ("mismatch", "missing", "pending") or matched > 1:
-                writer.writerow([row[f] for f in fields] + [outcome, verdict, matched])
+                writer.writerow([row[f] for f in fields] + [outcome, raw_states, verdict, matched])
 
 
 def token_subject():
