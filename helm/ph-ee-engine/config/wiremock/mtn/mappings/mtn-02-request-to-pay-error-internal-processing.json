@@ -5,18 +5,40 @@
     "method": "POST",
     "urlPath": "/collection/v1_0/requesttopay",
     "headers": {
-      "Authorization": { "matches": "Bearer .+" }
+      "Authorization": {
+        "matches": "Bearer .+"
+      },
+      "X-Reference-Id": {
+        "matches": ".+"
+      }
     },
     "bodyPatterns": [
-      { "matchesJsonPath": "$[?(@.payer.partyId == '250780000003')]" }
+      {
+        "matchesJsonPath": "$[?(@.payer.partyId == '250780000003')]"
+      }
     ]
   },
   "response": {
     "status": 500,
-    "headers": { "Content-Type": "application/json" },
+    "headers": {
+      "Content-Type": "application/json"
+    },
     "jsonBody": {
       "code": "INTERNAL_PROCESSING_ERROR",
       "message": "Internal error while processing the request."
     }
-  }
+  },
+  "postServeActions": [
+    {
+      "name": "webhook",
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8080/__admin/mappings",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"name\": \"mtn-collection-request-to-pay-status-internal-processing-{{originalRequest.headers.X-Reference-Id}}\", \"priority\": 1, \"request\": {\"method\": \"GET\", \"urlPath\": \"/collection/v1_0/requesttopay/{{originalRequest.headers.X-Reference-Id}}\"}, \"response\": {\"status\": 404, \"headers\": {\"Content-Type\": \"application/json\"}, \"jsonBody\": {\"code\": \"RESOURCE_NOT_FOUND\", \"message\": \"Requested resource was not found.\"}}}"
+      }
+    }
+  ]
 }

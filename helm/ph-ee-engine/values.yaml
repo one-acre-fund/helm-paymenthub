@@ -510,6 +510,30 @@ operationsmysql:
       GRANT ALL ON *.* TO 'root'@'%';
       GRANT ALL PRIVILEGES ON messagegateway.* TO 'mifos';
       GRANT ALL PRIVILEGES ON oaf.* TO 'mifos';
+  primary:
+    # The subchart's probes run `mysqladmin status` with a 1s timeout. Under a load test the
+    # importers keep MySQL busy enough to miss that, three misses restart the pod, and InnoDB
+    # crash recovery on the way back up can outlast the startup probe, so it loops.
+    # Give each check 5s and the liveness probe a minute of failures before it restarts.
+    livenessProbe:
+      timeoutSeconds: 5
+      periodSeconds: 10
+      failureThreshold: 6
+    readinessProbe:
+      timeoutSeconds: 5
+      periodSeconds: 10
+      failureThreshold: 3
+    startupProbe:
+      timeoutSeconds: 5
+      periodSeconds: 10
+      failureThreshold: 30
+    # The subchart sets no requests. On QA something outside this chart (most likely a VPA or
+    # another rightsizer) then set them to 11m CPU, which leaves MySQL almost no CPU when the
+    # node is busy, so the probes above time out. A rightsizer will override this value, so
+    # set a CPU floor there too. Memory is left to the rightsizer until real usage is known.
+    resources:
+      requests:
+        cpu: "500m"
 ph_ee_connector_ams_mifos:
   enabled: false
 ph_ee_connector_mojaloop:
