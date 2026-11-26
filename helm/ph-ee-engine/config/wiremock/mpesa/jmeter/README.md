@@ -215,8 +215,10 @@ pointed at the mock: against Tupande's QA function every one of them fails with
 `Transaction not found`. The Zambia variants only follow the mock's success path, and need
 Zambia's connectors pointed at the mock. Paybill accounts must validate against the AMS in use.
 
-`callback_empty_body` and `callback_no_result_code` are `ANY`, because the outcome depends on
-how the connector and its status query handle an unusable response.
+`callback_empty_body` and `callback_no_result_code` expect `FAILURE`: an unusable callback must
+never complete a payment. The connector currently ignores these callbacks, so the transactions
+stay in progress until the workflow's timer fails them about 8 minutes (493s) later. The
+cross-check counts in-progress as a match for `FAILURE`, so it doesn't wait for that timer.
 
 The mtn and airtel failure/pending scenarios each register a per-transaction status stub
 in WireMock's memory (see their READMEs), so a long run accumulates mappings. Clear them
