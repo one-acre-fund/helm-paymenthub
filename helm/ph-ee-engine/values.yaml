@@ -515,7 +515,14 @@ operationsmysql:
     # importers keep MySQL busy enough to miss that, three misses restart the pod, and InnoDB
     # crash recovery on the way back up can outlast the startup probe, so it loops.
     # Give each check 5s and the liveness probe a minute of failures before it restarts.
-    livenessProbe:
+    # Liveness only checks that mysqld accepts connections. `mysqladmin` starts bash and a
+    # client and logs in, which a CPU-starved pod can't do in time even when MySQL is fine,
+    # and the kubelet then restarts it (exit 0, "Completed"). A restart never makes a slow
+    # database faster, so that check is left to readiness.
+    customLivenessProbe:
+      tcpSocket:
+        port: mysql
+      initialDelaySeconds: 5
       timeoutSeconds: 5
       periodSeconds: 10
       failureThreshold: 6
